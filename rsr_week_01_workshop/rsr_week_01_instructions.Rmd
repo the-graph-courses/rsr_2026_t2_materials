@@ -15,7 +15,7 @@ The goal of today's workshop is to reinforce your skills in **data wrangling**, 
 
 **NOTE**: This course assumes knowledge of our Beginner R course content. Please refer to our textbook to look up any functions needed for this assignment: [datawithr.com](https://datawithr.com/){.uri}.
 
-All assignments should be submitted individually, but you are encouraged to work in groups. To submit your work, please upload your R script to the Workshop 1 submission page.
+All assignments should be submitted individually, but you are encouraged to work in groups. To submit your work, please upload your assignment Rmd file to the Workshop 1 submission page.
 
 # Instructions
 
@@ -146,7 +146,9 @@ Inspect your final HTML to ensure all looks good before submitting.
 
 # Submit Your Work
 
-To submit your completed assignment, upload YOUR Rmd file to the submission page. Make sure you can knit your document successfully to HTML before uploading to avoid any submission issues.
+To submit your completed assignment, upload YOUR assignment Rmd file to the submission page. Please remember to add your name at the top of the document.
+
+Make sure you can knit your document successfully to HTML before uploading to avoid any submission issues.
 
 Happy coding, and good luck!
 
