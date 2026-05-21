@@ -1,0 +1,24 @@
+---
+title: "Datasets for RSR Workshop 1"
+author: "The GRAPH Courses team"
+output: pdf_document
+---
+
+# Workshop Datasets
+
+In this week's workshop, you will analyse a dataset of COVID-19 Patients in the US. These datasets can be found in the "data" subfolder. 
+
+We have also provided an example report Rmd and HTML, using a dataset of Motorcycle Accidents in Colombia. This dataset will be used for a demo.
+
+## 1. COVID-19 Patients in the US
+
+This dataset encompasses anonymized data from 1540 COVID-19 hospitalized patients at two New York hospitals: State University of New York (SUNY) Downstate Health Sciences University and Maimonides Medical Center. The data, found in the "covid_19_united_states.csv" file, provides a wealth of information on patient demographics, known comorbidities, and ultimate hospitalization outcomes (discharge or death).
+
+Find out more about the data [**here**](https://tinyurl.com/covid-19-united-states).
+
+
+## 2. Motorcycle Accidents in Colombia (Example Report)
+
+This dataset contains police records of deaths resulting from motorcycle-related road injuries in the city of Medellin between 2012 and 2015. It focuses exclusively on fatal incidents involving motorcyclists, both drivers and passengers. The relevant dataset at the linked site is called "Dataset 1.xlsx". In the second sheet of that xlsx file, you will find a data dictionary. The accompanying publication can be accessed [**here**](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0256758).
+
+Access related data [**here**](https://tinyurl.com/motorcycle-accidents-colombia).

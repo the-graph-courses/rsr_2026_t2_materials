@@ -1,0 +1,103 @@
+---
+title: "Report on COVID-19 Patient Outcomes in New York City Hospitals"
+subtitle: "Tidyverse and RMarkdown Practice"
+author: "YOUR NAME HERE" # Remember to add your name!
+output:
+  prettydoc::html_pretty:
+    theme: architect
+date: "`r Sys.Date()`"
+---
+
+```{r include = FALSE}
+# NOTE
+# Please check the "rsr_week_01_instructions.Rmd" document as you complete this assignment! We encourage you to have both the instructions document and this assignment document open.
+```
+
+```{r include = FALSE}
+# Set chunk options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r}
+# TASK 1: LOAD THE REQUIRED PACKAGES
+if(!require(pacman)) install.packages("pacman")
+"WRITE_YOUR_CODE_HERE"
+```
+
+```{r}
+# TASK 2: IMPORT THE DATA & INSPECT VARIABLES
+covid_us <- "WRITE_YOUR_CODE_HERE"
+```
+
+```{r}
+# TASK 3: CLEAN THE COLUMN NAMES 
+covid_us_clean <- covid_us %>% 
+  "WRITE_YOUR_CODE_HERE"
+```
+
+```{r}
+# TASK 4: RENAME AND TRANSFORM VARIABLES
+covid_us_clean2 <- covid_us_clean %>%
+  "WRITE_YOUR_CODE_HERE"
+```
+
+```{r}
+# TASK 5: CREATE A SUBSET
+covid_us_subset <- "WRITE_YOUR_CODE_HERE"
+```
+
+```{r}
+# TASK 6: SUMMARIZE DATA
+race_sex_count <- "WRITE_YOUR_CODE_HERE"
+```
+
+```{r}
+# TASK 7: VISUALIZE SUMMARY DATA
+"WRITE_YOUR_CODE_HERE"
+```
+
+```{r}
+# TASK 8: EXPORT YOUR OUTPUTS
+"WRITE_YOUR_CODE_HERE"
+```
+
+# Introduction
+
+The dataset analysed in this report contains records of **`r nrow(covid_us_subset)`** COVID-19 deaths among patients admitted to two New York City hospitals (SUNY Downstate and Maimonides Medical Center) during the early waves of the pandemic. The records include patient demographics, comorbidities, and admission details.
+
+# Race-sex distribution of COVID-19 deaths
+
+In this analysis, we looked at the number of deaths per race and sex group.
+
+```{r}
+# Print your graph here.
+
+```
+
+```{r}
+# TASK 9: ADD INLINE CODE AND COMMENTARY 
+
+## Each of the 3 statistics in this code chunk will be quoted in the text below.
+
+max_sex_group <- race_sex_count %>% 
+  filter(n == max(n)) %>% 
+  pull(sex)
+
+max_race_group <- race_sex_count %>% 
+  "WRITE_YOUR_CODE_HERE"
+
+max_n_deaths <- "WRITE_YOUR_CODE_HERE"
+```
+
+The demographic group with the highest number of COVID-19 deaths was `"WRITE_YOUR_INLINE_CODE_HERE"` `r paste0(max_sex_group, "s")`, with `"WRITE_YOUR_INLINE_CODE_HERE"` deaths.
+
+## Demographic Analysis of Expired Male Patients
+
+We further analyzed the racial demographics of male patients who expired from the disease at Maimonides Medical Center.
+
+The table below shows this demographic breakdown:
+
+```{r}
+# TASK 10: SUMMARIZE DEMOGRAPHIC DATA 
+"WRITE_YOUR_CODE_HERE"
+```

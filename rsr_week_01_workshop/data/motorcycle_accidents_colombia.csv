@@ -1,0 +1,417 @@
+id,date_of_death,gender,date_of_birth,marital status,age,age group,department of residence,municipality_code,municipality_of_residence,condition
+1,2014-02-24T00:00:00Z,male,1943-10-30T00:00:00Z,unknown,70,70-74,Antioquia,1,Medellín,driver
+2,2012-11-15T00:00:00Z,male,1966-04-27T00:00:00Z,married,46,45-49,Antioquia,1,Medellín,driver
+3,2012-11-30T00:00:00Z,male,1990-04-26T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,driver
+4,2012-11-18T00:00:00Z,male,1978-07-28T00:00:00Z,married,34,30-34,Antioquia,1,Medellín,driver
+5,2012-07-08T00:00:00Z,male,1989-11-26T00:00:00Z,unknown,22,20-24,Antioquia,1,Medellín,driver
+6,2012-07-08T00:00:00Z,male,1966-04-05T00:00:00Z,"unmarried, living with partner for 2+ years",46,45-49,Antioquia,1,Medellín,driver
+7,2013-04-13T00:00:00Z,male,1993-11-25T00:00:00Z,unknown,19,15-19,Antioquia,1,Medellín,driver
+8,2013-10-23T00:00:00Z,female,1986-03-06T00:00:00Z,single,27,25-29,Antioquia,1,Medellín,driver
+9,2013-10-12T00:00:00Z,male,1964-04-01T00:00:00Z,married,49,45-49,Antioquia,1,Medellín,driver
+10,2014-10-21T00:00:00Z,male,1990-10-26T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+11,2014-01-12T00:00:00Z,male,1980-11-26T00:00:00Z,unknown,33,30-34,Antioquia,1,Medellín,driver
+12,2015-10-12T00:00:00Z,male,1990-05-12T00:00:00Z,unknown,25,25-29,Antioquia,1,Medellín,driver
+13,2015-08-27T00:00:00Z,male,1996-08-19T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,driver
+14,2015-05-03T00:00:00Z,male,1996-01-14T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,driver
+15,2014-11-08T00:00:00Z,male,1986-04-02T00:00:00Z,single,28,25-29,Antioquia,1,Medellín,passenger
+16,2015-07-28T00:00:00Z,female,1964-01-12T00:00:00Z,married,51,50-54,Antioquia,1,Medellín,passenger
+17,2012-08-14T00:00:00Z,male,1982-08-21T00:00:00Z,single,29,25-29,Antioquia,1,Medellín,driver
+18,2013-10-27T00:00:00Z,male,1978-11-13T00:00:00Z,married,35,35-39,Antioquia,1,Medellín,driver
+19,2014-01-02T00:00:00Z,female,1995-01-07T00:00:00Z,unknown,18,15-19,Antioquia,1,Medellín,unknown
+20,2014-08-11T00:00:00Z,male,1997-04-06T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,unknown
+21,2014-07-20T00:00:00Z,male,1977-07-25T00:00:00Z,single,36,35-39,Antioquia,1,Medellín,driver
+22,2014-07-27T00:00:00Z,male,1985-04-19T00:00:00Z,married,29,25-29,Antioquia,1,Medellín,driver
+23,2014-01-19T00:00:00Z,male,1994-02-21T00:00:00Z,married,19,15-19,Antioquia,1,Medellín,driver
+24,2014-03-13T00:00:00Z,male,1984-10-27T00:00:00Z,unknown,29,25-29,Antioquia,1,Medellín,driver
+25,2015-03-13T00:00:00Z,female,1972-08-22T00:00:00Z,married,42,40-44,Antioquia,1,Medellín,driver
+26,2015-01-28T00:00:00Z,male,1995-07-16T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,driver
+27,2015-01-21T00:00:00Z,male,1978-06-27T00:00:00Z,married,36,35-39,Antioquia,1,Medellín,driver
+28,2013-04-07T00:00:00Z,male,1990-06-10T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,driver
+29,2013-01-12T00:00:00Z,male,1977-06-10T00:00:00Z,married,35,35-39,Antioquia,1,Medellín,driver
+30,2013-08-01T00:00:00Z,male,1988-09-30T00:00:00Z,unknown,24,20-24,Antioquia,1,Medellín,driver
+31,2013-09-02T00:00:00Z,male,1990-02-01T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+32,2014-04-01T00:00:00Z,male,1981-07-11T00:00:00Z,married,32,30-34,Antioquia,1,Medellín,driver
+33,2014-04-14T00:00:00Z,male,1988-05-14T00:00:00Z,single,25,25-29,Antioquia,1,Medellín,driver
+34,2014-03-30T00:00:00Z,male,1994-08-15T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,driver
+35,2014-02-20T00:00:00Z,male,1969-09-14T00:00:00Z,married,44,40-44,Antioquia,1,Medellín,driver
+36,2015-09-22T00:00:00Z,male,1985-02-08T00:00:00Z,"unmarried, living with partner for 2+ years",30,30-34,Antioquia,266,Envigado,driver
+37,2015-08-02T00:00:00Z,male,1989-12-08T00:00:00Z,"unmarried, living with partner for 2+ years",25,25-29,Antioquia,1,Medellín,driver
+38,2015-05-13T00:00:00Z,male,1997-02-14T00:00:00Z,single,18,15-19,Antioquia,360,Itagüí,driver
+39,2015-01-19T00:00:00Z,male,1950-06-14T00:00:00Z,married,64,60-64,Antioquia,1,Medellín,driver
+40,2012-01-22T00:00:00Z,female,1990-10-28T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,passenger
+41,2014-06-23T00:00:00Z,male,1991-09-13T00:00:00Z,single,22,20-24,Antioquia,88,Bello,passenger
+42,2015-07-20T00:00:00Z,female,1995-06-04T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,passenger
+43,2012-06-22T00:00:00Z,male,1984-05-01T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+44,2013-04-13T00:00:00Z,male,1979-06-23T00:00:00Z,unknown,33,30-34,Antioquia,1,Medellín,driver
+45,2013-04-29T00:00:00Z,male,1989-03-13T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,driver
+46,2013-03-11T00:00:00Z,male,1990-11-28T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,driver
+47,2014-04-12T00:00:00Z,female,1995-06-04T00:00:00Z,unknown,18,15-19,Antioquia,1,Medellín,unknown
+48,2015-04-14T00:00:00Z,male,1968-12-24T00:00:00Z,single,46,45-49,Antioquia,1,Medellín,driver
+49,2015-11-18T00:00:00Z,female,1995-08-11T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,unknown
+50,2012-01-09T00:00:00Z,male,1994-12-20T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,driver
+52,2012-05-05T00:00:00Z,female,1980-03-15T00:00:00Z,single,32,30-34,Antioquia,1,Medellín,driver
+53,2012-04-26T00:00:00Z,male,1987-08-28T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,driver
+54,2012-06-10T00:00:00Z,male,1947-02-02T00:00:00Z,unknown,65,65-69,Antioquia,1,Medellín,driver
+55,2012-12-12T00:00:00Z,male,1987-02-27T00:00:00Z,"unmarried, living with partner for 2+ years",25,25-29,Antioquia,88,Bello,driver
+56,2012-12-30T00:00:00Z,male,1992-02-14T00:00:00Z,single,20,20-24,Antioquia,631,Sabaneta,driver
+57,2012-09-17T00:00:00Z,male,1982-04-12T00:00:00Z,single,30,30-34,Antioquia,88,Bello,driver
+58,2012-09-29T00:00:00Z,male,1987-06-30T00:00:00Z,unknown,25,25-29,Antioquia,1,Medellín,driver
+59,2012-12-10T00:00:00Z,male,1979-02-05T00:00:00Z,married,33,30-34,Antioquia,1,Medellín,driver
+60,2012-12-14T00:00:00Z,male,1994-02-12T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+61,2012-08-10T00:00:00Z,male,1991-04-22T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+62,2012-03-03T00:00:00Z,male,1970-03-03T00:00:00Z,single,42,40-44,Antioquia,1,Medellín,driver
+63,2013-09-07T00:00:00Z,male,1988-11-05T00:00:00Z,single,24,20-24,Antioquia,266,Envigado,driver
+64,2013-09-01T00:00:00Z,male,1985-10-02T00:00:00Z,unknown,27,25-29,Antioquia,266,Envigado,driver
+65,2013-11-22T00:00:00Z,male,1983-07-12T00:00:00Z,single,30,30-34,Antioquia,1,Medellín,driver
+66,2013-06-04T00:00:00Z,male,1981-11-07T00:00:00Z,single,31,30-34,Antioquia,1,Medellín,driver
+67,2013-10-11T00:00:00Z,female,1980-04-16T00:00:00Z,unknown,33,30-34,Antioquia,1,Medellín,driver
+68,2014-09-21T00:00:00Z,male,1988-01-11T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+69,2014-08-22T00:00:00Z,female,1981-02-17T00:00:00Z,unknown,33,30-34,Antioquia,1,Medellín,driver
+70,2014-08-19T00:00:00Z,male,1954-02-22T00:00:00Z,married,60,60-64,Antioquia,1,Medellín,driver
+71,2014-01-16T00:00:00Z,male,1979-01-24T00:00:00Z,married,34,30-34,Antioquia,1,Medellín,driver
+72,2014-01-07T00:00:00Z,male,1985-09-30T00:00:00Z,unknown,28,25-29,Antioquia,1,Medellín,driver
+73,2014-04-17T00:00:00Z,male,1989-03-05T00:00:00Z,unknown,25,25-29,Antioquia,1,Medellín,driver
+74,2014-01-07T00:00:00Z,male,1990-10-25T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+75,2014-03-13T00:00:00Z,male,1941-01-16T00:00:00Z,married,73,70-74,Antioquia,1,Medellín,driver
+76,2015-06-20T00:00:00Z,female,1984-12-02T00:00:00Z,single,30,30-34,Antioquia,1,Medellín,driver
+77,2015-10-31T00:00:00Z,male,1992-05-02T00:00:00Z,"unmarried, living with partner for <2 years",23,20-24,unknown,999,unknown,driver
+78,2015-10-19T00:00:00Z,male,1996-12-03T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+79,2015-10-02T00:00:00Z,male,1989-01-30T00:00:00Z,married,26,25-29,Antioquia,1,Medellín,driver
+80,2015-11-12T00:00:00Z,male,1994-07-20T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+81,2015-11-08T00:00:00Z,male,1983-11-22T00:00:00Z,single,31,30-34,Antioquia,88,Bello,driver
+82,2015-08-04T00:00:00Z,male,1996-12-07T00:00:00Z,unknown,18,15-19,Antioquia,1,Medellín,driver
+83,2015-09-07T00:00:00Z,male,1963-03-22T00:00:00Z,married,52,50-54,Antioquia,266,Envigado,driver
+84,2015-07-06T00:00:00Z,male,1992-01-27T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+85,2015-02-19T00:00:00Z,male,1966-04-19T00:00:00Z,unknown,48,45-49,Antioquia,1,Medellín,driver
+86,2015-03-17T00:00:00Z,male,1997-01-31T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+87,2012-06-10T00:00:00Z,female,1974-12-08T00:00:00Z,single,37,35-39,Antioquia,1,Medellín,passenger
+88,2013-10-11T00:00:00Z,male,1952-11-13T00:00:00Z,married,60,60-64,Antioquia,1,Medellín,passenger
+89,2014-01-31T00:00:00Z,female,1982-09-21T00:00:00Z,single,31,30-34,Antioquia,1,Medellín,passenger
+90,2014-04-12T00:00:00Z,female,1995-09-24T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,passenger
+91,2014-03-11T00:00:00Z,male,1994-09-20T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,passenger
+92,2014-02-10T00:00:00Z,female,1991-05-12T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,passenger
+94,2012-11-18T00:00:00Z,male,1985-01-30T00:00:00Z,unknown,26,25-29,Antioquia,1,Medellín,driver
+95,2012-09-19T00:00:00Z,male,1983-01-30T00:00:00Z,"unmarried, living with partner for 2+ years",29,25-29,Antioquia,1,Medellín,driver
+96,2012-09-16T00:00:00Z,male,1977-03-28T00:00:00Z,single,35,35-39,Antioquia,1,Medellín,driver
+97,2012-07-14T00:00:00Z,male,1982-06-20T00:00:00Z,unknown,30,30-34,Antioquia,1,Medellín,unknown
+98,2012-03-25T00:00:00Z,male,1988-06-10T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+99,2012-03-12T00:00:00Z,male,1991-02-09T00:00:00Z,married,21,20-24,Antioquia,1,Medellín,unknown
+100,2013-12-29T00:00:00Z,male,1992-10-03T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+102,2013-03-31T00:00:00Z,male,1970-04-12T00:00:00Z,single,42,40-44,Antioquia,1,Medellín,driver
+103,2013-08-12T00:00:00Z,female,1990-11-16T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,driver
+104,2013-10-28T00:00:00Z,male,1981-11-28T00:00:00Z,unknown,31,30-34,Antioquia,1,Medellín,driver
+105,2013-10-26T00:00:00Z,male,1991-05-23T00:00:00Z,"unmarried, living with partner for <2 years",22,20-24,Antioquia,1,Medellín,driver
+106,2013-10-12T00:00:00Z,male,1995-08-04T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+107,2013-03-20T00:00:00Z,male,1958-08-16T00:00:00Z,married,54,50-54,Antioquia,1,Medellín,driver
+108,2013-02-09T00:00:00Z,male,1978-02-18T00:00:00Z,single,34,30-34,Antioquia,1,Medellín,driver
+109,2014-12-14T00:00:00Z,male,1991-08-29T00:00:00Z,unknown,23,20-24,Antioquia,1,Medellín,unknown
+110,2014-11-27T00:00:00Z,male,1988-03-23T00:00:00Z,"unmarried, living with partner for 2+ years",26,25-29,Antioquia,88,Bello,driver
+111,2014-09-29T00:00:00Z,male,1968-09-23T00:00:00Z,"unmarried, living with partner for <2 years",46,45-49,Antioquia,1,Medellín,driver
+112,2014-04-21T00:00:00Z,male,1978-03-29T00:00:00Z,single,36,35-39,Antioquia,1,Medellín,unknown
+113,2014-03-17T00:00:00Z,male,1994-07-04T00:00:00Z,single,19,15-19,Antioquia,88,Bello,driver
+114,2014-02-20T00:00:00Z,male,1990-09-13T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,unknown
+115,2015-12-16T00:00:00Z,male,1976-08-13T00:00:00Z,unknown,39,35-39,Antioquia,1,Medellín,unknown
+116,2015-10-01T00:00:00Z,male,1986-02-12T00:00:00Z,"unmarried, living with partner for <2 years",29,25-29,Antioquia,1,Medellín,driver
+117,2015-09-12T00:00:00Z,male,1996-06-23T00:00:00Z,unknown,19,15-19,Antioquia,1,Medellín,driver
+118,2015-08-29T00:00:00Z,male,1979-10-23T00:00:00Z,"unmarried, living with partner for 2+ years",35,35-39,Antioquia,1,Medellín,driver
+119,2015-02-23T00:00:00Z,male,1977-03-03T00:00:00Z,married,38,35-39,Antioquia,88,Bello,driver
+120,2012-01-01T00:00:00Z,male,1985-10-23T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+121,2012-05-14T00:00:00Z,male,1985-02-02T00:00:00Z,single,27,25-29,Antioquia,1,Medellín,driver
+122,2012-05-05T00:00:00Z,male,NA,single,21,20-24,Antioquia,1,Medellín,driver
+123,2012-11-12T00:00:00Z,male,1988-06-30T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,driver
+124,2012-11-03T00:00:00Z,male,1968-10-13T00:00:00Z,unknown,44,40-44,Antioquia,1,Medellín,driver
+125,2012-08-12T00:00:00Z,male,1971-06-02T00:00:00Z,widowed,41,40-44,Antioquia,1,Medellín,driver
+126,2013-11-24T00:00:00Z,male,1986-08-18T00:00:00Z,unknown,27,25-29,Antioquia,360,Itagüí,driver
+127,2013-07-31T00:00:00Z,male,1969-09-29T00:00:00Z,single,43,40-44,Antioquia,1,Medellín,driver
+128,2013-06-17T00:00:00Z,male,1992-08-02T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,driver
+129,2013-04-21T00:00:00Z,male,1986-06-02T00:00:00Z,"unmarried, living with partner for 2+ years",26,25-29,Antioquia,1,Medellín,driver
+130,2013-09-17T00:00:00Z,male,1987-03-18T00:00:00Z,"unmarried, living with partner for 2+ years",26,25-29,Antioquia,1,Medellín,driver
+131,2013-07-11T00:00:00Z,male,1990-04-12T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+132,2013-10-26T00:00:00Z,female,1980-11-05T00:00:00Z,unknown,32,30-34,Antioquia,1,Medellín,driver
+133,2014-12-21T00:00:00Z,male,1992-02-27T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,driver
+134,2014-08-24T00:00:00Z,female,1984-04-04T00:00:00Z,"unmarried, living with partner for 2+ years",30,30-34,Antioquia,88,Bello,driver
+135,2014-09-01T00:00:00Z,male,1991-12-24T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,driver
+136,2014-07-08T00:00:00Z,male,1973-05-10T00:00:00Z,unknown,41,40-44,Antioquia,1,Medellín,driver
+137,2014-06-28T00:00:00Z,male,1984-12-23T00:00:00Z,"unmarried, living with partner for <2 years",29,25-29,Antioquia,1,Medellín,driver
+138,2014-03-28T00:00:00Z,male,1991-01-11T00:00:00Z,unknown,23,20-24,Antioquia,1,Medellín,driver
+139,2014-01-06T00:00:00Z,male,1968-04-29T00:00:00Z,married,45,45-49,Antioquia,1,Medellín,driver
+140,2015-09-04T00:00:00Z,male,1997-07-27T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+141,2015-06-30T00:00:00Z,male,1982-07-13T00:00:00Z,unknown,32,30-34,Antioquia,1,Medellín,driver
+142,2015-06-07T00:00:00Z,male,1995-10-05T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,driver
+143,2012-11-26T00:00:00Z,male,1991-12-28T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,passenger
+144,2015-12-25T00:00:00Z,male,1980-07-26T00:00:00Z,"unmarried, living with partner for 2+ years",35,35-39,Antioquia,1,Medellín,passenger
+145,2015-05-03T00:00:00Z,female,1991-03-17T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,passenger
+146,2012-12-08T00:00:00Z,male,1988-06-05T00:00:00Z,unknown,24,20-24,Antioquia,1,Medellín,driver
+147,2013-02-26T00:00:00Z,female,NA,unknown,24,20-24,Antioquia,88,Bello,driver
+148,2013-04-06T00:00:00Z,male,1982-07-15T00:00:00Z,single,30,30-34,Antioquia,1,Medellín,driver
+149,2013-05-26T00:00:00Z,male,1969-08-15T00:00:00Z,married,43,40-44,Antioquia,1,Medellín,driver
+150,2013-08-06T00:00:00Z,male,1981-05-08T00:00:00Z,married,32,30-34,Antioquia,1,Medellín,driver
+151,2014-11-30T00:00:00Z,male,1973-07-02T00:00:00Z,"unmarried, living with partner for 2+ years",41,40-44,Antioquia,1,Medellín,driver
+152,2014-10-01T00:00:00Z,male,1992-07-28T00:00:00Z,single,22,20-24,Antioquia,212,Copacabana,driver
+153,2014-08-25T00:00:00Z,male,1987-12-21T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+154,2014-07-29T00:00:00Z,male,1983-06-25T00:00:00Z,single,31,30-34,Antioquia,1,Medellín,driver
+155,2014-03-28T00:00:00Z,male,1988-08-03T00:00:00Z,single,25,25-29,Antioquia,266,Envigado,driver
+156,2015-12-05T00:00:00Z,male,1996-11-21T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,driver
+157,2012-09-28T00:00:00Z,male,1981-04-02T00:00:00Z,single,31,30-34,Antioquia,1,Medellín,driver
+158,2013-12-01T00:00:00Z,male,1960-12-13T00:00:00Z,unknown,52,50-54,Antioquia,1,Medellín,driver
+159,2014-12-26T00:00:00Z,male,1977-11-04T00:00:00Z,single,37,35-39,Antioquia,1,Medellín,driver
+160,2015-10-09T00:00:00Z,male,1978-11-20T00:00:00Z,single,36,35-39,Antioquia,1,Medellín,driver
+161,2015-09-29T00:00:00Z,male,1996-09-22T00:00:00Z,single,19,15-19,unknown,999,unknown,driver
+162,2015-06-23T00:00:00Z,female,1988-04-19T00:00:00Z,single,27,25-29,Antioquia,1,Medellín,driver
+163,2015-01-19T00:00:00Z,male,1986-03-20T00:00:00Z,single,28,25-29,Antioquia,360,Itagüí,driver
+164,2013-06-07T00:00:00Z,male,1985-12-09T00:00:00Z,married,27,25-29,Antioquia,1,Medellín,driver
+165,2015-12-07T00:00:00Z,male,NA,unknown,28,25-29,unknown,999,unknown,passenger
+166,2012-06-20T00:00:00Z,male,1987-09-15T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,unknown
+167,2013-04-14T00:00:00Z,male,1971-08-04T00:00:00Z,single,42,40-44,Antioquia,1,Medellín,driver
+168,2014-09-09T00:00:00Z,male,1990-01-19T00:00:00Z,single,24,20-24,Antioquia,88,Bello,driver
+169,2012-01-23T00:00:00Z,male,1987-12-12T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,driver
+170,2012-01-15T00:00:00Z,male,1995-11-14T00:00:00Z,single,16,15-19,Antioquia,1,Medellín,driver
+171,2012-01-16T00:00:00Z,male,1982-07-08T00:00:00Z,single,29,25-29,Antioquia,1,Medellín,driver
+172,2012-05-23T00:00:00Z,male,1992-04-11T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,driver
+173,2012-05-07T00:00:00Z,male,1979-02-22T00:00:00Z,unknown,33,30-34,Antioquia,1,Medellín,driver
+174,2012-05-29T00:00:00Z,male,1979-06-06T00:00:00Z,married,51,50-54,Antioquia,1,Medellín,driver
+175,2012-05-20T00:00:00Z,male,1990-11-03T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+176,2012-05-21T00:00:00Z,male,1981-06-11T00:00:00Z,unknown,30,30-34,Antioquia,1,Medellín,driver
+177,2012-04-20T00:00:00Z,female,1990-07-02T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+178,2012-04-16T00:00:00Z,male,1962-12-26T00:00:00Z,married,49,45-49,Antioquia,1,Medellín,driver
+179,2012-12-03T00:00:00Z,male,1978-10-09T00:00:00Z,married,34,30-34,Cesar,1,Valledupar,driver
+180,2012-06-18T00:00:00Z,male,1988-11-08T00:00:00Z,unknown,24,20-24,Antioquia,1,Medellín,driver
+181,2012-09-16T00:00:00Z,male,1989-08-11T00:00:00Z,married,23,20-24,Antioquia,360,Itagüí,driver
+182,2012-09-16T00:00:00Z,male,1975-01-07T00:00:00Z,married,37,35-39,Antioquia,88,Bello,driver
+183,2012-08-19T00:00:00Z,male,1940-10-20T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+184,2012-07-02T00:00:00Z,male,1976-04-12T00:00:00Z,unknown,36,35-39,Antioquia,360,Itagüí,driver
+185,2012-03-04T00:00:00Z,male,1985-09-11T00:00:00Z,married,26,25-29,Antioquia,360,Itagüí,driver
+186,2012-06-14T00:00:00Z,male,1994-02-22T00:00:00Z,single,18,15-19,Antioquia,88,Bello,driver
+187,2012-01-08T00:00:00Z,male,1989-02-18T00:00:00Z,unknown,22,20-24,unknown,999,unknown,driver
+188,2012-02-17T00:00:00Z,male,1993-04-11T00:00:00Z,unknown,19,15-19,unknown,999,unknown,driver
+189,2012-11-24T00:00:00Z,male,1988-08-20T00:00:00Z,unknown,24,20-24,Antioquia,1,Medellín,driver
+190,2012-06-12T00:00:00Z,male,1995-08-23T00:00:00Z,single,16,15-19,Antioquia,1,Medellín,driver
+191,2012-12-19T00:00:00Z,male,1985-03-16T00:00:00Z,single,27,25-29,Antioquia,1,Medellín,driver
+192,2012-10-05T00:00:00Z,female,1979-03-24T00:00:00Z,married,33,30-34,Antioquia,1,Medellín,driver
+193,2012-09-07T00:00:00Z,female,1980-11-23T00:00:00Z,married,31,30-34,Antioquia,1,Medellín,driver
+194,2012-09-08T00:00:00Z,male,1979-07-19T00:00:00Z,single,33,30-34,Antioquia,1,Medellín,driver
+195,2012-09-03T00:00:00Z,male,1961-12-21T00:00:00Z,married,50,50-54,Antioquia,1,Medellín,driver
+196,2012-08-07T00:00:00Z,male,1979-10-07T00:00:00Z,married,33,30-34,Antioquia,1,Medellín,driver
+197,2012-03-06T00:00:00Z,male,1983-09-11T00:00:00Z,unknown,28,25-29,Antioquia,1,Medellín,driver
+198,2013-11-25T00:00:00Z,male,1970-06-01T00:00:00Z,married,43,40-44,Antioquia,360,Itagüí,driver
+199,2013-09-23T00:00:00Z,male,1993-07-11T00:00:00Z,married,20,20-24,unknown,999,unknown,driver
+200,2013-08-27T00:00:00Z,male,1984-02-28T00:00:00Z,single,29,25-29,Antioquia,88,Bello,driver
+201,2013-02-14T00:00:00Z,male,1985-11-13T00:00:00Z,unknown,27,25-29,Antioquia,88,Bello,driver
+202,2013-07-09T00:00:00Z,male,1963-10-11T00:00:00Z,single,49,45-49,Antioquia,1,Medellín,driver
+203,2013-12-16T00:00:00Z,male,1994-08-26T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,driver
+204,2013-12-16T00:00:00Z,male,1987-02-10T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+205,2013-07-09T00:00:00Z,male,1988-12-14T00:00:00Z,unknown,24,20-24,Antioquia,1,Medellín,driver
+206,2013-07-21T00:00:00Z,male,1985-03-22T00:00:00Z,single,28,25-29,Antioquia,1,Medellín,driver
+207,2013-11-17T00:00:00Z,male,1990-07-14T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+208,2013-06-02T00:00:00Z,female,1967-10-22T00:00:00Z,single,45,45-49,Antioquia,1,Medellín,driver
+209,2013-04-13T00:00:00Z,male,1985-08-15T00:00:00Z,single,27,25-29,Antioquia,1,Medellín,driver
+210,2013-05-28T00:00:00Z,female,1971-08-06T00:00:00Z,unknown,41,40-44,Antioquia,1,Medellín,driver
+211,2013-05-04T00:00:00Z,male,1972-07-07T00:00:00Z,married,40,40-44,Antioquia,1,Medellín,driver
+212,2013-05-26T00:00:00Z,male,1989-03-30T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,driver
+213,2013-05-04T00:00:00Z,male,1987-10-29T00:00:00Z,single,25,25-29,Antioquia,1,Medellín,driver
+214,2013-05-11T00:00:00Z,male,1984-01-24T00:00:00Z,single,28,25-29,Antioquia,1,Medellín,driver
+215,2013-12-21T00:00:00Z,male,1988-09-25T00:00:00Z,"unmarried, living with partner for 2+ years",25,25-29,Antioquia,1,Medellín,driver
+216,2013-03-30T00:00:00Z,male,1988-08-12T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,driver
+217,2013-12-08T00:00:00Z,male,1975-08-17T00:00:00Z,unknown,49,45-49,Antioquia,1,Medellín,driver
+218,2013-12-06T00:00:00Z,male,1965-12-23T00:00:00Z,married,48,45-49,Antioquia,1,Medellín,driver
+219,2013-09-21T00:00:00Z,male,1987-01-17T00:00:00Z,"unmarried, living with partner for 2+ years",26,25-29,Antioquia,1,Medellín,driver
+220,2013-09-27T00:00:00Z,male,1964-02-25T00:00:00Z,"unmarried, living with partner for 2+ years",49,45-49,Antioquia,1,Medellín,driver
+221,2013-10-11T00:00:00Z,male,1980-07-22T00:00:00Z,unknown,33,30-34,Antioquia,1,Medellín,driver
+222,2013-06-28T00:00:00Z,male,1989-08-02T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+223,2013-03-11T00:00:00Z,male,1979-07-02T00:00:00Z,single,33,30-34,Antioquia,1,Medellín,driver
+224,2013-02-20T00:00:00Z,male,1956-04-11T00:00:00Z,"unmarried, living with partner for 2+ years",56,55-59,Antioquia,1,Medellín,driver
+225,2013-01-18T00:00:00Z,male,1985-02-17T00:00:00Z,single,27,25-29,Antioquia,1,Medellín,driver
+226,2014-12-19T00:00:00Z,male,1993-05-16T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+227,2014-12-15T00:00:00Z,male,1983-12-19T00:00:00Z,unknown,30,30-34,Antioquia,1,Medellín,driver
+228,2014-12-02T00:00:00Z,male,1993-08-15T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+229,2014-11-23T00:00:00Z,male,1981-04-01T00:00:00Z,single,33,30-34,unknown,999,unknown,driver
+230,2014-11-23T00:00:00Z,male,1991-03-18T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+231,2014-11-30T00:00:00Z,male,1971-03-01T00:00:00Z,married,43,40-44,Antioquia,1,Medellín,driver
+232,2014-11-09T00:00:00Z,male,1985-07-18T00:00:00Z,single,29,25-29,Antioquia,615,Rionegro,driver
+233,2014-10-18T00:00:00Z,male,1970-04-07T00:00:00Z,married,44,40-44,Antioquia,1,Medellín,driver
+234,2014-10-20T00:00:00Z,male,1977-03-06T00:00:00Z,single,37,35-39,Antioquia,88,Bello,driver
+235,2014-11-21T00:00:00Z,male,1973-09-11T00:00:00Z,"unmarried, living with partner for 2+ years",41,40-44,Antioquia,1,Medellín,driver
+236,2014-10-02T00:00:00Z,male,1978-04-12T00:00:00Z,single,36,35-39,Antioquia,1,Medellín,driver
+237,2014-10-13T00:00:00Z,male,1971-08-25T00:00:00Z,married,43,40-44,Antioquia,380,La Estrella,driver
+238,2014-09-24T00:00:00Z,male,1956-08-19T00:00:00Z,single,58,55-59,Antioquia,1,Medellín,driver
+239,2014-09-27T00:00:00Z,male,1993-02-02T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+240,2014-09-19T00:00:00Z,male,1988-01-12T00:00:00Z,single,26,25-29,Atlántico,758,Soledad,driver
+241,2014-09-20T00:00:00Z,male,1968-09-05T00:00:00Z,married,46,45-49,Antioquia,88,Bello,driver
+242,2014-09-08T00:00:00Z,male,1980-06-21T00:00:00Z,single,34,30-34,Antioquia,1,Medellín,driver
+243,2014-08-02T00:00:00Z,male,1983-04-15T00:00:00Z,single,31,30-34,Antioquia,1,Medellín,driver
+244,2014-07-31T00:00:00Z,male,1996-04-30T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+245,2014-08-16T00:00:00Z,male,1986-04-17T00:00:00Z,married,28,25-29,Antioquia,1,Medellín,driver
+246,2014-07-05T00:00:00Z,male,1983-06-04T00:00:00Z,single,31,30-34,Antioquia,1,Medellín,driver
+247,2014-01-15T00:00:00Z,female,1983-06-29T00:00:00Z,single,30,30-34,Antioquia,1,Medellín,driver
+248,2014-06-30T00:00:00Z,male,1990-08-30T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+249,2014-06-16T00:00:00Z,male,1967-02-09T00:00:00Z,unknown,47,45-49,Antioquia,1,Medellín,driver
+250,2014-05-08T00:00:00Z,male,1972-10-12T00:00:00Z,unknown,41,40-44,Antioquia,1,Medellín,driver
+251,2014-04-29T00:00:00Z,male,1989-08-23T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,driver
+252,2014-03-28T00:00:00Z,male,1981-12-04T00:00:00Z,unknown,32,30-34,Antioquia,1,Medellín,driver
+253,2014-02-24T00:00:00Z,male,1990-04-12T00:00:00Z,unknown,23,20-24,Antioquia,1,Medellín,driver
+254,2014-02-02T00:00:00Z,male,1997-07-09T00:00:00Z,single,16,15-19,Antioquia,1,Medellín,driver
+255,2014-02-01T00:00:00Z,male,1979-10-12T00:00:00Z,unknown,34,30-34,Antioquia,88,Bello,driver
+256,2014-02-24T00:00:00Z,female,1987-03-20T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+257,2015-11-02T00:00:00Z,male,1976-01-13T00:00:00Z,married,39,35-39,Antioquia,1,Medellín,driver
+258,2015-04-30T00:00:00Z,male,1979-09-28T00:00:00Z,married,35,35-39,Antioquia,1,Medellín,driver
+259,2015-04-08T00:00:00Z,male,1996-12-13T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+260,2015-12-04T00:00:00Z,male,1980-07-29T00:00:00Z,single,35,35-39,Antioquia,266,Envigado,driver
+261,2015-12-06T00:00:00Z,male,1979-03-11T00:00:00Z,"unmarried, living with partner for 2+ years",36,35-39,Antioquia,1,Medellín,driver
+262,2015-12-25T00:00:00Z,male,1998-12-01T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,driver
+263,2015-11-06T00:00:00Z,male,1987-05-23T00:00:00Z,single,28,25-29,Antioquia,1,Medellín,driver
+264,2015-07-20T00:00:00Z,male,1992-07-04T00:00:00Z,single,23,20-24,Antioquia,615,Rionegro,driver
+265,2015-08-30T00:00:00Z,male,1947-06-17T00:00:00Z,"unmarried, living with partner for 2+ years",68,65-69,Antioquia,1,Medellín,driver
+266,2015-08-26T00:00:00Z,male,1991-09-20T00:00:00Z,unknown,23,20-24,Antioquia,1,Medellín,driver
+267,2015-08-21T00:00:00Z,male,1980-10-25T00:00:00Z,single,34,30-34,Antioquia,1,Medellín,driver
+268,2015-08-07T00:00:00Z,male,1980-06-06T00:00:00Z,unknown,35,35-39,Antioquia,1,Medellín,driver
+269,2015-08-08T00:00:00Z,female,2000-05-16T00:00:00Z,single,15,15-19,Antioquia,1,Medellín,driver
+270,2015-02-16T00:00:00Z,male,1978-12-31T00:00:00Z,"unmarried, living with partner for 2+ years",36,35-39,Antioquia,1,Medellín,driver
+271,2015-06-03T00:00:00Z,male,1996-06-22T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+272,2015-06-28T00:00:00Z,male,1986-06-24T00:00:00Z,unknown,29,25-29,Antioquia,1,Medellín,driver
+273,2015-06-04T00:00:00Z,male,1996-08-25T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,driver
+274,2015-05-31T00:00:00Z,male,1988-10-09T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+275,2015-05-25T00:00:00Z,male,1985-02-15T00:00:00Z,single,30,30-34,Antioquia,360,Itagüí,driver
+276,2015-05-18T00:00:00Z,male,1977-12-17T00:00:00Z,single,37,35-39,Antioquia,1,Medellín,driver
+277,2015-03-21T00:00:00Z,male,1968-03-19T00:00:00Z,unknown,47,45-49,Antioquia,1,Medellín,driver
+278,2015-01-25T00:00:00Z,male,1990-07-26T00:00:00Z,single,24,20-24,Antioquia,88,Bello,driver
+279,2012-02-27T00:00:00Z,female,1987-05-14T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,passenger
+280,2012-01-31T00:00:00Z,female,1975-07-09T00:00:00Z,married,36,35-39,Antioquia,1,Medellín,passenger
+281,2012-05-27T00:00:00Z,male,1991-02-19T00:00:00Z,unknown,21,20-24,Antioquia,1,Medellín,passenger
+283,2012-06-14T00:00:00Z,female,1963-06-01T00:00:00Z,unknown,49,45-49,Antioquia,1,Medellín,passenger
+284,2012-02-17T00:00:00Z,male,1993-01-31T00:00:00Z,single,19,15-19,Antioquia,360,Itagüí,passenger
+285,2012-06-11T00:00:00Z,female,1972-12-15T00:00:00Z,married,39,35-39,Antioquia,1,Medellín,passenger
+286,2012-09-20T00:00:00Z,male,1990-07-16T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,passenger
+287,2012-09-25T00:00:00Z,male,1995-05-26T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,passenger
+288,2012-03-11T00:00:00Z,female,1989-09-23T00:00:00Z,"unmarried, living with partner for 2+ years",22,20-24,Antioquia,1,Medellín,passenger
+289,2013-05-25T00:00:00Z,male,1972-10-27T00:00:00Z,unknown,40,40-44,Antioquia,88,Bello,passenger
+290,2013-11-23T00:00:00Z,female,1993-05-14T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,passenger
+291,2013-11-05T00:00:00Z,female,1978-10-04T00:00:00Z,widowed,35,35-39,Antioquia,1,Medellín,passenger
+292,2013-05-25T00:00:00Z,male,1978-08-01T00:00:00Z,single,33,30-34,Antioquia,1,Medellín,passenger
+293,2013-09-26T00:00:00Z,male,1996-05-14T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,passenger
+294,2013-10-01T00:00:00Z,male,1993-12-07T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,passenger
+295,2013-02-03T00:00:00Z,male,1992-12-18T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,passenger
+296,2014-12-20T00:00:00Z,male,1984-06-03T00:00:00Z,single,30,30-34,Antioquia,1,Medellín,passenger
+297,2014-11-05T00:00:00Z,male,1992-04-30T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,passenger
+299,2014-10-18T00:00:00Z,female,1968-08-13T00:00:00Z,married,46,45-49,Antioquia,1,Medellín,passenger
+300,2014-12-31T00:00:00Z,female,1969-01-09T00:00:00Z,married,45,45-49,Antioquia,1,Medellín,passenger
+301,2014-12-29T00:00:00Z,female,1959-11-06T00:00:00Z,single,55,55-59,Antioquia,1,Medellín,passenger
+302,2014-11-23T00:00:00Z,female,1997-03-27T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,passenger
+303,2014-08-24T00:00:00Z,female,1989-11-04T00:00:00Z,"unmarried, living with partner for 2+ years",24,20-24,Antioquia,1,Medellín,passenger
+304,2014-08-18T00:00:00Z,female,1970-01-13T00:00:00Z,unknown,44,40-44,Antioquia,1,Medellín,passenger
+305,2014-08-05T00:00:00Z,female,1955-02-05T00:00:00Z,married,59,55-59,Antioquia,1,Medellín,passenger
+306,2014-07-04T00:00:00Z,female,1980-02-12T00:00:00Z,"unmarried, living with partner for 2+ years",34,30-34,Antioquia,1,Medellín,passenger
+307,2014-04-25T00:00:00Z,male,1943-11-21T00:00:00Z,separated/divorced,70,70-74,Antioquia,1,Medellín,passenger
+309,2014-03-14T00:00:00Z,male,1984-03-05T00:00:00Z,single,30,30-34,Antioquia,1,Medellín,passenger
+310,2014-02-02T00:00:00Z,female,1997-11-13T00:00:00Z,single,16,15-19,Antioquia,1,Medellín,passenger
+311,2015-04-06T00:00:00Z,female,1991-10-26T00:00:00Z,married,23,20-24,Antioquia,88,Bello,passenger
+312,2015-12-25T00:00:00Z,female,1974-11-24T00:00:00Z,unknown,41,40-44,Antioquia,1,Medellín,passenger
+313,2015-12-16T00:00:00Z,female,1971-12-02T00:00:00Z,married,44,40-44,Antioquia,1,Medellín,passenger
+314,2015-10-02T00:00:00Z,male,1966-01-24T00:00:00Z,married,49,45-49,Antioquia,1,Medellín,passenger
+315,2015-11-24T00:00:00Z,female,1983-11-20T00:00:00Z,"unmarried, living with partner for <2 years",32,30-34,Antioquia,88,Bello,passenger
+316,2015-11-15T00:00:00Z,female,1976-07-15T00:00:00Z,unknown,39,35-39,Antioquia,88,Bello,passenger
+317,2015-08-01T00:00:00Z,female,1995-12-17T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,passenger
+318,2015-08-02T00:00:00Z,male,1969-03-05T00:00:00Z,unknown,46,45-49,Antioquia,1,Medellín,passenger
+319,2015-08-06T00:00:00Z,female,1999-11-16T00:00:00Z,single,15,15-19,Antioquia,1,Medellín,passenger
+320,2015-07-16T00:00:00Z,female,1999-06-14T00:00:00Z,single,16,15-19,Antioquia,1,Medellín,passenger
+321,2015-07-11T00:00:00Z,female,1981-07-12T00:00:00Z,"unmarried, living with partner for <2 years",33,30-34,Antioquia,1,Medellín,passenger
+322,2015-02-12T00:00:00Z,male,1987-09-17T00:00:00Z,single,27,25-29,Antioquia,1,Medellín,passenger
+323,2015-02-02T00:00:00Z,male,1997-07-21T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,passenger
+324,2015-05-13T00:00:00Z,male,1996-09-21T00:00:00Z,single,18,15-19,Antioquia,360,Itagüí,passenger
+325,2015-03-18T00:00:00Z,female,1996-02-01T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,passenger
+326,2012-05-27T00:00:00Z,male,1986-09-25T00:00:00Z,single,25,25-29,Antioquia,1,Medellín,unknown
+327,2012-07-09T00:00:00Z,male,1971-12-29T00:00:00Z,"unmarried, living with partner for <2 years",40,40-44,Antioquia,1,Medellín,driver
+328,2013-07-06T00:00:00Z,male,1989-12-16T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+329,2012-02-23T00:00:00Z,male,1990-01-23T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,driver
+330,2012-05-22T00:00:00Z,male,1974-04-02T00:00:00Z,"unmarried, living with partner for <2 years",38,35-39,Antioquia,1,Medellín,driver
+331,2012-05-12T00:00:00Z,male,1980-07-12T00:00:00Z,unknown,31,30-34,Antioquia,1,Medellín,driver
+332,2012-06-16T00:00:00Z,male,1979-10-18T00:00:00Z,married,32,30-34,Antioquia,1,Medellín,driver
+333,2012-11-05T00:00:00Z,male,1990-10-07T00:00:00Z,single,22,20-24,Antioquia,42,Santafé De Antioquia,driver
+334,2012-10-18T00:00:00Z,male,1973-03-31T00:00:00Z,single,39,35-39,Antioquia,88,Bello,unknown
+335,2012-09-13T00:00:00Z,female,1989-01-25T00:00:00Z,single,23,20-24,Antioquia,88,Bello,driver
+336,2012-08-31T00:00:00Z,male,1982-09-04T00:00:00Z,single,29,25-29,Antioquia,1,Medellín,driver
+337,2012-07-20T00:00:00Z,male,1984-09-30T00:00:00Z,single,27,25-29,Antioquia,212,Copacabana,driver
+338,2012-11-30T00:00:00Z,female,1992-02-04T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,passenger
+339,2012-11-25T00:00:00Z,male,1978-06-08T00:00:00Z,single,34,30-34,Antioquia,1,Medellín,driver
+340,2012-11-25T00:00:00Z,male,1986-05-12T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+341,2012-11-27T00:00:00Z,male,1979-11-14T00:00:00Z,unknown,33,30-34,Antioquia,1,Medellín,driver
+342,2012-12-06T00:00:00Z,male,1982-05-07T00:00:00Z,"unmarried, living with partner for <2 years",30,30-34,Antioquia,1,Medellín,driver
+343,2012-12-09T00:00:00Z,male,1976-05-10T00:00:00Z,unknown,36,35-39,Antioquia,1,Medellín,driver
+344,2012-12-01T00:00:00Z,male,NA,single,22,20-24,Antioquia,1,Medellín,driver
+345,2012-10-30T00:00:00Z,male,1995-02-28T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,driver
+346,2012-10-12T00:00:00Z,male,1996-01-15T00:00:00Z,single,16,15-19,Antioquia,1,Medellín,unknown
+347,2012-10-19T00:00:00Z,male,1976-06-04T00:00:00Z,"unmarried, living with partner for 2+ years",36,35-39,Antioquia,1,Medellín,driver
+348,2012-09-30T00:00:00Z,male,1989-12-30T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+349,2012-08-22T00:00:00Z,male,1969-04-26T00:00:00Z,single,43,40-44,Antioquia,1,Medellín,driver
+350,2012-08-16T00:00:00Z,male,1977-12-29T00:00:00Z,"unmarried, living with partner for 2+ years",34,30-34,Antioquia,1,Medellín,driver
+351,2012-08-14T00:00:00Z,male,1982-04-02T00:00:00Z,single,30,30-34,Antioquia,1,Medellín,driver
+352,2012-08-06T00:00:00Z,male,1979-01-03T00:00:00Z,"unmarried, living with partner for <2 years",33,30-34,Antioquia,1,Medellín,driver
+353,2012-03-26T00:00:00Z,male,1988-01-15T00:00:00Z,single,24,20-24,Antioquia,1,Medellín,driver
+354,2012-03-12T00:00:00Z,male,1991-12-21T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,driver
+355,2013-05-27T00:00:00Z,male,1984-12-11T00:00:00Z,single,28,25-29,Antioquia,686,Santa Rosa De Osos,driver
+356,2013-07-12T00:00:00Z,male,1977-06-06T00:00:00Z,"unmarried, living with partner for 2+ years",36,35-39,Antioquia,88,Bello,driver
+357,2013-08-11T00:00:00Z,male,1990-08-15T00:00:00Z,single,22,20-24,Antioquia,88,Bello,driver
+358,2013-10-20T00:00:00Z,male,NA,unknown,28,25-29,unknown,999,unknown,driver
+359,2013-12-29T00:00:00Z,male,1993-05-05T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,unknown
+360,2013-12-21T00:00:00Z,male,1994-08-03T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,unknown
+361,2013-11-12T00:00:00Z,male,1976-02-05T00:00:00Z,single,37,35-39,Antioquia,1,Medellín,driver
+362,2013-06-13T00:00:00Z,male,1947-01-06T00:00:00Z,"unmarried, living with partner for <2 years",66,65-69,Antioquia,1,Medellín,driver
+363,2013-05-06T00:00:00Z,male,1987-03-12T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+364,2013-05-07T00:00:00Z,male,1990-11-25T00:00:00Z,single,22,20-24,Antioquia,1,Medellín,driver
+365,2013-03-16T00:00:00Z,male,1996-02-21T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,driver
+366,2013-03-16T00:00:00Z,male,1994-11-29T00:00:00Z,single,18,15-19,Antioquia,1,Medellín,unknown
+367,2013-12-02T00:00:00Z,female,1979-12-18T00:00:00Z,married,33,30-34,Antioquia,1,Medellín,driver
+368,2013-09-24T00:00:00Z,male,1985-10-12T00:00:00Z,"unmarried, living with partner for 2+ years",27,25-29,Antioquia,1,Medellín,driver
+369,2013-09-28T00:00:00Z,male,1979-11-14T00:00:00Z,single,33,30-34,Antioquia,1,Medellín,driver
+370,2013-09-25T00:00:00Z,male,1975-11-24T00:00:00Z,single,37,35-39,Antioquia,1,Medellín,driver
+371,2013-07-27T00:00:00Z,male,1975-06-19T00:00:00Z,single,38,35-39,Antioquia,1,Medellín,driver
+372,2013-07-17T00:00:00Z,male,1985-01-27T00:00:00Z,unknown,28,25-29,Antioquia,1,Medellín,driver
+373,2013-01-28T00:00:00Z,male,1980-03-27T00:00:00Z,married,32,30-34,Antioquia,1,Medellín,driver
+374,2013-01-13T00:00:00Z,male,1969-06-15T00:00:00Z,unknown,44,40-44,Antioquia,1,Medellín,driver
+375,2013-01-31T00:00:00Z,male,1966-01-18T00:00:00Z,single,47,45-49,Antioquia,1,Medellín,driver
+376,2013-08-17T00:00:00Z,male,1971-02-13T00:00:00Z,married,42,40-44,Antioquia,1,Medellín,driver
+377,2013-08-24T00:00:00Z,male,1972-06-06T00:00:00Z,unknown,41,40-44,Antioquia,1,Medellín,driver
+378,2013-10-28T00:00:00Z,male,1984-04-23T00:00:00Z,single,29,25-29,Antioquia,1,Medellín,driver
+379,2013-10-27T00:00:00Z,male,1992-09-01T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,unknown
+380,2013-10-20T00:00:00Z,male,1996-04-30T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,driver
+381,2013-10-06T00:00:00Z,male,1991-12-26T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+382,2013-10-02T00:00:00Z,male,1987-03-23T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+383,2013-10-13T00:00:00Z,male,1992-10-26T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,driver
+384,2013-10-13T00:00:00Z,male,1994-09-17T00:00:00Z,single,19,15-19,Antioquia,1,Medellín,driver
+385,2013-09-13T00:00:00Z,male,1997-06-08T00:00:00Z,single,16,15-19,Antioquia,1,Medellín,driver
+386,2013-09-13T00:00:00Z,male,1990-06-11T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,driver
+387,2013-09-08T00:00:00Z,male,1990-04-13T00:00:00Z,"unmarried, living with partner for 2+ years",23,20-24,Antioquia,1,Medellín,driver
+388,2013-08-05T00:00:00Z,male,1967-07-29T00:00:00Z,married,46,45-49,Antioquia,1,Medellín,driver
+389,2013-03-12T00:00:00Z,female,1968-07-12T00:00:00Z,single,44,40-44,Antioquia,1,Medellín,driver
+390,2013-02-24T00:00:00Z,male,1979-07-10T00:00:00Z,"unmarried, living with partner for <2 years",32,30-34,Antioquia,1,Medellín,driver
+391,2013-04-18T00:00:00Z,male,1986-11-12T00:00:00Z,single,26,25-29,Antioquia,1,Medellín,driver
+392,2014-11-16T00:00:00Z,male,1973-12-23T00:00:00Z,"unmarried, living with partner for <2 years",41,40-44,Antioquia,1,Medellín,driver
+393,2014-10-18T00:00:00Z,male,1997-08-14T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,driver
+394,2014-10-15T00:00:00Z,male,1994-05-06T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,driver
+395,2014-08-21T00:00:00Z,male,1985-07-04T00:00:00Z,single,29,25-29,Antioquia,1,Medellín,driver
+397,2014-07-26T00:00:00Z,male,1972-11-15T00:00:00Z,married,41,40-44,Antioquia,1,Medellín,driver
+398,2014-07-11T00:00:00Z,male,1994-03-08T00:00:00Z,single,20,20-24,Antioquia,88,Bello,driver
+399,2014-07-06T00:00:00Z,male,1990-11-06T00:00:00Z,single,23,20-24,Antioquia,1,Medellín,unknown
+400,2014-01-17T00:00:00Z,female,1962-12-15T00:00:00Z,single,51,50-54,Antioquia,1,Medellín,driver
+401,2014-06-20T00:00:00Z,male,1984-02-01T00:00:00Z,single,30,30-34,Antioquia,88,Bello,driver
+402,2014-05-12T00:00:00Z,male,1992-12-21T00:00:00Z,single,21,20-24,Antioquia,1,Medellín,driver
+403,2014-04-28T00:00:00Z,female,1969-01-02T00:00:00Z,married,45,45-49,Antioquia,1,Medellín,unknown
+404,2014-04-06T00:00:00Z,male,1978-03-25T00:00:00Z,"unmarried, living with partner for 2+ years",36,35-39,Antioquia,1,Medellín,driver
+405,2014-03-07T00:00:00Z,male,1993-08-27T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,driver
+406,2014-02-01T00:00:00Z,male,1997-01-23T00:00:00Z,single,17,15-19,Antioquia,1,Medellín,driver
+407,2015-04-20T00:00:00Z,male,1988-12-04T00:00:00Z,unknown,26,25-29,unknown,999,unknown,driver
+408,2015-04-26T00:00:00Z,male,1995-03-02T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,driver
+409,2015-12-30T00:00:00Z,male,1995-08-29T00:00:00Z,single,20,20-24,Antioquia,1,Medellín,driver
+410,2015-10-16T00:00:00Z,male,1983-11-02T00:00:00Z,"unmarried, living with partner for 2+ years",31,30-34,Antioquia,1,Medellín,driver
+411,2015-11-01T00:00:00Z,male,1985-08-04T00:00:00Z,single,30,30-34,Antioquia,129,Caldas,driver
+412,2015-09-10T00:00:00Z,male,1981-07-04T00:00:00Z,unknown,34,30-34,Antioquia,1,Medellín,driver
+413,2015-09-05T00:00:00Z,male,1963-05-12T00:00:00Z,married,52,50-54,Antioquia,1,Medellín,unknown
+414,2015-08-21T00:00:00Z,male,1989-09-16T00:00:00Z,single,25,25-29,Antioquia,1,Medellín,driver
+415,2015-08-05T00:00:00Z,male,1978-10-25T00:00:00Z,"unmarried, living with partner for 2+ years",36,35-39,Antioquia,1,Medellín,driver
+416,2015-08-08T00:00:00Z,male,1991-10-30T00:00:00Z,"unmarried, living with partner for 2+ years",23,20-24,Antioquia,266,Envigado,driver
+417,2015-06-28T00:00:00Z,male,1991-02-11T00:00:00Z,unknown,24,20-24,Antioquia,1,Medellín,driver
+418,2015-05-30T00:00:00Z,male,1984-07-14T00:00:00Z,single,30,30-34,Antioquia,1,Medellín,driver
+419,2015-05-26T00:00:00Z,male,1962-05-16T00:00:00Z,married,53,50-54,Antioquia,1,Medellín,driver
+420,2015-05-19T00:00:00Z,male,1975-07-08T00:00:00Z,married,39,35-39,Antioquia,1,Medellín,driver
+421,2015-03-05T00:00:00Z,male,1987-03-24T00:00:00Z,unknown,27,25-29,Antioquia,1,Medellín,driver
+422,2015-02-20T00:00:00Z,male,1986-04-17T00:00:00Z,single,28,25-29,Antioquia,1,Medellín,driver
+423,2015-02-07T00:00:00Z,male,1997-07-05T00:00:00Z,"unmarried, living with partner for 2+ years",35,35-39,Antioquia,1,Medellín,driver

@@ -1,0 +1,161 @@
+---
+title: "RSR Workshop 1 Instructions Document"
+subtitle: "Tidyverse and RMarkdown Practice"
+author: "The GRAPH Courses Team"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+---
+
+# Introduction
+
+Welcome to your first workshop assignment for the Research Statistics with R (RSR) Bootcamp! In this week's exercise, you will use your understanding of the {tidyverse} package and RMarkdown to create a short report.
+
+The goal of today's workshop is to reinforce your skills in **data wrangling**, **visualization**, and **reporting** using R.
+
+**NOTE**: This course assumes knowledge of our Beginner R course content. Please refer to our textbook to look up any functions needed for this assignment: [datawithr.com](https://datawithr.com/){.uri}.
+
+All assignments should be submitted individually, but you are encouraged to work in groups. To submit your work, please upload your R script to the Workshop 1 submission page.
+
+# Instructions
+
+Below, you'll find a series of tasks that guide you through importing, cleaning, and analyzing a dataset of COVID-19 patient records from two New York City hospitals. You can find the dataset CSV file and information about the dataset in the "data" subfolder.
+
+These tasks should be completed in the `rsr_week_01_assignment.Rmd` file found in the "rmd" subfolder. We encourage you to have both this instructions document and the assignment document open.
+
+## TASK 1: LOAD THE REQUIRED PACKAGES
+
+Use `pacman::p_load()` to load the following packages: `{tidyverse}`, `{here}`, `{janitor}` and `{reactable}`.
+
+Install the `{inspectdf}` package using the following code:
+
+```{r}
+pacman::p_load_current_gh("the-graph-courses/inspectdf")
+```
+
+## TASK 2: IMPORT THE DATA & INSPECT VARIABLES
+
+Use `read_csv()` and `here()` to import the "covid_19_united_states.csv" dataset from your data folder.
+
+Explore the variables using functions from the `{inspectdf}` package, such as `inspect_cat()`, `inspect_num()`, and `show_plot()`.
+
+## TASK 3: CLEAN THE COLUMN NAMES
+
+Some columns, including several comorbidity columns (e.g. `coronary.artery.disease`, `cerebrovascular.disease`), contain dots that make them challenging to work with in R. Use `clean_names()` from the `{janitor}` package to address this issue. Store the output as a data frame called `covid_us_clean`.
+
+## TASK 4: RENAME AND TRANSFORM VARIABLES
+
+Transform the data by doing the following, and store the results as `covid_us_clean2`:
+
+- Rename the `group` column to `status`. Use the `rename()` function to perform this change.
+- Change the capitalization of the `sex` values ("male" and "female") to title case using `mutate()` and `str_to_title()`.
+- Change the capitalization of the `race` values ("black", "white", "hispanic", etc.) to title case in the same `mutate()` call.
+
+## TASK 5: CREATE A SUBSET
+
+Create a subset of your data by doing the following, and store it as `covid_us_subset`:
+
+- Keep only the following columns using the `select()` function: `id`, `sex`, `age`, `race`, `status`, and `hospital`.
+- Use the `filter()` function to keep only rows where `status` is "Expired" AND `race` is NOT "Unknown".
+
+**CHECK**: Your dataset should have 684 rows and 6 columns.
+
+## TASK 6: SUMMARIZE DATA
+
+Using the subset created in Task 5, construct a summary table that displays the number of deaths per race and sex.
+
+**HINT**: Use the `count()` function from `{dplyr}`. You could also do the same thing using a combination of `group_by()` and `summarize()`, but `count()` is the more efficient option.
+
+**CHECK**: Your summary table should have 10 rows and 3 columns. The first few rows of your summary table should look like this:
+
++---------+---------+---------+
+| race    | sex     | n       |
+|         |         |         |
+| \<chr\> | \<chr\> | \<int\> |
++:========+:========+========:+
+| Asian   | Female  | 16      |
++---------+---------+---------+
+| Asian   | Male    | 32      |
++---------+---------+---------+
+| Black   | Female  | 108     |
++---------+---------+---------+
+| Black   | Male    | 126     |
++---------+---------+---------+
+
+## TASK 7: VISUALIZE SUMMARY DATA
+
+Using the summary table you created in the previous step, create a stacked bar plot using `{ggplot2}` to illustrate the number of deaths per race, segmented by sex.
+
+Add a title, subtitle, and caption to your plot that provide context and explain the data being visualized. Customize the theme.
+
+**HINT**: You will need to use the `ggplot()` and `geom_col()` functions to create this plot.
+
+## TASK 8: EXPORT YOUR OUTPUTS
+
+Organize your outputs by creating an "outputs" folder within your project directory.
+
+1.  Export your summary table as a CSV file.
+
+2.  Use `ggsave()` to save your plot.
+
+**HINT**: Save both these files to your "outputs" folder. Make sure to use the `here()` function to specify your file paths.
+
+## TASK 9: ADD INLINE CODE AND COMMENTARY
+
+To finalize your report, include **inline code** in your RMD to quote results from your `race_sex_count` table created in Task 6. There are 3 statistics to be quoted in the text: `max_race_group`, `max_sex_group`, and `max_n_deaths`.
+
+First, complete the code to extract `max_race_group` and `max_n_deaths` from `race_sex_count`.
+
+Then, replace any placeholders such as `"WRITE_YOUR_INLINE_CODE_HERE"` with actual inline code to dynamically display your findings.
+
+Quoting results with inline code can be tricky, so we've completed one answer as an example for you. Feel free to adapt this code for the remaining two answers.
+
+**CHECK**: When you knit your document, the text below Task 9 should read as:
+
+> The demographic group with the highest number of COVID-19 deaths was White Males, with 199 deaths.
+
+## TASK 10: CREATE A DEMOGRAPHIC SUBSET & SUMMARY
+
+Create a summary table that displays the racial breakdown of expired male patients, and render it using `{reactable}` in your knitted document.
+
+For this, use the `covid_us_subset` by doing the following, and store it as `expired_demographics`:
+
+- Use the `filter()` function to ONLY include participants where `sex` is `Male` AND `hospital` is `Maimonides`.
+- Construct a summary table that displays the count of these patients by `race` using the `count()` function from `{dplyr}`.
+- Use the `reactable()` function from `{reactable}` to render the table.
+
+**CHECK**: Your `expired_demographics` summary table should have 5 rows and 2 columns. The first few rows of your summary table should look like this:
+
++------------+---------+
+| race       | n       |
+|            |         |
+| \<chr\>    | \<int\> |
++:===========+========:+
+| Asian      | 32      |
++------------+---------+
+| Black      | 23     |
++------------+---------+
+| Hispanic   | 1       |
++------------+---------+
+
+## TASK 11: KNIT YOUR RMARKDOWN DOCUMENT
+
+Finally, knit your RMarkdown document to an HTML file. When you knit your file, please turn OFF code echo on all chunks, so that you have a clean output.
+
+Inspect your final HTML to ensure all looks good before submitting.
+
+# Submit Your Work
+
+To submit your completed assignment, upload YOUR Rmd file to the submission page. Make sure you can knit your document successfully to HTML before uploading to avoid any submission issues.
+
+Happy coding, and good luck!
+
+# Challenge (Optional)
+
+If you're looking for an additional challenge, try the following:
+
+1.  Add text labels to the bars in your plot, to indicate the exact number of deaths for each segment. You can use the `geom_text()` function to achieve this.
+
+2.  Create an additional plot. For example, you could add a line graph or bar graph to represent a time series of the number of deaths per week. Utilize the `select()`, `filter()`, `mutate()`, and plotting functions from `{ggplot2}` to complete this task.
+
+    **HINT**: The `date_admit` column is stored as text in `dd.mm.yy hh:mm` format. You'll need to parse it with `lubridate::dmy_hm()` before plotting.

@@ -1,0 +1,148 @@
+---
+title: "Example Report on Motorcycle Accident Deaths in Colombia"
+subtitle: "Tidyverse and RMarkdown Practice"
+author: "GRAPH Courses Team"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+---
+
+```{r include = FALSE}
+# Set chunk options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r}
+# TASK 1: LOAD THE REQUIRED PACKAGES
+if(!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse,
+               here,
+               janitor, 
+               reactable)
+```
+
+```{r}
+# TASK 2: IMPORT THE DATA
+col_accidents <- read_csv(here("data/motorcycle_accidents_colombia.csv"))
+#head(col_accidents)
+```
+
+```{r}
+# TASK 3: CLEAN THE COLUMN NAMES 
+col_accidents_clean <- col_accidents %>% 
+  clean_names()
+
+#head(col_accidents_clean)
+```
+
+```{r}
+# TASK 4: RENAME AND TRANSFORM VARIABLES
+col_accidents_clean2 <- col_accidents_clean %>%
+  rename(position = condition) %>% 
+  mutate(gender = str_to_title(gender))
+#head(col_accidents_clean2)
+```
+
+```{r}
+# TASK 5: CREATE A SUBSET
+col_accidents_subset <- col_accidents_clean2 %>% 
+  select(id, gender, age, age_group, position) %>% 
+  filter(position != "unknown")
+```
+
+```{r}
+# TASK 6: SUMMARIZE DATA
+age_sex_count <- col_accidents_subset %>% 
+  count(age_group, gender) %>% 
+  ungroup()
+```
+
+```{r include = F}
+# TASK 7: VISUALIZE SUMMARY DATA
+death_plot <- 
+  ggplot(age_sex_count) +
+  aes(x = age_group, y = n, fill = gender) +
+  geom_col() +
+  #scale_fill_hue(direction = 1) +
+  theme_minimal()+
+  labs(x= "Age Group", 
+       y = "Number of deaths", 
+       title = "Number of deaths by Age Groups", 
+       fill = "Gender", 
+       subtitle = "The graph shows the number of deaths for each age group by gender",
+       caption = "Data source: Romero & Porras (2021)") +
+  # OPTIONAL: ADD TEXT LABELS
+  geom_text(aes(label = n),
+            vjust = 1.1,
+            size = 3,
+            position = "stack",
+            color = "white", 
+            fontface = "bold")
+
+death_plot
+```
+
+```{r eval = F}
+# TASK 8: EXPORT YOUR OUTPUTS
+
+write_csv(x = age_sex_count, file = here("outputs/age_sex_count.csv"))
+
+ggsave(plot = death_plot, filename = here("outputs/death_plot.png"))
+```
+
+# Introduction
+
+The dataset analysed in this report provides information about **`r nrow(col_accidents_subset)`** deaths caused by motorcycle accidents in Medellín, a Colombian city, from 2012 to 2015. The data is sourced from medical and police certificates and can be accessed [here](https://zenodo.org/record/4836304).
+
+# Age-sex distribution of motorcylce deaths
+
+In this analysis, we looked at the number of deaths per age and sex group.
+
+```{r fig.height=7}
+# Print your graph or table here.
+death_plot
+```
+
+```{r}
+# TASK 9: ADD INLINE CODE AND COMMENTARY 
+
+## Each of the 3 statistics in this code chunk will be quoted in the text below.
+max_sex_group <- age_sex_count %>% 
+  filter(n == max(n)) %>% 
+  pull(gender)
+
+max_age_group <- age_sex_count %>% 
+  filter(n == max(n)) %>% 
+  pull(age_group)
+
+max_n_deaths <- max(age_sex_count$n) 
+# OR age_sex_count$n %>% max()
+# OR age_sex_count %>% filter(n == max(n)) %>% pull(n)
+```
+
+The age-sex group with the most fatal accidents was **`r paste0(max_sex_group, "s")`** aged **`r max_age_group`**, with **`r max_n_deaths`** deaths. 
+
+## Analysis of Driver Position 
+
+```{r}
+# TASK 10: SUMMARIZE DRIVER POSITION DATA 
+
+# Create subset for age group and sex with most deaths
+driver_position_subset <- col_accidents_subset %>% 
+  filter(gender == "Male" & age_group == "20-24") %>% 
+  count(position) %>% 
+  ungroup()
+```
+
+We further analyzed the position of the driver involved in these accidents for the age-sex group with the most fatal accidents. 
+
+The table below shows the breakdown of accidents by driver position:
+
+```{r}
+# Paste your table here
+reactable::reactable(driver_position_subset,
+                     columns = list(
+                       position = colDef(name = "Driver Position"),
+                       n = colDef(name = "Deaths")
+  ))
+```
