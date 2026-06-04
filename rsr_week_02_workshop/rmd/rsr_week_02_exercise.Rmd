@@ -1,0 +1,574 @@
+---
+title: "Workshop 2: Descriptive Statistics with R"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    toc: true
+author: "GRAPH Courses team"
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Introduction
+
+Welcome to Workshop 2! In this workshop you will practice describing a real dataset using the descriptive statistics tools you learned about in this week's pre-work lessons.
+
+This week's pre-work lessons covered:
+
+- Intro to Descriptive Statistics and Variable Types
+- Exploring Categorical and Numeric Variables in R: COVID-19 Case Study
+- Measures of Central Tendency: Mean, Median, and Mode
+- Measures of Dispersion: Range, Variance, and Standard Deviation
+
+Keep your lesson notes open as you work through this exercise. You are expected to apply the functions and concepts from the lessons to a new dataset.
+
+# Steps to complete the assignment
+
+After loading the packages and data, there are 5 parts to this exercise, with both code questions and text answer questions. 
+
+Many of the coding tasks are fill-in-the-blank style questions, where some of the code has been partially written for you. Delete the blanks and replace them with the correct code needed. For example:
+
+```{r}
+# If we give you this:
+pacman::____________(tidyverse)
+
+# You should remove the blank and replace it with the appropriate code.
+pacman::p_load(tidyverse)
+```
+
+The length of the blank space doesn't necessarily represent the length of the answer ;)
+
+When you are done with all 5 parts, save your Rmd and submit it on the workshop page. 
+
+Good luck, and happy coding!
+
+# Dataset: Sarcopenia in elderly adults
+
+Today we will use a dataset from a cross-sectional study that aimed to determine the prevalence of **sarcopenia** in the elderly population (\>60 years) in Karnataka, India.
+
+Sarcopenia is a condition common in elderly people. It is characterized by progressive and generalized loss of skeletal muscle mass and strength. Two of the variables most directly related to sarcopenia in this dataset are **grip strength** (a measure of muscle strength) and **skeletal muscle index** (a measure of muscle mass).
+
+The data was obtained from [Zenodo](https://zenodo.org/record/3691939), and the source publication can be found [here](https://doi.org/10.12688/f1000research.22580.1).
+
+## Load packages and data
+
+For this workshop you will need the packages below. Run the chunk to load them:
+
+```{r}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, janitor, DescTools, summarytools)
+
+pacman::p_load_current_gh("the-graph-courses/inspectdf")
+```
+
+**NOTE**: You may get an error message if you are installing the `{summarytools}` package for the first time. If this happens, please contact an instructor to help you solve the issue. 
+
+Load the `sarcopenia_elderly.csv` file from your data folder and assign it to an object called `sarcopenia_raw`. Then print the first few rows.
+
+```{r}
+sarcopenia_raw <- read_csv(here(__________________))
+head(sarcopenia_raw)
+```
+
+**Checkpoint:** If you've loaded the data correctly, you should see `sarcopenia_raw` as a dataframe in your Environment tab, with 239 rows and 9 columns.
+
+The columns include:
+
+- `number`: a participant ID number
+- `age`: age in years
+- `age_group`: age decade ("Sixties", "Seventies", "Eighties")
+- `sex_male_1_female_0`: sex, coded as 1 for male and 0 for female
+- `marital_status`: marital status
+- `height_meters`: height in meters
+- `weight_kg`: weight in kilograms
+- `grip_strength_kg`: hand grip strength in kilograms
+- `skeletal_muscle_index`: skeletal muscle index
+
+# Part 1: Identifying variable types & R data classes
+
+In the prework, you learned about the two main variable types and their subtypes. Here is a summary:
+
+- **Numerical** data refers to variables that can be measured or counted as numbers. These numbers can be **discrete** (countable, whole values) or **continuous** (any value within a range).
+
+- **Categorical** data refers to variables that can be divided into groups or categories. These categories can be **nominal** (no specific order) or **ordinal** (with a specific order).
+
+## Review of the main data types in R
+
+Each variable type corresponds to one or more R data classes:
+
++-------------------+-------------------------------------------------------------------+
+|                   |                                                                   |
++===================+===================================================================+
+| **Variable Type** | **R Data Class**                                                  |
++-------------------+-------------------------------------------------------------------+
+| Continuous        | `numeric`, specifically `double`                                  |
++-------------------+-------------------------------------------------------------------+
+| Discrete          | `numeric`, specifically `integer`                                 |
++-------------------+-------------------------------------------------------------------+
+| Nominal           | `character`                                                       |
++-------------------+-------------------------------------------------------------------+
+| Ordinal           | `factor` (ordered)                                                |
++-------------------+-------------------------------------------------------------------+
+| Binary            | - `numeric`, specifically `integer` with 2 values (e.g., 0 and 1) |
+|                   |                                                                   |
+|                   | - `logical` a.k.a. Boolean (`TRUE` or `FALSE`)                    |
+|                   |                                                                   |
+|                   | - `character` with 2 values (e.g., "success" and "failure")       |
+|                   |                                                                   |
+|                   | - `factor` with 2 values, (e.g., "low" and "high")                |
++-------------------+-------------------------------------------------------------------+
+
+Use `glimpse()` to look at the R data class of each variable in the dataset.
+
+```{r}
+glimpse(sarcopenia_raw)
+```
+
+**Q1a.** For each of the variables listed below, write down (in the bullets) which variable type it is. Use the categories you learned in the prework: **numeric (continuous)**, **numeric (discrete)**, **categorical (nominal)**, **categorical (ordinal)**, or **categorical (binary)**.
+
+- `number`: __________________
+- `age`: __________________
+- `age_group`: __________________
+- `sex_male_1_female_0`: __________________
+- `marital_status`: __________________
+- `height_meters`: __________________
+- `weight_kg`: __________________
+- `grip_strength_kg`: __________________
+- `skeletal_muscle_index`: __________________
+
+Some variable types are currently stored as an R data class which doesn't match the variable types above. We will fix this in the next section.
+
+# Part 2: Inspecting and cleaning the dataset
+
+## Inspecting the dataset
+
+To get a deeper look at the dataset, we'll use two different inspection tools.
+
+First, run the code we've written for you below, which uses `dfSummary()` from `{summarytools}` to get a complete summary of all variables. The output includes means, percentiles, frequency counts, and inline mini-plots for every variable in the dataset (click on the `shiny.tag` box to see it).
+
+```{r}
+print(dfSummary(sarcopenia_raw), method = "render")
+```
+
+Next, use `inspect_types()` from `{inspectdf}` together with `show_plot()` to visualize how many variables fall into each R data class.
+
+```{r}
+inspect_types(sarcopenia_raw) %>% show_plot()
+```
+
+Look at the two outputs above carefully. Make notes on the following questions:
+
+**Q2a.** Are there any missing values? HINT: `dfSummary()` will tell you this.
+
+Ans:
+
+**Q2b.** There is a categorical variable that should be coded as `character` in R, but it is currently stored as `numeric`. Identify this variable.
+
+Ans:
+
+**Q2c.** There is a `character` variable that should be coded as `factor`, because it is an ordinal variable. Identify this variable.
+
+Ans:
+
+## Convert variables to the correct R data types
+
+Now you'll fix the two variable types you identified above. Use `mutate()` to do the following:
+
+1.  Convert `age_group` to an ordered **factor** with levels: `"Sixties"`, `"Seventies"`, `"Eighties"`.
+2.  Create a new character variable called `sex` with two values: `"Female"` (for 0) and `"Male"` (for 1). **HINT:** Either `case_when()` or `if_else()` can be used here to add conditions inside `mutate()`.
+3.  Use `select()` to drop the original `sex_male_1_female_0` column.
+
+Save the result to a new data frame called `sarcopenia`.
+
+**NOTE:** When you convert a character variable to a factor using `levels`, any value in the data that is **not** listed in `levels` is silently turned into `NA`, with no error or warning from R. So always make sure the levels you list cover every value present in the variable. The `dfSummary()` output above shows that `age_group` contains only `"Sixties"`, `"Seventies"`, and `"Eighties"`, so listing those three levels is safe here.
+
+The chunk below also includes two lines that are already done for you: they convert the `number` column to a character and rename it to `id`. Although `number` looks numeric, it is just a participant identifier, not a count or a measurement. It would make no sense to take its mean or standard deviation, so we store it as a character to keep it out of numeric summaries.
+
+```{r}
+sarcopenia <- sarcopenia_raw %>%
+  mutate(
+    age_group = factor(age_group, levels = c(__________________)),
+    sex = __________________,
+    number = as.character(number)   
+  ) %>%
+  rename(id = number) %>%           
+  select(__________________)
+
+glimpse(sarcopenia)
+```
+
+Re-run `inspect_types()` to confirm the new variable types:
+
+```{r}
+inspect_types(sarcopenia) %>% show_plot()
+```
+
+**Checkpoint:** You should now have 5 numeric variables, 3 character variables, and 1 factor variable.
+
+# Part 3: Describing categorical variables
+
+Use `inspect_cat()` together with `show_plot()` to visualize the levels of each categorical (character or factor) variable in the dataset.
+
+```{r}
+inspect_cat(sarcopenia) %>% show_plot()
+```
+
+## Frequency tables with `tabyl()`
+
+Use `tabyl()` from `{janitor}` to make a frequency table of `age_group`.
+
+```{r}
+sarcopenia %>% __________________
+```
+
+Now make a frequency table of `marital_status`.
+
+```{r}
+sarcopenia %>% __________________
+```
+
+**Q3a.** Which age group has the largest number of participants?
+
+Ans:
+
+**Q3b.** What proportion of participants are widows or widowers? Look at the `percent` column.
+
+Ans:
+
+## Two-way frequency table
+
+Create a two-way frequency table showing the distribution of `marital_status` across `sex`.
+
+```{r}
+sarcopenia %>%
+  tabyl(__________________)
+```
+
+Then use `adorn_percentages("col")` and `adorn_pct_formatting()` to display column-wise proportions.
+
+```{r}
+sarcopenia %>%
+  tabyl(marital_status, sex) %>%
+  __________________ %>% 
+  adorn_pct_formatting()
+```
+
+**Q3c.** What patterns do you notice when comparing marital status between men and women? Are there more widows or more widowers?
+
+Ans:
+
+**Q3d.** Given the fact that women tend to live longer than men, are these findings consistent with what one might expect?
+
+Ans:
+
+## Bar chart of an ordinal variable
+
+Create a bar chart showing the distribution of `age_group`. Because you converted `age_group` to a factor with ordered levels above, the bars should now appear in the correct order ("Sixties" first, then "Seventies", then "Eighties"), rather than alphabetically.
+
+Customize the plot with:
+
+- A custom fill color
+- An informative title
+- Clean x and y axis labels
+
+```{r}
+ggplot(sarcopenia, aes(x = __________________)) +
+  __________________(fill = "__________________") +
+  labs(title = "Distribution of participants by age group",
+       x = "Age group",
+       y = "Number of participants") +
+  theme_minimal()
+```
+
+**Q3e.** What do you notice about the distribution of participants across age groups?
+
+Ans:
+
+## Stratified bar chart
+
+Now we'll look at how marital status varies across the three age groups. First, create a regular (count-based) **stacked bar chart**, with `age_group` on the x-axis and bars filled by `marital_status`.
+
+```{r}
+ggplot(sarcopenia, aes(x = age_group, fill = __________________)) +
+  geom_bar() +
+  labs(title = "Marital status by age group (counts)",
+       x = "Age group",
+       y = "Count",
+       __________________ = "Marital status") +
+  theme_minimal()
+```
+
+In the chart above, it is hard to tell what proportion of each age group is married, widowed, etc., because the total bar heights vary so much between groups. Recall from Q3e that the "Sixties" group has many more participants than the "Eighties" group, so the "Sixties" bar dwarfs the other two and makes comparison difficult.
+
+To compare proportions across groups of very different sizes, we use **percent-stacking** instead. Recreate the previous chart, but add `position = "fill"` inside `geom_bar()` to convert each bar to a proportion that sums to 1.
+
+```{r}
+ggplot(sarcopenia, aes(__________________, fill = marital_status)) +
+  geom_bar(__________________) +
+  __________________(title = "Marital status by age group (proportions)",
+       x = "Age group",
+       y = "Proportion",
+       fill = "Marital status") +
+  theme_minimal()
+```
+
+**Q3f.** How does the proportion of widows/widowers change across the age groups?
+
+Ans:
+
+# Part 4: Describing numeric variables
+
+Use `inspect_num()` together with `show_plot()` to visualize the distribution of each numeric variable in the dataset. The function also returns a numeric summary table when called on its own.
+
+```{r}
+inspect_num(sarcopenia)
+inspect_num(sarcopenia) %>% show_plot()
+```
+
+**Q4a.** Most of the numeric variables in this dataset are approximately normally distributed (bell-shaped, with low frequencies at the extremes and most values in the middle). One variable stands out as clearly **skewed**. Which one, and what kind of skew does it show?
+
+Ans:
+
+**Q4b.** Looking at the histograms, one variable shows a hint of a **bimodal distribution** (a distribution with two distinct peaks separated by a small valley, like the humps of a camel). Which variable exhibits this pattern?
+
+Ans:
+
+## Visualize the distribution of `skeletal_muscle_index`
+
+Run the code written for you below to plot a histogram of `skeletal_muscle_index` with a density curve overlay, scaled so that they share the same y-axis.
+
+**NOTE:** To overlay a density curve on a histogram, we set `aes(y = after_stat(density))` inside `geom_histogram()`, then add `geom_density()` as another layer.
+
+```{r}
+ggplot(sarcopenia, aes(x = skeletal_muscle_index)) +
+  geom_histogram(aes(y = after_stat(density)),
+                 bins = 25,
+                 fill = "seagreen",
+                 color = "white") +
+  geom_density(color = "indianred", linewidth = 1) +
+  labs(title = "Distribution of skeletal muscle index",
+       x = "Skeletal muscle index",
+       y = "Density") +
+  theme_minimal()
+```
+
+## Stratified density plot
+
+Now make a density plot of skeletal muscle index, with separate overlapping curves for each `sex`. Map `sex` to both `color` and `fill`, and set transparency to 30%.
+
+```{r}
+ggplot(sarcopenia, aes(__________________)) +
+  __________________(alpha = _____) +
+  labs(title = "Distribution of skeletal muscle index by sex",
+       x = "Skeletal muscle index",
+       y = "Density") +
+  theme_minimal()
+```
+
+**Q4c.** Looking at this plot, how would you describe the difference between the two distributions? Does this explain the bimodal shape you noticed in Q4b?
+
+Ans:
+
+## Mean, median, and mode of grip strength
+
+Now you will describe the "typical" value of grip strength using the three measures of central tendency.
+
+Compute the mean, median, and mode of `grip_strength_kg` using the `mean()`, `median()`, and `Mode()` functions.
+
+**NOTE:** The `Mode()` function (with a capital M) comes from the `{DescTools}` package; the lowercase `mode()` is a different base R function and will **not** give you the most frequent value.
+
+```{r}
+__________________(sarcopenia$grip_strength_kg)
+median(__________________)
+__________________(sarcopenia$grip_strength_kg)
+```
+
+**Q4d.** Based on the `inspect_num()` plot in Part 4, does the distribution of grip strength appear unimodal (one main peak) or multimodal (more than one peak)? Does `Mode()` returning more than one value mean the distribution is multimodal?
+
+Ans:
+
+**Q4e.** Are these three measures of central tendency similar, or do they differ a lot? What might this suggest about the shape of the distribution?
+
+Ans:
+
+## Measures of dispersion
+
+The mean tells you the center, but it doesn't tell you the spread. Next, you'll calculate measures of dispersion for `grip_strength_kg`.
+
+### Range and interquartile range
+
+Use `range()` to get the minimum and maximum, and `diff(range(...))` to compute the actual numeric range. Then use `IQR()` to get the interquartile range.
+
+```{r}
+range(__________________)
+__________________(range(sarcopenia$grip_strength_kg))
+__________________(sarcopenia$grip_strength_kg)
+```
+
+**Q4f.** What is the difference between the lowest and highest grip strength values in the sample?
+
+Ans:
+
+### Variance and standard deviation
+
+Use `var()` and `sd()` to compute the variance and standard deviation of `grip_strength_kg`.
+
+```{r}
+__________________
+__________________
+```
+
+## Comparing means and dispersion between groups
+
+A common research question with this dataset is whether grip strength differs between men and women. We can use `group_by()` and `summarize()` to calculate the mean grip strength, the standard deviation, and the IQR for each `sex`.
+
+```{r}
+sarcopenia %>%
+  group_by(sex) %>%
+  summarize(mean_grip_strength = _____(grip_strength_kg),
+            sd_grip_strength = _____(grip_strength_kg),
+            iqr_grip_strength = _____(grip_strength_kg))
+```
+
+**Q4g.** Which sex has a higher average grip strength? Is this what you would expect?
+
+Ans:
+
+**Q4h.** Which sex has a larger spread of grip strength values?
+
+Ans:
+
+# Part 5: Sarcopenia indicator
+
+The term sarcopenia originates from the Greek "sarx" (flesh) and "penia" (loss). It is mostly a geriatric syndrome characterized by a progressive decrease in skeletal muscle mass and function.
+
+A common screening criterion for sarcopenia is **low skeletal muscle index**. We can define what "low" means for each sex by looking at the medians by sex:
+
+```{r}
+sarcopenia %>%
+  group_by(_____) %>%
+  summarize(mean_smi = mean(_____),
+            median_smi = median(_____))
+```
+
+Low skeletal muscle index criterion for each sex:
+
+- women with skeletal muscle index below the female median of **6.13**
+- men with skeletal muscle index below the male median of **8.75**
+
+Use `mutate()` and `case_when()` to create a new logical column called `below_sex_median` that is `TRUE` if the participant meets the low skeletal muscle index criterion for their sex, and `FALSE` otherwise.
+
+```{r}
+sarcopenia <- sarcopenia %>%
+  mutate(below_sex_median = case_when(
+    sex == ________ & skeletal_muscle_index < _______ ~ TRUE,
+    sex == ________ & skeletal_muscle_index < _______ ~ TRUE,
+    TRUE ~ FALSE
+  ))
+```
+
+Then use `tabyl()` to find the proportion of the sample with low skeletal muscle index.
+
+```{r}
+sarcopenia %>% __________________
+```
+
+Next, create a two-way table of `age_group` and `below_sex_median`, and use `adorn_percentages()` to show row-wise proportions (the proportion of each age group with low skeletal muscle index).
+
+```{r}
+sarcopenia %>%
+  tabyl(a__________________) %>%
+  __________________ %>%
+  adorn_pct_formatting()
+```
+
+Finally, make a stratified bar chart showing the proportion of participants with low skeletal muscle index **in each age group**.
+
+```{r}
+ggplot(sarcopenia, aes(__________________)) +
+  geom_bar(__________________) +
+  labs(title = "Proportion with low skeletal muscle index by age group",
+       x = "Age group",
+       y = "Proportion",
+       fill = "Low skeletal muscle index") +
+  theme_minimal()
+```
+
+**Q5a.** Does the prevalence of low skeletal muscle index increase with age?
+
+Ans:
+
+# OPTIONAL CHALLENGE: Visualizing central tendency and spread (Ungraded)
+
+## Histogram with density curve
+
+Create a histogram of `grip_strength_kg`. Overlay a kernel density curve on top of it, scaled so that they share the same y-axis.
+
+```{r}
+# Write code to create your histogram here
+
+```
+
+## Overlay vertical lines for mean and standard deviation
+
+Build on the previous plot and add vertical lines for:
+
+- the **mean** of grip strength (dashed, in green)
+- the mean **plus** one standard deviation (dotted, in orange)
+- the mean **minus** one standard deviation (dotted, in orange)
+
+**HINT:** Use `geom_vline(aes(xintercept = ...))` with the relevant calculations inside.
+
+```{r}
+# Store mean and sd for reference
+mean_grip <- mean(sarcopenia$grip_strength_kg)
+sd_grip <- sd(sarcopenia$grip_strength_kg)
+```
+
+```{r}
+# Write code to create your mega-plot here
+
+```
+
+## Boxplot with mean marker
+
+Run this code to create a boxplot of `grip_strength_kg` by `sex`.
+
+```{r}
+ggplot(sarcopenia, aes(x = sex, y = grip_strength_kg, fill = sex)) +
+  geom_boxplot(alpha = 0.6) +
+  labs(title = "Grip strength by sex",
+       x = "Sex",
+       y = "Grip strength (kg)") +
+  theme_minimal()
+```
+
+Now, add a marker for the **mean** of each group using `stat_summary()`.
+
+```{r}
+# Write code to create your plot here
+
+
+```
+
+**BONUS:** Try adapting your code above to create a violin plot instead of a boxplot.
+
+```{r}
+# Create your plot here
+
+```
+
+# Wrap up
+
+You've now described a real cross-sectional dataset using:
+
+- `glimpse()`, `dfSummary()`, `inspect_types()`, `inspect_cat()`, `inspect_num()`, and `show_plot()` to inspect variables and their types
+- `mutate()`, `factor()`, `if_else()`/`case_when()`, `as.character()`, `rename()`, and `select()` to clean and recode variables
+- `tabyl()` with `adorn_percentages()` and `adorn_pct_formatting()` for one- and two-way frequency tables
+- `geom_bar()` for bar charts of categorical variables, including stacked and percent-stacked versions using `position` arguments
+- `mean()`, `median()`, and `Mode()` for central tendency
+- `range()`, `IQR()`, `var()`, and `sd()` for dispersion
+- `geom_histogram()`, `geom_density()`, `geom_boxplot()`, and `geom_violin()` for graphical summaries of numeric variables
+- `group_by()` and `summarize()` to compute summaries by group
+
+Great work! Save and submit your Rmd.
