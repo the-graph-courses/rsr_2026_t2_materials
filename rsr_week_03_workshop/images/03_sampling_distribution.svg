@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <pattern id="baby-dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="5" fill="#7fb3d5"/>
+    </pattern>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="8" refY="6" orient="auto">
+      <path d="M0,0 L10,6 L0,12 Z" fill="#566573"/>
+    </marker>
+  </defs>
+
+  <text x="380" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#34495e">Building a Sampling Distribution</text>
+
+  <!-- Population -->
+  <rect x="35" y="96" width="145" height="126" rx="14" fill="url(#baby-dots)" stroke="#2e86c1" stroke-width="2"/>
+  <text x="108" y="78" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b4f72">Population</text>
+  <text x="108" y="244" text-anchor="middle" font-size="13" fill="#566573">all full-term births</text>
+
+  <!-- Arrow 1 -->
+  <line x1="190" y1="158" x2="258" y2="158" stroke="#566573" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="224" y="140" text-anchor="middle" font-size="13" fill="#566573">draw n</text>
+
+  <!-- Sample -->
+  <rect x="270" y="98" width="140" height="120" rx="14" fill="#fdedec" stroke="#cb4335" stroke-width="2"/>
+  <text x="340" y="78" text-anchor="middle" font-size="15" font-weight="bold" fill="#922b21">One sample</text>
+  <g fill="#ec7063">
+    <circle cx="303" cy="136" r="7"/>
+    <circle cx="330" cy="136" r="7"/>
+    <circle cx="357" cy="136" r="7"/>
+    <circle cx="384" cy="136" r="7"/>
+    <circle cx="316" cy="164" r="7"/>
+    <circle cx="343" cy="164" r="7"/>
+    <circle cx="370" cy="164" r="7"/>
+  </g>
+  <text x="340" y="242" text-anchor="middle" font-size="13" fill="#922b21">compute one mean x&#772;</text>
+
+  <!-- Arrow 2 -->
+  <line x1="420" y1="158" x2="488" y2="158" stroke="#566573" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="454" y="140" text-anchor="middle" font-size="13" fill="#566573">repeat</text>
+
+  <!-- Histogram of means -->
+  <text x="594" y="78" text-anchor="middle" font-size="15" font-weight="bold" fill="#922b21">Sample means</text>
+  <g fill="#f5b7b1" stroke="#cb4335" stroke-width="1">
+    <rect x="518" y="210" width="20" height="30"/>
+    <rect x="540" y="182" width="20" height="58"/>
+    <rect x="562" y="144" width="20" height="96"/>
+    <rect x="584" y="116" width="20" height="124"/>
+    <rect x="606" y="144" width="20" height="96"/>
+    <rect x="628" y="182" width="20" height="58"/>
+    <rect x="650" y="210" width="20" height="30"/>
+  </g>
+  <line x1="510" y1="240" x2="678" y2="240" stroke="#566573" stroke-width="1.5"/>
+  <text x="594" y="264" text-anchor="middle" font-size="13" fill="#566573">sampling distribution</text>
+
+</svg>
