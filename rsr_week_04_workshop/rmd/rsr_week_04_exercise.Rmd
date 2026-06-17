@@ -1,0 +1,355 @@
+---
+title: "Workshop 4: SE, Confidence Intervals, and the t-test"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    toc: true
+author: "GRAPH Courses team"
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+# Introduction
+
+In this workshop you will quantify the uncertainty in an estimate and test whether a difference between two groups is real. You will calculate standard errors and confidence intervals, then run and read two-sample t-tests, applying everything to two datasets.
+
+This week's pre-work covered:
+
+- Standard error and confidence intervals
+- Hypothesis testing and p-values
+- The t-test types (one-sample, two-sample, paired)
+
+A separate **demo** (`rsr_week_04_demo.Rmd`) works through every R function on the sarcopenia dataset. Keep it open: when a question asks for a standard error, a confidence interval, or a t-test, the demo shows you the exact code syntax needed.
+
+# Steps to complete the assignment
+
+There are 4 parts plus an optional bonus, with both code questions and short-answer questions. The short-answer questions are mostly fill-in-the-blank, true/false, or multiple choice.
+
+For the coding tasks, delete the blanks and replace them with the correct code. For example:
+
+```{r eval = FALSE}
+# If we give you this:
+pacman::____________(tidyverse)
+
+# Replace the blank:
+pacman::p_load(tidyverse)
+```
+
+The length of the blank does not indicate the length of the answer.
+
+When you are done, save your Rmd and submit it on the workshop page. You have one hour. Good luck!
+
+# Today's analysis: BMI & Blood pressure
+
+You will study the same question in two datasets:
+
+> **Does systolic blood pressure (SBP) differ between people with a lower BMI and people with a higher BMI?**
+
+- **Whitehall** is a simulated cohort of older London civil servants (1997 to 2005). It has some missing values.
+- **Diabetes in China** is a large population cohort of Chinese adults. Its column for blood pressure is `sbp_mm_hg`.
+
+## Load packages and data
+
+```{r}
+# Load packages
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, effectsize)
+```
+
+```{r}
+# Load the two datasets
+whitehall <- read_csv(here("data/Whitehall_fossa.csv"))
+diabetes_china <- read_csv(here(__________________))
+```
+
+**Checkpoint:** `whitehall` should have **4327 rows and 17 columns**, and `diabetes_china` should have **211833 rows and 25 columns**.
+
+## Create the BMI category in each dataset
+
+In both datasets you split BMI at 25, into a group coded `1` (BMI below 25) and a group coded `2` (BMI 25 or above), then compare the standard errors, confidence intervals, and t-tests across the two datasets.
+
+Create `bmi_cat` with `case_when()`: code `1` for BMI below 25 and `2` for BMI 25 or above. We do not relabel the groups; the t-test output simply calls them "group 1" and "group 2".
+
+The Whitehall version is done for you. Write the diabetes version yourself, in the same way.
+
+```{r}
+# Create bmi_cat in the Whitehall data (done for you)
+whitehall <- whitehall %>%
+  mutate(bmi_cat = case_when(
+    bmi < 25 ~ 1,
+    bmi >= 25 ~ 2))
+
+# Create bmi_cat in the diabetes data (your turn)
+diabetes_china <- diabetes_china %>%
+  mutate(bmi_cat = case_when(
+    __________________,
+    __________________))
+```
+
+```{r}
+# Check the group sizes in each dataset
+table(whitehall$bmi_cat)
+table(diabetes_china$bmi_cat)
+```
+
+**Checkpoint:** In Whitehall you should see about **1843** in group 1 and **2467** in group 2 (a few rows have missing BMI and are dropped). In the diabetes data you should see about **151003** in group 1 and **60830** in group 2.
+
+## Preview: the differences you will test
+
+Before any calculation, plot the two distributions in each dataset so you can see the comparison you are about to make. These are the same kind of density plot used in the demo for skeletal muscle index. Run the chunks below.
+
+```{r}
+# Plot density curves of SBP split by BMI category (Whitehall)
+ggplot(filter(whitehall, !is.na(bmi_cat)),
+       aes(x = sbp, color = as.factor(bmi_cat), fill = as.factor(bmi_cat))) +
+  geom_density(alpha = 0.3) +
+  labs(title = "Systolic blood pressure by BMI category (Whitehall)",
+       x = "Systolic blood pressure (mmHg)",
+       y = "Density",
+       color = "BMI category",
+       fill = "BMI category") +
+  theme_minimal()
+```
+
+```{r}
+# Plot density curves of SBP split by BMI category (diabetes)
+ggplot(filter(diabetes_china, !is.na(bmi_cat)),
+       aes(x = sbp_mm_hg, color = as.factor(bmi_cat), fill = as.factor(bmi_cat))) +
+  geom_density(alpha = 0.3) +
+  labs(title = "Systolic blood pressure by BMI category (diabetes data)",
+       x = "Systolic blood pressure (mmHg)",
+       y = "Density",
+       color = "BMI category",
+       fill = "BMI category") +
+  theme_minimal()
+```
+
+In Whitehall the two curves sit almost on top of each other, with only a small shift. In the diabetes data the shift between the curves is clearer. Keep these pictures in mind as you test each difference below.
+
+# Part 1: Standard error and confidence interval (Whitehall)
+
+First we estimate the mean SBP for the whole Whitehall sample and put an uncertainty band around it.
+
+Reminder, the standard error of the mean is:
+
+$$SE = \frac{SD}{\sqrt{n}}$$
+
+where SD is the standard deviation and n is the sample size. R has no single standard-error function, so we build it from `sd` and `n`.
+
+**Q1a.** Calculate the sample size (`n`), standard deviation (`sd`), and standard error (`se`) of `sbp` in the Whitehall data. Whitehall has some missing SBP values, so you must exclude them.
+
+```{r}
+# Calculate n (number of non-missing SBP values)
+n_sbp_wh <- sum(!is.na(__________________))
+n_sbp_wh
+
+# Calculate the standard deviation (exclude missing values)
+sd_sbp_wh <- sd(whitehall$sbp, __________________)
+round(sd_sbp_wh, 3)
+
+# Calculate SE = SD / sqrt(n)
+se_sbp_wh <- __________________
+round(se_sbp_wh, 3)
+```
+
+**Q1b.** Fill in the blanks: A standard error of about 0.27 mmHg means that if we drew many samples of this size, the sample mean SBP would typically fall within about ______ mmHg of the true mean. A ______ (larger / smaller) sample would make the standard error even smaller.
+
+Ans:
+
+**Q1c.** Calculate the mean SBP and a 95% confidence interval for it.
+
+Reminder, a confidence interval for a mean is:
+
+$$\bar{x} \pm z \times SE$$
+
+where z is **1.96** for a 95% interval and **2.576** for a 99% interval.
+
+```{r}
+# Calculate the mean SBP
+mean_sbp_wh <- mean(whitehall$sbp, na.rm = TRUE)
+
+# 95% CI: mean +/- 1.96 * SE
+ci_95_wh <- c(mean_sbp_wh - 1.96 * se_sbp_wh,
+              mean_sbp_wh __________________)
+round(ci_95_wh, 3)
+```
+
+**Q1d.** The 95% CI is about (130.23, 131.28) mmHg. Which interpretation is correct? Choose A, B, or C.
+
+A. There is a 95% probability that the true mean SBP lies in this exact interval.
+B. If we repeated this procedure on many samples, about 95% of the intervals would contain the true mean SBP.
+C. About 95% of individual people have an SBP inside this interval.
+
+Ans:
+
+**Q1e.** Now calculate a 99% confidence interval for the mean SBP, using the 99% multiplier 2.576 in place of 1.96.
+
+```{r}
+# 99% CI: mean +/- 2.576 * SE
+ci_99_wh <- c(mean_sbp_wh - __________________ * se_sbp_wh,
+              mean_sbp_wh + __________________ * se_sbp_wh)
+round(ci_99_wh, 3)
+```
+
+**Q1f.** Fill in the blanks: The 99% interval is ______ (wider / narrower) than the 95% interval, because a higher confidence level uses a ______ (larger / smaller) multiplier.
+
+Ans:
+
+# Part 2: Two-sample t-test (Whitehall)
+
+Now we test whether mean SBP differs between the two BMI groups (the first Whitehall plot in the preview above).
+
+**Q2a.** Fill in the symbols for a two-sided test. Use `=` or the not-equal sign.
+
+- $H_0$: $\mu_1$ ______ $\mu_2$
+- $H_1$: $\mu_1$ ______ $\mu_2$
+
+Ans:
+
+**Q2b.** Run a two-sample t-test of `sbp` by `bmi_cat`.
+
+```{r}
+# Two-sample t-test: SBP by BMI category
+t.test(__________________, data = whitehall)
+```
+
+**Q2c.** Fill in the blanks from the output (group 1 is BMI below 25, group 2 is BMI 25 or above):
+
+- Mean SBP in group 1: ______
+- Mean SBP in group 2: ______
+- Difference (group 1 minus group 2): ______ mmHg
+
+Ans:
+
+**Q2d.** Fill in the blanks and choose the correct option:
+
+- t = ______
+- p = ______
+- The p-value is the probability of (choose one):
+  A) the null hypothesis being true
+  B) seeing a difference this large or larger if there were truly no difference
+  C) the difference being important
+- At $\alpha = 0.05$ we ______ (reject / fail to reject) $H_0$.
+
+Ans:
+
+**Q2e.** Read the 95% CI for the difference, then answer:
+
+- The 95% CI for the difference is about ( ______ , ______ ).
+- True or false: this interval includes 0. ______
+- So the difference ______ (is / is not) statistically significant.
+
+Ans:
+
+**Q2f.** A clinician says a difference of at least 5 mmHg is clinically worthwhile. The observed difference is about 2.16 mmHg.
+
+- Is 2.16 larger than 5? ______
+- So is this difference clinically significant? ______ (yes / no)
+
+Ans:
+
+# Part 3: The same analysis on the diabetes dataset
+
+Now repeat the key steps on the diabetes data. The blood pressure column here is `sbp_mm_hg` (the second plot in the preview above).
+
+**Q3a.** Calculate the standard error of mean `sbp_mm_hg` and a 95% confidence interval for the mean.
+
+```{r}
+# Calculate n, SD, SE for diabetes SBP
+n_sbp_db <- sum(!is.na(diabetes_china$sbp_mm_hg))
+sd_sbp_db <- sd(diabetes_china$sbp_mm_hg, na.rm = TRUE)
+se_sbp_db <- __________________
+round(se_sbp_db, 3)
+
+# Calculate the mean and a 95% CI: mean +/- 1.96 * SE
+mean_sbp_db <- mean(diabetes_china$sbp_mm_hg, na.rm = TRUE)
+ci_95_db <- c(mean_sbp_db - 1.96 * se_sbp_db,
+              __________________)
+round(ci_95_db, 3)
+```
+
+**Q3b.** Run a two-sample t-test of `sbp_mm_hg` by `bmi_cat`.
+
+```{r}
+# Two-sample t-test: SBP by BMI category (diabetes)
+t.test(__________________, data = __________________)
+```
+
+**Q3c.** Fill in the blanks from the output:
+
+- Mean SBP in group 1: ______
+- Mean SBP in group 2: ______
+- Difference (group 1 minus group 2): ______ mmHg
+- t = ______
+- p = ______ (how R displays it)
+- Decision at $\alpha = 0.05$: ______ (reject / fail to reject) $H_0$
+
+Ans:
+
+**Q3d.** The difference is about 10.4 mmHg, with a 95% CI of about (-10.57, -10.27).
+
+- Is 10.4 larger than the clinician's 5 mmHg threshold? ______
+- So is this difference clinically significant? ______ (yes / no)
+
+Ans:
+
+# Part 4: Comparing the two datasets
+
+**Q4a.** Whitehall's SE for mean SBP is about 0.27; the diabetes SE is about 0.04. Fill in the blanks:
+
+The ______ (Whitehall / diabetes) dataset has the smaller standard error. This is because it has a ______ (larger / smaller) sample size, and SE = SD / sqrt(n).
+
+Ans:
+
+**Q4b.** Both differences are statistically significant. Which one is also large enough to matter clinically (above 5 mmHg)? Choose A, B, or C.
+
+A. Whitehall (about 2.16 mmHg)
+B. Diabetes (about 10.4 mmHg)
+C. Both
+
+Ans:
+
+**Q4c.** True or false:
+
+- A result can be statistically significant but too small to matter clinically. ______
+- A very large sample can make even a tiny difference statistically significant. ______
+
+Ans:
+
+# OPTIONAL BONUS: Effect size (ungraded)
+
+> This uses **Cohen's d**, an idea not covered in the pre-work. See the demo and the effect sizes handout. Skip it if you are short on time.
+
+**B1.** Calculate Cohen's d for the SBP difference in each dataset. The syntax mirrors `t.test()`, but wrap the grouping variable in `as.factor()`.
+
+```{r}
+# Cohen's d for each dataset
+# Write your code here
+
+```
+
+**B2.** Fill in the blanks, using the cutoff table from the effect sizes handout (about 0.2 = small, 0.5 = medium, 0.8 = large):
+
+- Whitehall d is about 0.12, which is a ______ effect.
+- Diabetes d is about 0.66, which is a ______ effect.
+- This ______ (agrees / disagrees) with your Part 4 conclusions.
+
+Ans:
+
+# Wrap up
+
+You have now:
+
+- built a standard error by hand from `sd()` and `n`, and seen how sample size controls it
+- constructed 95% and 99% confidence intervals using the 1.96 and 2.576 multipliers
+- plotted the group distributions to see the difference you were testing
+- stated hypotheses and run two-sample t-tests with `t.test(outcome ~ group, data = ...)`
+- read t-tests fully: group means, the difference, `t`, the p-value, and the CI of the difference
+- distinguished statistical significance from clinical significance across two datasets
+- (bonus) quantified effect size with `cohens_d()`
+
+Save and submit your Rmd.

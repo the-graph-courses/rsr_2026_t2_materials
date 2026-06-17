@@ -1,0 +1,182 @@
+---
+title: "Workshop 4 Demo: SE, Confidence Intervals, and the t-test in R"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    toc: true
+author: "GRAPH Courses team"
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+# About this demo
+
+This is a **worked example** showing how to use the functions needed for the workshop. Every line of code here is complete and correct. Read it alongside the exercise: when the exercise asks you to calculate a standard error, a confidence interval, or run a t-test, come back here to see the function and the syntax.
+
+The pre-work lessons explained the *concepts* (what a standard error is, what a confidence interval means, how a p-value is defined, the t-test types). They did not show much R code. That is what this demo is for: it connects each concept to the R function that produces it.
+
+We use the **sarcopenia** dataset, which you have seen before. In the descriptive statistics workshop you plotted the distribution of skeletal muscle index for men and women and saw that the two curves were shifted apart. Here we go one step further and put **numbers** on that difference: a standard error, a confidence interval, and a t-test.
+
+# Load packages and data
+
+```{r}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, effectsize)
+```
+
+```{r}
+sarcopenia <- read_csv(here("data/sarcopenia_elderly.csv"))
+head(sarcopenia)
+```
+
+**Checkpoint:** `sarcopenia` should have **239 rows and 9 columns**.
+
+The sex variable is coded 0/1. We turn it into a labelled factor so output is readable.
+
+```{r}
+sarcopenia <- sarcopenia %>%
+  mutate(sex = if_else(sex_male_1_female_0 == 0, "Female", "Male"))
+```
+
+# Recap: the difference we already saw
+
+In the earlier workshop we plotted the two distributions of skeletal muscle index. The male curve sits to the right of the female curve.
+
+```{r}
+ggplot(sarcopenia, aes(x = skeletal_muscle_index, color = sex, fill = sex)) +
+  geom_density(alpha = 0.3) +
+  labs(title = "Skeletal muscle index by sex",
+       x = "Skeletal muscle index",
+       y = "Density") +
+  theme_minimal()
+```
+
+We could *see* a difference, but we never quantified it. We never asked: how precise is each group mean? Could a gap this size appear by chance? That is what the rest of this demo does.
+
+# Part A: Standard error of the mean
+
+The pre-work defined the **standard error (SE)** as the standard deviation of the sampling distribution: how much the sample mean would bounce around if we kept drawing new samples of the same size. The formula is
+
+$$SE = \frac{s}{\sqrt{n}}$$
+
+where `s` is the sample standard deviation and `n` is the sample size.
+
+R has no single "standard error of the mean" function, so we build it from its parts. We calculate `n`, then `s`, then combine them. Let's do this for skeletal muscle index across the whole sample.
+
+```{r}
+# n: count the non-missing values
+n_smi <- sum(!is.na(sarcopenia$skeletal_muscle_index))
+n_smi
+
+# s: the sample standard deviation
+sd_smi <- sd(sarcopenia$skeletal_muscle_index, na.rm = TRUE)
+sd_smi
+
+# SE = s / sqrt(n)
+se_smi <- sd_smi / sqrt(n_smi)
+round(se_smi, 3)
+```
+
+The sample mean is:
+
+```{r}
+mean_smi <- mean(sarcopenia$skeletal_muscle_index, na.rm = TRUE)
+round(mean_smi, 3)
+```
+
+So the mean skeletal muscle index is about **7.48**, with a standard error of about **0.106**.
+
+**How to read this:** if we repeatedly drew new samples of 239 people from the same population, the sample mean would typically land within about 0.106 units of the true population mean. The SE is small here because the sample is reasonably large. Remember the relationship from the pre-work: larger `n` gives a smaller SE and a more precise estimate.
+
+Note the `na.rm = TRUE`. Without it, `sd()` and `mean()` return `NA` if any value is missing. This dataset has no missing skeletal muscle index values, but the habit matters: the Whitehall data in the exercise *does* have missing values.
+
+# Part B: Confidence interval for the mean
+
+The pre-work gave the formula for a normal-based 95% confidence interval:
+
+$$CI = \bar{x} \pm 1.96 \times \frac{s}{\sqrt{n}} = \bar{x} \pm 1.96 \times SE$$
+
+```{r}
+ci_95_smi <- c(mean_smi - 1.96 * se_smi,
+           mean_smi + 1.96 * se_smi)
+round(ci_95_smi, 3)
+```
+
+The 95% confidence interval for mean skeletal muscle index is about **(7.28, 7.69)**.
+
+**How to read this (carefully):** If we repeated this whole procedure on many fresh samples, about 95% of the intervals we built would contain the true population mean. It is **not** correct to say "there is a 95% probability the true mean is between 7.28 and 7.69" for this particular interval: the true mean is fixed, so this interval either contains it or it does not.
+
+A higher confidence level produces a wider interval, because we demand that more of the intervals capture the truth. For a 99% interval we just swap in the 99% multiplier, 2.576:
+
+```{r}
+ci_99_smi <- c(mean_smi - 2.576 * se_smi,
+           mean_smi + 2.576 * se_smi)
+round(ci_99_smi, 3)
+```
+
+The 99% interval is wider than the 95% interval, as expected.
+
+# Part C: Two-sample t-test
+
+Now the main question: is the male/female gap in skeletal muscle index real? This is a **two-sample (independent) t-test**, because we are comparing the means of two separate groups.
+
+**Hypotheses (two-sided, the default):**
+
+- $H_0$: the true mean skeletal muscle index is equal in men and women ($\mu_{female} = \mu_{male}$)
+- $H_1$: the true means differ ($\mu_{female} \neq \mu_{male}$)
+
+In R, the two-sample t-test with the formula syntax is `t.test(outcome ~ group, data = ...)`. R compares the groups in the order of their factor levels (here, alphabetical: Female first, then Male).
+
+```{r}
+t.test(skeletal_muscle_index ~ sex, data = sarcopenia)
+```
+
+**Reading the output, line by line:**
+
+- `mean in group Female` ≈ **6.22**, `mean in group Male` ≈ **8.78**. The difference is about **−2.55** (Female minus Male).
+- `t = -19.31`. Recall $t = \frac{\text{estimate} - \text{null value}}{SE}$. The estimate (the difference) is about 19 standard errors away from 0. That is an enormous signal-to-noise ratio.
+- `df = 236.12`. Welch's t-test (R's default) does not assume equal variances, so the degrees of freedom are adjusted.
+- `p-value < 2.2e-16`. This is the probability of seeing a difference this large, or larger, **if the null hypothesis were true** (if there were really no difference). It is vanishingly small.
+- `95 percent confidence interval: -2.81 to -2.29`. This is the CI for the **difference** in means. It does not include 0.
+
+**Decision and interpretation:** the p-value is far below $\alpha = 0.05$, so we reject $H_0$. The confidence interval agrees: it excludes 0 entirely, so 0 (no difference) is not a plausible value. We conclude there is strong evidence that mean skeletal muscle index differs between men and women in this population, with men higher by roughly 2.3 to 2.8 units.
+
+Notice that the p-value and the confidence interval tell the same story from two angles. The p-value answers "is 0 plausible?" The confidence interval answers "which values are plausible?"
+
+# Part D (bonus): Effect size
+
+> This section uses an idea, **effect size**, that was not in the pre-work. It is here so you can see the R function. Treat it as enrichment.
+
+A p-value tells you whether a difference is detectable; it does not tell you whether the difference is **big**. With a large sample, even a trivial difference can be statistically significant. **Cohen's d** measures the size of a difference in standard-deviation units, independent of sample size.
+
+```{r}
+cohens_d(skeletal_muscle_index ~ sex, data = sarcopenia)
+```
+
+Cohen's d here is about **−2.5**. The sign again just reflects group order; the magnitude is what matters. Using the conventional cutoffs (see the effect sizes handout):
+
+| Cohen's d (absolute value) | Interpretation |
+|----------------------------|----------------|
+| around 0.2                 | small          |
+| around 0.5                 | medium         |
+| 0.8 or above               | large          |
+
+A d of 2.5 is far beyond the "large" cutoff. So the male/female difference in skeletal muscle index is not only statistically significant, it is also very large in practical terms: the two groups barely overlap. This matches the density plot at the top, where the two curves are clearly separated.
+
+In the exercise you will meet a contrasting case: a difference that is statistically significant but tiny in practical terms.
+
+# Summary of the functions
+
+| Goal | R approach |
+|--------------------------|----------------------------------------------|
+| Standard error of a mean | `sd(x, na.rm = TRUE) / sqrt(sum(!is.na(x)))` |
+| 95% / 99% CI for a mean | `mean +/- 1.96 (or 2.576) * SE` |
+| Compare two group means | `t.test(outcome ~ group, data = ...)` |
+| Read a t-test | group means, `t`, `df`, `p-value`, and the CI of the difference |
+| Effect size (bonus) | `cohens_d(outcome ~ group, data = ...)` |
+
+Keep this demo open while you work through the exercise.
