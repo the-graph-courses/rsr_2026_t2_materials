@@ -250,9 +250,9 @@ results_table %>%
   tab_options(table.width = pct(100))
 ```
 
-**Question**: Choose at least two variables and compare the table values against the raw test output from your t.test and aov functions. Which statistics did you check, and did they match?
+**Question**: Because you did not write the gt code yourself (we wrote it for you, and in the future, LLMs might write such formatting code for you), it is a good idea to cross check all values in the table against the raw test output from your `t.test()` or `aov()` functions to make sure it is correct. For now, check the Marriage rows test. Compare the table values to the output from `t.test()`. What did you find? Are there any differences worth highlighting? (e.g. is the p-value reported exactly the same way?)
 
-Answer: I checked the Gender t-test and the Age category ANOVA. The table shows t = -1.00 for Gender and F = 102.04 for Age category, which match the raw outputs after rounding.
+Answer: The Marriage row in the table shows t = 15.28 and p < 0.001. These match the raw `t.test()` output after rounding. The raw output gives the p-value in scientific notation, about 2.71e-49, while the table reports it as `<0.001`.
 
 **Question**: Which characteristics are statistically significant at alpha = 0.05?
 
@@ -335,10 +335,8 @@ power_delta_1
 
 Does the required sample size go up or down compared with the 2-point version? Why?
 
-Answer: It goes up. A smaller difference is harder to detect, so we need more participants.
+Answer: It goes up. R returns about 924.4, so we round up to 925 participants per group. A smaller difference is harder to detect, so we need more participants.
 
 # Summary
 
 The table shows no statistically significant gender difference, but age category, marriage, and history of visiting Wuhan are statistically significant. The power section shows that sample size increases when the minimum difference worth detecting gets smaller.
-</content>
-</invoke>
