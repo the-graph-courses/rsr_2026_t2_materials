@@ -10,7 +10,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 # Introduction
@@ -60,9 +60,13 @@ This exercise has two parts:
 
 Fill in the blanks in the code below to load the packages we will need: `readxl`, `tidyverse`, `gt`, `here`, and `janitor`.
 
+We also load `inspectdf`, which we will use to visualize the variables. The CRAN version of this package has been removed, so we install the GRAPH Courses version from GitHub with `p_load_current_gh()`.
+
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
 pacman::p_load(_______)
+
+pacman::p_load_current_gh("the-graph-courses/inspectdf")
 ```
 
 ## Step 1: Import and label the data
@@ -92,15 +96,16 @@ Before calculating means and standard deviations, check for missing values. Runn
 summary(survey)
 ```
 
-**Question**: Does `total_scores_of_K6` have any missing values? Do any other variables in the dataset have missing values?
+**Question**: Do any of the variables in the dataset have missing values?
 
 Answer: _______
 
 All the columns are coded as numeric, even though many are categorical. The codebook in `data/distress_codebook.xls` gives us the labels for the categorical variables. Below we:
 
--  rename variables to make them more readable, since they will be presented in the paper's table
 -  use the codebook to label the categorical variables
 -  convert the age variable to a categorical variable with four groups, as was done in the paper
+
+We will keep the original variable names from the dataset for the analysis steps. The paper-style row labels for the table come later, after we reshape the data.
 
 Fill in any blanks in the code below, then run the code to check that the dataset has the correct structure.
 
@@ -110,39 +115,44 @@ Remember that you can check the demo code for examples of how to do similar tran
 survey <- survey %>%
   mutate(
     # convert the gender variable to a factor with two levels
-    Gender = _______(gender, levels = c(0, 1), labels = c("Female", "Male")),
+    gender = _______(gender, levels = c(0, 1), labels = c("Female", "Male")),
     # making the age variable categorical with four groups as in the paper
-    `Age category` = ____(
+    age = ____(
       age,
       breaks = c(-Inf, 30, 40, 50, Inf),
       labels = c("18-30", "31-40", "41-50", ">50")
     ),
     # convert the marriage variable to a factor with two levels
     # code 1 = married, 0 = unmarried. Code 2 probably means divorced though this is missing in the codebook
-    Marriage = _______(
+    marriage = _______(
       if_else(marriage == 1, "married", "unmarried"),
       levels = c("unmarried", "married")
     ),
-    `History of visiting Wuhan` = _______(
+    history_of_visiting_SEA = factor(
       history_of_visiting_SEA,
       ______ = c(0, 1),
       ______ = c("No", "Yes")
     )
   ) %>%
-  select(total_scores_of_K6, Gender, `Age category`, Marriage, `History of visiting Wuhan`)
+  select(total_scores_of_K6, gender, age, marriage, history_of_visiting_SEA)
 
-nrow(survey)
 ```
 
 Checkpoint: After selecting variables, the dataset should have 1599 rows and 5 columns.
 
-Call the tabyl function to check the four categorical variables of Gender, Age category, Marriage, and History of visiting Wuhan before continuing.
+Call the tabyl function to check the four categorical variables before continuing.
 
 ```{r group-checks}
-tabyl(survey, Gender)
-tabyl(survey,`Age category`)
-tabyl(survey,________) # Marriage
-tabyl(survey,________) # History of visiting Wuhan
+tabyl(survey, gender)
+tabyl(survey, age)
+tabyl(survey, ________) # marriage
+tabyl(survey, ________) # history_of_visiting_SEA
+```
+
+We can also visualize all four categorical variables at once with `inspect_cat()` from `{inspectdf}`, piped into `show_plot()`.
+
+```{r inspect-cat}
+inspect_cat(survey) %>% show_plot()
 ```
 
 **Question**: How many men are in the dataset? How many people had visited Wuhan in the past month?
@@ -190,16 +200,17 @@ group_stats <- survey_long %>%
     # standard error is sd divided by the square root of n
     se = ________, 
     # 95% CI: leave 2.5% in each tail, so get the quantile for the 0.975 point using qt()
-    ci_lo = mean - qt(0.975, df = n - 1) * se,
-    # same for the upper bound
-    ci_hi = _______ + qt(0.975, df = n - 1) * se,
+    ci_95_low_end = mean - qt(0.975, df = n - 1) * se,
+    # same for the upper bound, but adding instead of subtracting
+    ci_95_high_end = _______ + qt(0.975, df = n - 1) * se,
     .groups = "drop"
   ) %>%
-  # arrange the data by variable and group to match the order of the table
+  # relabel variable names for the table, then arrange to match the paper
   mutate(
     variable = factor(
       variable,
-      levels = c("Gender", "Age category", "Marriage", "History of visiting Wuhan")
+      levels = c("gender", "age", "marriage", "history_of_visiting_SEA"),
+      labels = c("Gender", "Age category", "Marriage", "History of visiting Wuhan")
     )
   ) %>%
   arrange(variable, group)
@@ -219,44 +230,47 @@ We will use a t-test for variables with two groups and a one-way ANOVA for varia
 
 In these tests, we will use `var.equal = TRUE`, which assumes equal variance between the groups. This is done to match the published table, even though it may not be the most appropriate assumption in this case.
 
-Tip: variable names that contain spaces, like `Age category` and `History of visiting Wuhan`, must be wrapped in backticks when you use them in a formula.
+First, the gender t-test. Gender has two groups, so we use a t-test.
 
-```{r tests}
-gender_t <- t.test(total_scores_of_K6 ~ Gender, data = survey, var.equal = TRUE)
-
-age_aov <- aov(total_scores_of_K6 ~ _____, data = survey)
-
-# Equal variance t test for marriage
-marriage_t <- _____(_________________)
-
-# Equal variance t test for history of visiting Wuhan
-wuhan_t <- _____(_________________)
-```
-
-Look at each output.
-
-```{r test-output}
+```{r test-gender}
+gender_t <- t.test(total_scores_of_K6 ~ gender, data = survey, var.equal = TRUE)
 gender_t
-summary(age_aov)
-marriage_t
-wuhan_t
 ```
 
 **Question**: At alpha = 0.05, is the gender difference statistically significant? Do we reject or fail to reject the null hypothesis?
 
 Your answer:
 
-**Question**: Given this decision, which kind of decision error would we worry about for the gender t-test, Type I or Type II? What would that error mean here?
+**Question**: Given this decision, which kind of decision error is it possible that we might have made for the gender t-test, Type I (False positive) or Type II (False negative)? What would that error mean here?
 
 Your answer:
+
+Next, the age ANOVA. Age category has four groups, so we use a one-way ANOVA.
+
+```{r test-age}
+age_aov <- aov(total_scores_of_K6 ~ _____, data = survey)
+summary(age_aov)
+```
 
 **Question**: For the age ANOVA, is the age difference statistically significant? What does this tell us about the groups?
 
 Your answer:
 
-**Question**: Given this decision, which kind of decision error would we worry about for the ANOVA, Type I or Type II? What would that error mean here?
+**Question**: Given this decision, which kind of decision error is it possible that we might have made for the ANOVA, Type I or Type II? What would that error mean here?
 
 Your answer:
+
+Finally, fill in the tests to compare the mean K6 score between married and unmarried people, and between people who had visited Wuhan in the past month and those who had not. Both have two groups, so both use a t-test. Then look at the output.
+
+```{r test-rest}
+# Equal variance t test for marriage
+marriage_t <- _____(_________________)
+marriage_t
+
+# Equal variance t test for history of visiting Wuhan
+wuhan_t <- _____(_________________)
+wuhan_t
+```
 
 ## Step 4: Assemble the table with `gt`
 
@@ -288,9 +302,9 @@ results_table <- group_stats %>%
       ")"
     ),
     `95% CI` = paste0(
-      format(round(ci_lo, 2), nsmall = 2),
+      format(round(ci_95_low_end, 2), nsmall = 2),
       ", ",
-      format(round(ci_hi, 2), nsmall = 2)
+      format(round(ci_95_high_end, 2), nsmall = 2)
     ),
 
     statistic = case_when(
@@ -331,7 +345,7 @@ results_table %>%
   tab_options(table.width = pct(100))
 ```
 
-**Question**: Choose at least two variables and compare the table values against the raw test output from your t.test and aov functions. Which statistics did you check, and did they match?
+**Question**: Because you did not write the gt code yourself (we wrote it for you, and in the future, LLMs might write such formatting code for you), it is a good idea to cross check all values in the table against the raw test output from your `t.test()` or `aov()` functions to make sure it is correct. For now, check the Marriage rows test. Compare the table values to the output from `t.test()`. What did you find? Are there any differences worth highlighting? (e.g. is the p-value reported exactly the same way?)
 
 Your answer:
 
@@ -343,19 +357,17 @@ Your answer:
 
 Your answer:
 
-## OPTIONAL: LLM formatting practice
+## LLM formatting practice
 
 Sometimes tables are more informative when they have a small in-cell bar showing the key values we want to highlight. This is possible with gt, using the gtExtras package. 
 
-Practice using LLMs for formatting by asking for a version of the table that adds an in-cell bar for the mean K6 score.
-
-Before asking, run:
+Practice using LLMs for formatting by asking your favorite LLM for a version of the table that adds an in-cell bar for the mean K6 score. Before asking, run:
 
 ```{r glimpse-results}
 glimpse(results_table)
 ```
 
-Then write a prompt that includes the object name, the column containing the means, and the package you want to use.
+Then write a prompt that includes the object name, the output from the glimpse function showing the structure of the data, and the package you want to use.
 
 ```{r llm-bars}
 # pacman::p_load(gtExtras)

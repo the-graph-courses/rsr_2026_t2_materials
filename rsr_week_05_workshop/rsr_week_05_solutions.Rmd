@@ -23,13 +23,9 @@ These are the completed solutions for the week 5 exercise.
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(readxl, dplyr, tidyr, gt, here, janitor)
-```
+pacman::p_load(readxl, tidyverse, gt, here, janitor)
 
-Look at the target table before you start.
-
-```{r target-table}
-knitr::include_graphics(here("paper/table2_with_values.jpg"))
+pacman::p_load_current_gh("the-graph-courses/inspectdf")
 ```
 
 ## Step 1: Import and label the data
@@ -44,51 +40,54 @@ glimpse(survey)
 
 **Question**: How many rows and columns does the raw imported dataset have?
 
-Answer: The dataset has 1599 rows and 38 columns.
+Answer: The raw dataset has 1599 rows and 38 columns.
 
 **Question**: What are the variable types? Will we need to convert any variable types?
 
-Answer: The variables are imported as numeric. We need to convert the categorical variables to factors before making the table.
-
-Before calculating means and standard deviations, check for missing values. Running `summary()` on the whole dataset reports a count of missing values for each variable on the `NA's` line.
+Answer: The variables are all imported as numeric. We need to convert the categorical variables (gender, age category, marriage, history of visiting Wuhan) to factors before making the table.
 
 ```{r missing-check}
 summary(survey)
 ```
 
-**Question**: Does `total_scores_of_K6` have any missing values? Do any other variables in the dataset have missing values?
+**Question**: Do any of the variables in the dataset have missing values?
 
-Answer: No. Every variable shows `NA's   0`, so our later `mean()` and `sd()` calculations will use all 1599 observations.
+Answer: No. None of the variables have missing values, so no `NA's` line appears in the summary output.
 
 ```{r import}
 survey <- survey %>%
   mutate(
-    Gender = factor(gender, levels = c(0, 1), labels = c("Female", "Male")),
-    `Age category` = cut(
+    gender = factor(gender, levels = c(0, 1), labels = c("Female", "Male")),
+    age = cut(
       age,
       breaks = c(-Inf, 30, 40, 50, Inf),
       labels = c("18-30", "31-40", "41-50", ">50")
     ),
-    Marriage = factor(
+    marriage = factor(
       if_else(marriage == 1, "married", "unmarried"),
       levels = c("unmarried", "married")
     ),
-    `History of visiting Wuhan` = factor(
+    history_of_visiting_SEA = factor(
       history_of_visiting_SEA,
       levels = c(0, 1),
       labels = c("No", "Yes")
     )
   ) %>%
-  select(total_scores_of_K6, Gender, `Age category`, Marriage, `History of visiting Wuhan`)
+  select(total_scores_of_K6, gender, age, marriage, history_of_visiting_SEA)
 
-nrow(survey)
 ```
 
+Checkpoint: After selecting variables, the dataset should have 1599 rows and 5 columns.
+
 ```{r group-checks}
-tabyl(survey, Gender)
-tabyl(survey, `Age category`)
-tabyl(survey, Marriage)
-tabyl(survey, `History of visiting Wuhan`)
+tabyl(survey, gender)
+tabyl(survey, age)
+tabyl(survey, marriage)
+tabyl(survey, history_of_visiting_SEA)
+```
+
+```{r inspect-cat}
+inspect_cat(survey) %>% show_plot()
 ```
 
 **Question**: How many men are in the dataset? How many people had visited Wuhan in the past month?
@@ -99,13 +98,6 @@ Answer: There are 531 men. There are 326 people who had visited Wuhan in the pas
 
 ```{r reshape}
 survey_long <- survey %>%
-  select(
-    total_scores_of_K6,
-    Gender,
-    `Age category`,
-    Marriage,
-    `History of visiting Wuhan`
-  ) %>%
   pivot_longer(
     cols = -total_scores_of_K6,
     names_to = "variable",
@@ -131,14 +123,15 @@ group_stats <- survey_long %>%
     mean = mean(total_scores_of_K6),
     sd = sd(total_scores_of_K6),
     se = sd / sqrt(n),
-    ci_lo = mean - qt(0.975, df = n - 1) * se,
-    ci_hi = mean + qt(0.975, df = n - 1) * se,
+    ci_95_low_end = mean - qt(0.975, df = n - 1) * se,
+    ci_95_high_end = mean + qt(0.975, df = n - 1) * se,
     .groups = "drop"
   ) %>%
   mutate(
     variable = factor(
       variable,
-      levels = c("Gender", "Age category", "Marriage", "History of visiting Wuhan")
+      levels = c("gender", "age", "marriage", "history_of_visiting_SEA"),
+      labels = c("Gender", "Age category", "Marriage", "History of visiting Wuhan")
     )
   ) %>%
   arrange(variable, group)
@@ -152,25 +145,11 @@ Answer: The `Yes` group has the higher mean distress score. Its mean is about 18
 
 ## Step 3: The tests
 
-```{r tests}
-gender_t <- t.test(total_scores_of_K6 ~ Gender, data = survey, var.equal = TRUE)
+First, the gender t-test.
 
-age_aov <- aov(total_scores_of_K6 ~ `Age category`, data = survey)
-
-marriage_t <- t.test(total_scores_of_K6 ~ Marriage, data = survey, var.equal = TRUE)
-
-wuhan_t <- t.test(
-  total_scores_of_K6 ~ `History of visiting Wuhan`,
-  data = survey,
-  var.equal = TRUE
-)
-```
-
-```{r test-output}
+```{r test-gender}
+gender_t <- t.test(total_scores_of_K6 ~ gender, data = survey, var.equal = TRUE)
 gender_t
-summary(age_aov)
-marriage_t
-wuhan_t
 ```
 
 **Question**: At alpha = 0.05, is the gender difference statistically significant? Do we reject or fail to reject the null hypothesis?
@@ -179,7 +158,14 @@ Answer: No. The p-value is about 0.316, which is greater than 0.05. We fail to r
 
 **Question**: Given this decision, which kind of decision error would we worry about for the gender t-test, Type I or Type II? What would that error mean here?
 
-Answer: A Type II error. We failed to reject the null hypothesis, so the decision error we would worry about is missing a real gender difference in mean distress in the population.
+Answer: Because we fail to reject the null, a Type II error is the concern. It would mean that there is a real gender difference in mean distress in the population, but this study failed to detect it.
+
+Next, the age ANOVA.
+
+```{r test-age}
+age_aov <- aov(total_scores_of_K6 ~ age, data = survey)
+summary(age_aov)
+```
 
 **Question**: For the age ANOVA, is the age difference statistically significant? What does this tell us about the groups?
 
@@ -187,7 +173,22 @@ Answer: Yes. The p-value is less than 0.001. This tells us that at least one age
 
 **Question**: Given this decision, which kind of decision error would we worry about for the ANOVA, Type I or Type II? What would that error mean here?
 
-Answer: A Type I error. We rejected the null hypothesis, so the decision error we would worry about is concluding that age category is associated with mean distress when, in the population, the age-category means do not really differ.
+Answer: Because we reject the null, a Type I error is the concern. It would mean that we concluded age category is associated with mean distress when, in the population, the age-category means do not really differ.
+
+Finally, the tests for marriage and history of visiting Wuhan.
+
+```{r test-rest}
+marriage_t <- t.test(total_scores_of_K6 ~ marriage, data = survey, var.equal = TRUE)
+
+wuhan_t <- t.test(
+  total_scores_of_K6 ~ history_of_visiting_SEA,
+  data = survey,
+  var.equal = TRUE
+)
+
+marriage_t
+wuhan_t
+```
 
 ## Step 4: Assemble the table with `gt`
 
@@ -209,9 +210,9 @@ results_table <- group_stats %>%
       ")"
     ),
     `95% CI` = paste0(
-      format(round(ci_lo, 2), nsmall = 2),
+      format(round(ci_95_low_end, 2), nsmall = 2),
       ", ",
-      format(round(ci_hi, 2), nsmall = 2)
+      format(round(ci_95_high_end, 2), nsmall = 2)
     ),
     statistic = case_when(
       variable == "Gender" ~ as.numeric(gender_t$statistic),
@@ -261,7 +262,7 @@ Answer: Age category, Marriage, and History of visiting Wuhan are statistically 
 
 Answer: People who had visited Wuhan in the past month had significantly higher mean K6 distress scores than those who had not (18.6 vs 5.0), t(1597) = -40.9, p < 0.001.
 
-## LLM formatting practice
+## OPTIONAL: LLM formatting practice
 
 ```{r glimpse-results}
 glimpse(results_table)
@@ -269,7 +270,7 @@ glimpse(results_table)
 
 One possible extension:
 
-```{r llm-bars}
+```{r llm-bars, eval=FALSE}
 pacman::p_load(gtExtras)
 
 results_table %>%
@@ -339,3 +340,5 @@ Answer: It goes up. A smaller difference is harder to detect, so we need more pa
 # Summary
 
 The table shows no statistically significant gender difference, but age category, marriage, and history of visiting Wuhan are statistically significant. The power section shows that sample size increases when the minimum difference worth detecting gets smaller.
+</content>
+</invoke>

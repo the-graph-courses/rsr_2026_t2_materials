@@ -1,0 +1,335 @@
+---
+title: "SOLUTIONS: Replicating a publication table of group differences"
+subtitle: "COVID-19 psychological distress (K6) by characteristic"
+author: "GRAPH Courses team"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+These are the completed solutions for the week 5 exercise.
+
+# PART 1: Replicate the table
+
+## Load packages
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(readxl, dplyr, tidyr, gt, here, janitor)
+```
+
+Look at the target table before you start.
+
+```{r target-table}
+knitr::include_graphics(here("paper/table2_with_values.jpg"))
+```
+
+## Step 1: Import and label the data
+
+```{r data-preview}
+survey <- read_excel(here("data/distress_data.xlsx"))
+```
+
+```{r glimpse-data}
+glimpse(survey)
+```
+
+**Question**: How many rows and columns does the raw imported dataset have?
+
+Answer: The raw imported dataset has 1599 rows and 38 columns.
+
+**Question**: What are the variable types? Will we need to convert any variable types?
+
+Answer: The variables are imported as numeric. We need to convert the categorical variables to factors before making the table.
+
+Before calculating means and standard deviations, check for missing values. Running `summary()` on the whole dataset reports a count of missing values for each variable on the `NA's` line.
+
+```{r missing-check}
+summary(survey)
+```
+
+**Question**: Do any of the variables in the dataset have missing values?
+
+Answer: No. Every variable shows `NA's   0`, so our later `mean()` and `sd()` calculations will use all 1599 observations.
+
+```{r import}
+survey <- survey %>%
+  mutate(
+    gender = factor(gender, levels = c(0, 1), labels = c("Female", "Male")),
+    age = cut(
+      age,
+      breaks = c(-Inf, 30, 40, 50, Inf),
+      labels = c("18-30", "31-40", "41-50", ">50")
+    ),
+    marriage = factor(
+      if_else(marriage == 1, "married", "unmarried"),
+      levels = c("unmarried", "married")
+    ),
+    history_of_visiting_SEA = factor(
+      history_of_visiting_SEA,
+      levels = c(0, 1),
+      labels = c("No", "Yes")
+    )
+  ) %>%
+  select(total_scores_of_K6, gender, age, marriage, history_of_visiting_SEA)
+
+nrow(survey)
+```
+
+```{r group-checks}
+tabyl(survey, gender)
+tabyl(survey, age)
+tabyl(survey, marriage)
+tabyl(survey, history_of_visiting_SEA)
+```
+
+**Question**: How many men are in the dataset? How many people had visited Wuhan in the past month?
+
+Answer: There are 531 men. There are 326 people who had visited Wuhan in the past month.
+
+## Step 2: Descriptive stats for every group
+
+```{r reshape}
+survey_long <- survey %>%
+  pivot_longer(
+    cols = -total_scores_of_K6,
+    names_to = "variable",
+    values_to = "group"
+  )
+
+survey_long
+```
+
+```{r count-example}
+survey_long %>%
+  group_by(variable, group) %>%
+  summarise(
+    n = n()
+  )
+```
+
+```{r descriptives}
+group_stats <- survey_long %>%
+  group_by(variable, group) %>%
+  summarise(
+    n = n(),
+    mean = mean(total_scores_of_K6),
+    sd = sd(total_scores_of_K6),
+    se = sd / sqrt(n),
+    ci_95_low_end = mean - qt(0.975, df = n - 1) * se,
+    ci_95_high_end = mean + qt(0.975, df = n - 1) * se,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    variable = factor(
+      variable,
+      levels = c("gender", "age", "marriage", "history_of_visiting_SEA"),
+      labels = c("Gender", "Age category", "Marriage", "History of visiting Wuhan")
+    )
+  ) %>%
+  arrange(variable, group)
+
+group_stats
+```
+
+**Question**: For history of visiting Wuhan, which group has the higher mean distress score?
+
+Answer: The `Yes` group has the higher mean distress score. Its mean is about 18.6, compared with about 5.0 in the `No` group.
+
+## Step 3: The tests
+
+```{r tests}
+gender_t <- t.test(total_scores_of_K6 ~ gender, data = survey, var.equal = TRUE)
+
+age_aov <- aov(total_scores_of_K6 ~ age, data = survey)
+
+marriage_t <- t.test(total_scores_of_K6 ~ marriage, data = survey, var.equal = TRUE)
+
+wuhan_t <- t.test(
+  total_scores_of_K6 ~ history_of_visiting_SEA,
+  data = survey,
+  var.equal = TRUE
+)
+```
+
+```{r test-output}
+gender_t
+summary(age_aov)
+marriage_t
+wuhan_t
+```
+
+**Question**: At alpha = 0.05, is the gender difference statistically significant? Do we reject or fail to reject the null hypothesis?
+
+Answer: No. The p-value is about 0.316, which is greater than 0.05. We fail to reject the null hypothesis.
+
+**Question**: Given this decision, which kind of decision error would we worry about for the gender t-test, Type I or Type II? What would that error mean here?
+
+Answer: A Type II error. We failed to reject the null hypothesis, so the decision error we would worry about is missing a real gender difference in mean distress in the population.
+
+**Question**: For the age ANOVA, is the age difference statistically significant? What does this tell us about the groups?
+
+Answer: Yes. The p-value is less than 0.001. This tells us that at least one age-category mean differs from the others.
+
+**Question**: Given this decision, which kind of decision error would we worry about for the ANOVA, Type I or Type II? What would that error mean here?
+
+Answer: A Type I error. We rejected the null hypothesis, so the decision error we would worry about is concluding that age category is associated with mean distress when, in the population, the age-category means do not really differ.
+
+## Step 4: Assemble the table with `gt`
+
+```{r anova-extract}
+age_f <- summary(age_aov)[[1]]$`F value`[1]
+age_p <- summary(age_aov)[[1]]$`Pr(>F)`[1]
+
+age_f
+age_p
+```
+
+```{r build-table}
+results_table <- group_stats %>%
+  mutate(
+    `Mean (SD)` = paste0(
+      format(round(mean, 1), nsmall = 1),
+      " (",
+      format(round(sd, 1), nsmall = 1),
+      ")"
+    ),
+    `95% CI` = paste0(
+      format(round(ci_95_low_end, 2), nsmall = 2),
+      ", ",
+      format(round(ci_95_high_end, 2), nsmall = 2)
+    ),
+    statistic = case_when(
+      variable == "Gender" ~ as.numeric(gender_t$statistic),
+      variable == "Age category" ~ age_f,
+      variable == "Marriage" ~ as.numeric(marriage_t$statistic),
+      variable == "History of visiting Wuhan" ~ as.numeric(wuhan_t$statistic)
+    ),
+    p_value = case_when(
+      variable == "Gender" ~ gender_t$p.value,
+      variable == "Age category" ~ age_p,
+      variable == "Marriage" ~ marriage_t$p.value,
+      variable == "History of visiting Wuhan" ~ wuhan_t$p.value
+    ),
+    stat_text = as.character(round(statistic, 2)),
+    p_text = if_else(p_value < 0.001, "<0.001", as.character(round(p_value, 3)))
+  ) %>%
+  group_by(variable) %>%
+  mutate(row_in_block = row_number()) %>%
+  ungroup() %>%
+  mutate(
+    `t/F` = if_else(row_in_block == 1, stat_text, ""),
+    p = if_else(row_in_block == 1, p_text, "")
+  )
+```
+
+```{r render-table}
+results_table %>%
+  select(variable, group, `Mean (SD)`, `95% CI`, `t/F`, p) %>%
+  gt(groupname_col = "variable", rowname_col = "group") %>%
+  tab_header(title = "Psychological distress (K6) by characteristic") %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_row_groups()
+  ) %>%
+  tab_options(table.width = pct(100))
+```
+
+**Question**: Choose at least two variables and compare the table values against the raw test output from your t.test and aov functions. Which statistics did you check, and did they match?
+
+Answer: I checked the Gender t-test and the Age category ANOVA. The table shows t = -1.00 for Gender and F = 102.04 for Age category, which match the raw outputs after rounding.
+
+**Question**: Which characteristics are statistically significant at alpha = 0.05?
+
+Answer: Age category, Marriage, and History of visiting Wuhan are statistically significant. Gender is not statistically significant.
+
+**Question**: Choose one significant result and report it in plain language as you would in a results section of a paper.
+
+Answer: People who had visited Wuhan in the past month had significantly higher mean K6 distress scores than those who had not (18.6 vs 5.0), t(1597) = -40.9, p < 0.001.
+
+## LLM formatting practice
+
+```{r glimpse-results}
+glimpse(results_table)
+```
+
+One possible extension:
+
+```{r llm-bars}
+pacman::p_load(gtExtras)
+
+results_table %>%
+  mutate(mean_bar = mean) %>%
+  select(variable, group, `Mean (SD)`, mean_bar, `95% CI`, `t/F`, p) %>%
+  gt(groupname_col = "variable", rowname_col = "group") %>%
+  gtExtras::gt_plt_bar(
+    column = mean_bar,
+    keep_column = TRUE,
+    color = "#2F6B9A"
+  ) %>%
+  cols_label(mean_bar = "Mean") %>%
+  tab_header(title = "Psychological distress (K6) by characteristic")
+```
+
+# PART 2: Power and sample size for a follow-up study
+
+```{r pilot-sd}
+pilot_sd <- sd(survey$total_scores_of_K6)
+round(pilot_sd, 1)
+```
+
+## Sample size for 80% power
+
+Suppose a 2-point reduction in mean K6 score is the smallest difference worth detecting.
+
+```{r power-80}
+power_80 <- power.t.test(
+  delta = 2,
+  sd = pilot_sd,
+  sig.level = 0.05,
+  power = 0.80,
+  type = "two.sample"
+)
+
+power_80
+```
+
+How many participants are needed per group? Round up.
+
+Answer: R returns about 231.8, so we round up to 232 participants per group.
+
+**Question**: If the chance of detecting a 2-point difference is 80% with our sample size, what happens if the actual difference is 4 points? Do we have a higher or lower chance of detecting it?
+
+Answer: We have a higher chance of detecting it. Larger true differences are easier to detect.
+
+## Smaller difference
+
+Now you decide that even a 1-point difference is worth detecting.
+
+```{r power-delta-1}
+power_delta_1 <- power.t.test(
+  delta = 1,
+  sd = pilot_sd,
+  sig.level = 0.05,
+  power = 0.80,
+  type = "two.sample"
+)
+
+power_delta_1
+```
+
+Does the required sample size go up or down compared with the 2-point version? Why?
+
+Answer: It goes up. A smaller difference is harder to detect, so we need more participants.
+
+# Summary
+
+The table shows no statistically significant gender difference, but age category, marriage, and history of visiting Wuhan are statistically significant. The power section shows that sample size increases when the minimum difference worth detecting gets smaller.
