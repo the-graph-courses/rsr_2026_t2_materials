@@ -86,13 +86,13 @@ Answer: _______
 
 Answer: _______
 
-Before calculating means and standard deviations, check whether the outcome variable has any missing values. For a numeric variable, `summary()` reports the count of missing values on the `NA's` line.
+Before calculating means and standard deviations, check for missing values. Running `summary()` on the whole dataset reports a count of missing values for each variable on the `NA's` line.
 
 ```{r missing-check}
-summary(survey$total_scores_of_K6)
+summary(survey)
 ```
 
-**Question**: Does `total_scores_of_K6` have any missing values?
+**Question**: Does `total_scores_of_K6` have any missing values? Do any other variables in the dataset have missing values?
 
 Answer: _______
 
