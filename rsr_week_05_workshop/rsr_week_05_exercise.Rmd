@@ -367,7 +367,7 @@ Practice using LLMs for formatting by asking your favorite LLM for a version of 
 glimpse(results_table)
 ```
 
-Then write a prompt that includes the object name, the output from the glimpse function showing the structure of the data, and the package you want to use.
+Then write a prompt that includes the object name, the output from the glimpse function showing the structure of the data, the current `gt` code from the `render-table` chunk above, and the package you want to use.
 
 ```{r llm-bars}
 # pacman::p_load(gtExtras)
