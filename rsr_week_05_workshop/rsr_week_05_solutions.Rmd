@@ -23,7 +23,7 @@ These are the completed solutions for the week 5 exercise.
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(readxl, tidyverse, gt, here, janitor)
+pacman::p_load(readxl, tidyverse, gt, gtsummary, here, janitor)
 
 pacman::p_load_current_gh("the-graph-courses/inspectdf")
 ```
@@ -262,7 +262,7 @@ Answer: Age category, Marriage, and History of visiting Wuhan are statistically 
 
 Answer: People who had visited Wuhan in the past month had significantly higher mean K6 distress scores than those who had not (18.6 vs 5.0), t(1597) = -40.9, p < 0.001.
 
-## OPTIONAL: LLM formatting practice
+## LLM formatting practice
 
 ```{r glimpse-results}
 glimpse(results_table)
@@ -286,7 +286,29 @@ results_table %>%
   tab_header(title = "Psychological distress (K6) by characteristic")
 ```
 
+## Side note: gtsummary
+
+It is worth knowing that the `gtsummary` package can get us some of the way there quickly. The `tbl_continuous()` function is useful when we have one continuous outcome and can give us the group means and standard deviations, plus p-values. However it is tricky to get the 95% confidence intervals or the t/F statistic column in the same format as the paper. Run the code below to see an example `tbl_continuous()` output.
+
+```{r gtsummary-table}
+survey %>%
+  tbl_continuous(
+    variable = total_scores_of_K6,
+    include = c(gender, age, marriage, history_of_visiting_SEA),
+    statistic = ~ "{mean} ({sd})",
+    label = list(
+      gender ~ "Gender",
+      age ~ "Age category",
+      marriage ~ "Marriage",
+      history_of_visiting_SEA ~ "History of visiting Wuhan"
+    )
+  ) %>%
+  add_p()
+```
+
 # PART 2: Power and sample size for a follow-up study
+
+Suppose this survey is pilot data for a follow-up randomized study. You want to test whether a stress-management program reduces K6 distress compared with a control group.
 
 ```{r pilot-sd}
 pilot_sd <- sd(survey$total_scores_of_K6)
@@ -295,7 +317,7 @@ round(pilot_sd, 1)
 
 ## Sample size for 80% power
 
-Suppose a 2-point reduction in mean K6 score is the smallest difference worth detecting.
+Suppose a 2-point lower mean K6 score in the intervention group compared with the control group is the smallest difference worth detecting.
 
 ```{r power-80}
 power_80 <- power.t.test(
@@ -309,7 +331,7 @@ power_80 <- power.t.test(
 power_80
 ```
 
-How many participants are needed per group? Round up.
+**Question**: How many participants are needed per group? Round up.
 
 Answer: R returns about 231.8, so we round up to 232 participants per group.
 
@@ -333,7 +355,7 @@ power_delta_1 <- power.t.test(
 power_delta_1
 ```
 
-Does the required sample size go up or down compared with the 2-point version? Why?
+**Question**: Does the required sample size go up or down compared with the 2-point version? Why?
 
 Answer: It goes up. R returns about 924.4, so we round up to 925 participants per group. A smaller difference is harder to detect, so we need more participants.
 

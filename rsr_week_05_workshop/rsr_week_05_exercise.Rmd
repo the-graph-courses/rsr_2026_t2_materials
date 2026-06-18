@@ -58,7 +58,7 @@ This exercise has two parts:
 
 ## Load packages
 
-Fill in the blanks in the code below to load the packages we will need: `readxl`, `tidyverse`, `gt`, `here`, and `janitor`.
+Fill in the blanks in the code below to load the packages we will need: `readxl`, `tidyverse`, `gt`, `gtsummary`, `here`, and `janitor`.
 
 We also load `inspectdf`, which we will use to visualize the variables. The CRAN version of this package has been removed, so we install the GRAPH Courses version from GitHub with `p_load_current_gh()`.
 
@@ -274,7 +274,7 @@ wuhan_t
 
 ## Step 4: Assemble the table with `gt`
 
-The code below turns your summaries and tests into a publication-style table.
+The code below turns your summaries and tests into a publication-style table that more closely matches the paper.
 
 We have filled this section in for you. We think that when doing statistical research projects in the age of LLMs, you should focus first on checking that the statistical code and outputs are correct. You can then use tools such as LLMs to help with table formatting, as long as you verify that the formatted table matches the results from the statistical code that you either wrote by hand or read through very carefully.
 
@@ -374,9 +374,31 @@ Then write a prompt that includes the object name, the output from the glimpse f
 # Paste and test your LLM-generated code here.
 ```
 
+
+## Side note: gtsummary
+
+It is worth knowing that the `gtsummary` package can get us some of the way there quickly. The `tbl_continuous()` function is useful when we have one continuous outcome and can give us the group means and standard deviations, plus p-values. However it is tricky to get the 95% confidence intervals or the t/F statistic column in the same format as the paper. Run the code below to see an example `tbl_continuous()` output.
+
+```{r gtsummary-table}
+survey %>%
+  tbl_continuous(
+    variable = total_scores_of_K6,
+    include = c(gender, age, marriage, history_of_visiting_SEA),
+    statistic = ~ "{mean} ({sd})",
+    label = list(
+      gender ~ "Gender",
+      age ~ "Age category",
+      marriage ~ "Marriage",
+      history_of_visiting_SEA ~ "History of visiting Wuhan"
+    )
+  ) %>%
+  add_p()
+```
+
+
 # PART 2 OPTIONAL UNGRADED CHALLENGE: Power and sample size for a follow-up study
 
-Suppose this survey is pilot data. You now want to run a two-arm intervention study to reduce K6 distress.
+Suppose this survey is pilot data for a follow-up randomized study. You want to test whether a stress-management program reduces K6 distress compared with a control group.
 
 Before collecting new data, you need to estimate how many participants per group are required.
 We will use `power.t.test()` and the pilot standard deviation from this dataset.
@@ -388,7 +410,7 @@ round(pilot_sd, 1)
 
 ## Sample size for 80% power
 
-Suppose a 2-point reduction in mean K6 score is the smallest difference worth detecting.
+Suppose a 2-point lower mean K6 score in the intervention group compared with the control group is the smallest difference worth detecting.
 
 ```{r power-80}
 power.t.test(
@@ -400,7 +422,7 @@ power.t.test(
 )
 ```
 
-How many participants are needed per group? Round up.
+**Question**: How many participants are needed per group? Round up.
 
 Your answer:
 
@@ -423,6 +445,6 @@ power.t.test(
 )
 ```
 
-Does the required sample size go up or down compared with the 2-point version? Why?
+**Question**: Does the required sample size go up or down compared with the 2-point version? Why?
 
 Your answer:
