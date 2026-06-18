@@ -35,12 +35,14 @@ knitr::include_graphics(here("paper/table2_with_values.jpg"))
 ## Step 1: Import and label the data
 
 ```{r data-preview}
-survey_raw <- read_excel(here("data/distress_data.xlsx"))
-
-glimpse(survey_raw)
+survey <- read_excel(here("data/distress_data.xlsx"))
 ```
 
-**Question**: How many rows and columns does the dataset have?
+```{r glimpse-data}
+glimpse(survey)
+```
+
+**Question**: How many rows and columns does the raw imported dataset have?
 
 Answer: The dataset has 1599 rows and 38 columns.
 
@@ -48,10 +50,19 @@ Answer: The dataset has 1599 rows and 38 columns.
 
 Answer: The variables are imported as numeric. We need to convert the categorical variables to factors before making the table.
 
+Before calculating means and standard deviations, check whether the outcome variable has any missing values. For a numeric variable, `summary()` reports the count of missing values on the `NA's` line.
+
+```{r missing-check}
+summary(survey$total_scores_of_K6)
+```
+
+**Question**: Does `total_scores_of_K6` have any missing values?
+
+Answer: No. The `NA's` line shows 0 missing values, so our later `mean()` and `sd()` calculations will use all 1599 observations.
+
 ```{r import}
-survey <- read_excel(here("data/distress_data.xlsx")) %>%
-  transmute(
-    total_scores_of_K6,
+survey <- survey %>%
+  mutate(
     Gender = factor(gender, levels = c(0, 1), labels = c("Female", "Male")),
     `Age category` = cut(
       age,
@@ -67,7 +78,8 @@ survey <- read_excel(here("data/distress_data.xlsx")) %>%
       levels = c(0, 1),
       labels = c("No", "Yes")
     )
-  )
+  ) %>%
+  select(total_scores_of_K6, Gender, `Age category`, Marriage, `History of visiting Wuhan`)
 
 nrow(survey)
 ```
@@ -165,17 +177,17 @@ wuhan_t
 
 Answer: No. The p-value is about 0.316, which is greater than 0.05. We fail to reject the null hypothesis.
 
-**Question**: For the gender t-test, which error is possible, Type I or Type II? What would that error mean here?
+**Question**: Given this decision, which kind of decision error would we worry about for the gender t-test, Type I or Type II? What would that error mean here?
 
-Answer: A Type II error is possible. It would mean that there is a real gender difference in mean distress in the population, but this study failed to detect it.
+Answer: A Type II error. We failed to reject the null hypothesis, so the decision error we would worry about is missing a real gender difference in mean distress in the population.
 
 **Question**: For the age ANOVA, is the age difference statistically significant? What does this tell us about the groups?
 
 Answer: Yes. The p-value is less than 0.001. This tells us that at least one age-category mean differs from the others.
 
-**Question**: Which error is possible here for the ANOVA, Type I or Type II? What would that error mean here?
+**Question**: Given this decision, which kind of decision error would we worry about for the ANOVA, Type I or Type II? What would that error mean here?
 
-Answer: A Type I error is possible because we reject the null hypothesis. It would mean that we concluded age category is associated with mean distress when, in the population, the age-category means do not really differ.
+Answer: A Type I error. We rejected the null hypothesis, so the decision error we would worry about is concluding that age category is associated with mean distress when, in the population, the age-category means do not really differ.
 
 ## Step 4: Assemble the table with `gt`
 
@@ -257,7 +269,7 @@ glimpse(results_table)
 
 One possible extension:
 
-```{r llm-bars, eval=FALSE}
+```{r llm-bars}
 pacman::p_load(gtExtras)
 
 results_table %>%

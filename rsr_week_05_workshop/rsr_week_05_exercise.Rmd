@@ -78,11 +78,21 @@ survey <- read_excel(here("data/distress_data.xlsx"))
 ________(survey)
 ```
 
-**Question**: How many rows and columns does the dataset have?
+**Question**: How many rows and columns does the raw imported dataset have?
 
 Answer: _______ 
 
 **Question**: What are the variable types? Will we need to convert any variable types?
+
+Answer: _______
+
+Before calculating means and standard deviations, check whether the outcome variable has any missing values. For a numeric variable, `summary()` reports the count of missing values on the `NA's` line.
+
+```{r missing-check}
+summary(survey$total_scores_of_K6)
+```
+
+**Question**: Does `total_scores_of_K6` have any missing values?
 
 Answer: _______
 
@@ -96,7 +106,7 @@ Fill in any blanks in the code below, then run the code to check that the datase
 
 Remember that you can check the demo code for examples of how to do similar transformations.
 
-```{r import, eval=FALSE}
+```{r import}
 survey <- survey %>%
   mutate(
     # convert the gender variable to a factor with two levels
@@ -124,11 +134,11 @@ survey <- survey %>%
 nrow(survey)
 ```
 
-Checkpoint: The dataset should have 1599 rows and 5 columns.
+Checkpoint: After selecting variables, the dataset should have 1599 rows and 5 columns.
 
 Call the tabyl function to check the four categorical variables of Gender, Age category, Marriage, and History of visiting Wuhan before continuing.
 
-```{r group-checks, eval=FALSE}
+```{r group-checks}
 tabyl(survey, Gender)
 tabyl(survey,`Age category`)
 tabyl(survey,________) # Marriage
@@ -145,7 +155,7 @@ Now, we will calculate the average K6 score by each of the four categorical vari
 
 First, we reshape the data to long form so each row is one person in one group of one characteristic.
 
-```{r reshape, eval=FALSE}
+```{r reshape}
 survey_long <- survey %>%
   pivot_longer(
     cols = -total_scores_of_K6,
@@ -158,7 +168,7 @@ survey_long
 
 Using this, we can easily calculate the summary statistics for every group in one pipeline. For example, below we calculate the number of people in each group.
 
-```{r count-example, eval=FALSE}
+```{r count-example}
 survey_long %>%
   group_by(variable, group) %>%
   summarise(
@@ -168,7 +178,7 @@ survey_long %>%
 
 Now let's do something like that but for all the descriptive statistics we want to calculate:
 
-```{r descriptives, eval=FALSE}
+```{r descriptives}
 group_stats <- survey_long %>%
   group_by(variable, group) %>%
   summarise(
@@ -211,7 +221,7 @@ In these tests, we will use `var.equal = TRUE`, which assumes equal variance bet
 
 Tip: variable names that contain spaces, like `Age category` and `History of visiting Wuhan`, must be wrapped in backticks when you use them in a formula.
 
-```{r tests, eval=FALSE}
+```{r tests}
 gender_t <- t.test(total_scores_of_K6 ~ Gender, data = survey, var.equal = TRUE)
 
 age_aov <- aov(total_scores_of_K6 ~ _____, data = survey)
@@ -225,7 +235,7 @@ wuhan_t <- _____(_________________)
 
 Look at each output.
 
-```{r test-output, eval=FALSE}
+```{r test-output}
 gender_t
 summary(age_aov)
 marriage_t
@@ -236,7 +246,7 @@ wuhan_t
 
 Your answer:
 
-**Question**: For the gender t-test, which error is possible, Type I or Type II? What would that error mean here?
+**Question**: Given this decision, which kind of decision error would we worry about for the gender t-test, Type I or Type II? What would that error mean here?
 
 Your answer:
 
@@ -244,7 +254,7 @@ Your answer:
 
 Your answer:
 
-**Question**: Which error is possible here for the ANOVA, Type I or Type II? What would that error mean here?
+**Question**: Given this decision, which kind of decision error would we worry about for the ANOVA, Type I or Type II? What would that error mean here?
 
 Your answer:
 
@@ -258,7 +268,7 @@ You do not need to edit these chunks. Run them and check that the t/F and p valu
 
 First, we extract the ANOVA F statistic and p-value.
 
-```{r anova-extract, eval=FALSE}
+```{r anova-extract}
 age_f <- summary(age_aov)[[1]]$`F value`[1]
 age_p <- summary(age_aov)[[1]]$`Pr(>F)`[1]
 
@@ -268,7 +278,7 @@ age_p
 
 Then, we assemble the table with the `gt` package.
 
-```{r build-table, eval=FALSE}
+```{r build-table}
 results_table <- group_stats %>%
   mutate(
     `Mean (SD)` = paste0(
@@ -309,7 +319,7 @@ results_table <- group_stats %>%
 
 Now, we render the table with the `gt` package.
 
-```{r render-table, eval=FALSE}
+```{r render-table}
 results_table %>%
   select(variable, group, `Mean (SD)`, `95% CI`, `t/F`, p) %>%
   gt(groupname_col = "variable", rowname_col = "group") %>%
@@ -341,13 +351,13 @@ Practice using LLMs for formatting by asking for a version of the table that add
 
 Before asking, run:
 
-```{r glimpse-results, eval=FALSE}
+```{r glimpse-results}
 glimpse(results_table)
 ```
 
 Then write a prompt that includes the object name, the column containing the means, and the package you want to use.
 
-```{r llm-bars, eval=FALSE}
+```{r llm-bars}
 # pacman::p_load(gtExtras)
 # Paste and test your LLM-generated code here.
 ```
@@ -359,7 +369,7 @@ Suppose this survey is pilot data. You now want to run a two-arm intervention st
 Before collecting new data, you need to estimate how many participants per group are required.
 We will use `power.t.test()` and the pilot standard deviation from this dataset.
 
-```{r pilot-sd, eval=FALSE}
+```{r pilot-sd}
 pilot_sd <- sd(survey$total_scores_of_K6)
 round(pilot_sd, 1)
 ```
@@ -368,7 +378,7 @@ round(pilot_sd, 1)
 
 Suppose a 2-point reduction in mean K6 score is the smallest difference worth detecting.
 
-```{r power-80, eval=FALSE}
+```{r power-80}
 power.t.test(
   delta = _____,
   sd = _____,
@@ -391,7 +401,7 @@ Your answer:
 
 Now you decide that even a 1-point difference is worth detecting.
 
-```{r power-delta-1, eval=FALSE}
+```{r power-delta-1}
 power.t.test(
   delta = _____,
   sd = _____,
