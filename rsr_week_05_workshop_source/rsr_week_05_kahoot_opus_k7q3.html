@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 5 Warm-up Quiz</title>
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#f7f8fb;color:#1c2230;line-height:1.45;font-size:15px}
+  .wrap{max-width:820px;margin:0 auto;padding:24px 20px 60px}
+  h1{font-size:1.5rem;margin:0 0 2px}
+  .sub{color:#5a6275;margin:0 0 18px;font-size:.9rem}
+  .controls{margin:0 0 18px}
+  button{background:#3b5bdb;color:#fff;border:0;padding:7px 14px;border-radius:7px;font-size:.85rem;cursor:pointer;margin-right:8px}
+  button.sec{background:#e3e7f1;color:#1c2230}
+  .q{background:#fff;border:1px solid #e2e6ef;border-radius:10px;padding:14px 18px;margin:12px 0}
+  .qh{font-weight:600;margin:0 0 6px}
+  .qh .n{color:#3b5bdb;margin-right:6px}
+  .tag{font-size:.7rem;text-transform:uppercase;letter-spacing:.6px;color:#8089a0;font-weight:600}
+  ol.opts{list-style:none;margin:8px 0 0;padding:0}
+  ol.opts li{padding:7px 11px;border:1px solid #e2e6ef;border-radius:7px;margin:5px 0;cursor:pointer;background:#fbfcfe}
+  ol.opts li:hover{background:#eef2fd}
+  ol.opts li.correct{border-color:#2f9e44;background:#ebfbee}
+  ol.opts li .lbl{font-weight:600;color:#8089a0;margin-right:7px}
+  .ans{display:none;margin-top:9px;padding:9px 12px;background:#f1f6ff;border-left:3px solid #3b5bdb;border-radius:0 7px 7px 0;font-size:.92rem}
+  .ans.show{display:block}
+  .ans b{color:#2f6b2f}
+  code{background:#eef0f6;padding:1px 5px;border-radius:4px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.84em}
+  pre{background:#1c2230;color:#e7ecf7;padding:10px 12px;border-radius:8px;overflow:auto;font-size:.78rem;
+    font-family:"SF Mono",Menlo,Consolas,monospace;margin:8px 0}
+  pre .c{color:#8b94b3} pre .k{color:#ffd479} pre .s{color:#9be6c0}
+  figure{margin:10px 0;text-align:center}
+  figcaption{color:#6b7289;font-size:.78rem;margin-top:3px}
+  svg{max-width:100%;height:auto}
+  table.out{border-collapse:collapse;font-family:"SF Mono",Menlo,monospace;font-size:.76rem;margin:8px 0;width:100%}
+  table.out td,table.out th{border:1px solid #d8dde8;padding:4px 8px;text-align:right}
+  table.out th{background:#f0f2f8}
+  table.out td.l,table.out th.l{text-align:left}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Week 5 Warm-up Quiz</h1>
+  <p class="sub">t-tests, ANOVA, Type I/II errors, sample size and power. Prep for the K6 distress table exercise.</p>
+  <div class="controls">
+    <button onclick="toggle(true)">Show all answers</button>
+    <button class="sec" onclick="toggle(false)">Hide all answers</button>
+  </div>
+
+  <!-- Q1 -->
+  <section class="q" data-c="2">
+    <p class="qh"><span class="n">1.</span><span class="tag">t-test vs ANOVA</span></p>
+    <div class="qh" style="font-weight:400">What is the main difference between a t-test and a one-way ANOVA?</div>
+    <figure>
+      <svg viewBox="0 0 460 110" width="460" height="110" role="img" aria-label="t-test compares two groups, ANOVA compares many">
+        <text x="10" y="18" font-size="12" fill="#3b5bdb" font-weight="700">t-test</text>
+        <circle cx="40" cy="55" r="18" fill="#a5b4f0"/><circle cx="90" cy="55" r="18" fill="#a5b4f0"/>
+        <text x="65" y="95" font-size="11" fill="#5a6275" text-anchor="middle">2 groups</text>
+        <line x1="150" y1="20" x2="150" y2="95" stroke="#d8dde8"/>
+        <text x="175" y="18" font-size="12" fill="#2f9e44" font-weight="700">ANOVA</text>
+        <circle cx="205" cy="55" r="16" fill="#9be0b4"/><circle cx="250" cy="55" r="16" fill="#9be0b4"/>
+        <circle cx="295" cy="55" r="16" fill="#9be0b4"/><circle cx="340" cy="55" r="16" fill="#9be0b4"/>
+        <text x="272" y="95" font-size="11" fill="#5a6275" text-anchor="middle">3 or more groups</text>
+      </svg>
+      <figcaption>Same logic (signal over noise), different number of groups.</figcaption>
+    </figure>
+    <ol class="opts">
+      <li><span class="lbl">A</span>ANOVA needs normal data, but a t-test does not</li>
+      <li><span class="lbl">B</span>A t-test is for two groups, ANOVA is for more groups</li>
+      <li><span class="lbl">C</span>A t-test is for paired data, ANOVA is for unpaired data</li>
+    </ol>
+    <div class="ans"><b>B.</b> A t-test compares two means; ANOVA extends the same signal-over-noise idea to three or more. In the exercise you use a t-test for Gender, Marriage and Wuhan history, and an ANOVA for Age category (4 groups).</div>
+  </section>
+
+  <!-- Q2 -->
+  <section class="q" data-c="3">
+    <p class="qh"><span class="n">2.</span><span class="tag">shared logic</span></p>
+    <div class="qh" style="font-weight:400">Both tests reduce the data to one statistic, which is then turned into a...</div>
+    <ol class="opts">
+      <li><span class="lbl">A</span>standard deviation</li>
+      <li><span class="lbl">B</span>box plot</li>
+      <li><span class="lbl">C</span>p-value</li>
+    </ol>
+    <div class="ans"><b>C.</b> A t-test gives a t-statistic and ANOVA gives an F-statistic, and both map to a p-value. If the p-value is below alpha (usually 0.05), we reject the null.</div>
+  </section>
+
+  <!-- Q3 -->
+  <section class="q" data-c="1">
+    <p class="qh"><span class="n">3.</span><span class="tag">signal and noise</span></p>
+    <div class="qh" style="font-weight:400">The t-statistic is signal divided by noise. What makes it larger (and the p-value smaller)?</div>
+    <figure>
+      <svg viewBox="0 0 460 130" width="460" height="130" role="img" aria-label="t equals gap between means over standard error">
+        <text x="230" y="30" text-anchor="middle" font-size="14" fill="#2f6b2f">gap between the means  (signal)</text>
+        <line x1="70" y1="50" x2="390" y2="50" stroke="#1c2230" stroke-width="2"/>
+        <text x="230" y="78" text-anchor="middle" font-size="14" fill="#b8860b">standard error  (noise)</text>
+        <text x="400" y="62" font-size="22" fill="#3b5bdb">= t</text>
+        <text x="70" y="112" font-size="11" fill="#5a6275">bigger gap or smaller noise pushes t away from 0</text>
+      </svg>
+    </figure>
+    <ol class="opts">
+      <li><span class="lbl">A</span>A bigger gap between means, or less noise</li>
+      <li><span class="lbl">B</span>A bigger standard error</li>
+      <li><span class="lbl">C</span>A higher chosen alpha</li>
+    </ol>
+    <div class="ans"><b>A.</b> A wider separation of the means (top) or a smaller standard error (bottom) moves t further from zero, which shrinks the p-value. Alpha is just the cutoff and does not change t.</div>
+  </section>
+
+  <!-- Q4 -->
+  <section class="q" data-c="2">
+    <p class="qh"><span class="n">4.</span><span class="tag">choosing the test</span></p>
+    <div class="qh" style="font-weight:400">We compare mean K6 distress for people who did vs did not visit Wuhan. These are two separate groups of different people. Which test fits?</div>
+    <figure>
+      <svg viewBox="0 0 460 95" width="460" height="95" role="img" aria-label="three test types">
+        <rect x="10" y="20" width="135" height="55" rx="6" fill="#eef2fd" stroke="#c3cdf2"/>
+        <text x="77" y="40" text-anchor="middle" font-size="11" font-weight="700" fill="#3b5bdb">one-sample</text>
+        <text x="77" y="58" text-anchor="middle" font-size="10" fill="#5a6275">group vs a</text>
+        <text x="77" y="70" text-anchor="middle" font-size="10" fill="#5a6275">fixed target</text>
+        <rect x="160" y="20" width="135" height="55" rx="6" fill="#ebfbee" stroke="#9bd6a8"/>
+        <text x="227" y="40" text-anchor="middle" font-size="11" font-weight="700" fill="#2f9e44">two-sample</text>
+        <text x="227" y="58" text-anchor="middle" font-size="10" fill="#5a6275">two separate</text>
+        <text x="227" y="70" text-anchor="middle" font-size="10" fill="#5a6275">groups</text>
+        <rect x="310" y="20" width="140" height="55" rx="6" fill="#fff4e6" stroke="#ffd8a8"/>
+        <text x="380" y="40" text-anchor="middle" font-size="11" font-weight="700" fill="#b8860b">paired</text>
+        <text x="380" y="58" text-anchor="middle" font-size="10" fill="#5a6275">same people,</text>
+        <text x="380" y="70" text-anchor="middle" font-size="10" fill="#5a6275">measured twice</text>
+      </svg>
+    </figure>
+    <ol class="opts">
+      <li><span class="lbl">A</span>One-sample t-test</li>
+      <li><span class="lbl">B</span>Two-sample t-test</li>
+      <li><span class="lbl">C</span>Paired t-test</li>
+    </ol>
+    <div class="ans"><b>B.</b> Two separate groups of different people means a two-sample (independent) t-test. It is not paired (no before and after on the same person) and not one-sample (no fixed target value).</div>
+  </section>
+
+  <!-- Q5 -->
+  <section class="q" data-c="2">
+    <p class="qh"><span class="n">5.</span><span class="tag">reading t output</span></p>
+    <div class="qh" style="font-weight:400">From this gender t-test, what do we conclude at alpha = 0.05?</div>
+    <pre>data:  total_scores_of_K6 by Gender
+<span class="k">t = -2.86</span>,  df = 1597,  <span class="k">p-value = 0.0043</span>
+95 percent confidence interval:  <span class="s">-1.41  -0.26</span>
+mean Female = 7.9     mean Male = 8.7</pre>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Fail to reject the null; the means look equal</li>
+      <li><span class="lbl">B</span>Reject the null; the mean scores differ</li>
+      <li><span class="lbl">C</span>The result is invalid because t is negative</li>
+    </ol>
+    <div class="ans"><b>B.</b> p = 0.0043 is below 0.05, and the confidence interval (-1.41, -0.26) excludes 0, so both agree. The negative sign only reflects the group order (Female minus Male); its size is what matters, not its sign.</div>
+  </section>
+
+  <!-- Q6 -->
+  <section class="q" data-c="1">
+    <p class="qh"><span class="n">6.</span><span class="tag">reading ANOVA output</span></p>
+    <div class="qh" style="font-weight:400">In this Age-category ANOVA, which value is the p-value?</div>
+    <table class="out">
+      <tr><th class="l"></th><th>Df</th><th>Sum Sq</th><th>Mean Sq</th><th>F value</th><th>Pr(&gt;F)</th></tr>
+      <tr><td class="l">Age category</td><td>3</td><td>612</td><td>204.0</td><td>9.8</td><td>2.1e-06</td></tr>
+      <tr><td class="l">Residuals</td><td>1595</td><td>33215</td><td>20.8</td><td></td><td></td></tr>
+    </table>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Pr(&gt;F) = 2.1e-06</li>
+      <li><span class="lbl">B</span>F value = 9.8</li>
+      <li><span class="lbl">C</span>Df = 3</li>
+    </ol>
+    <div class="ans"><b>A.</b> The p-value lives in the <code>Pr(&gt;F)</code> column. Here it is 0.0000021, far below 0.05, so we reject the null that all four age-group means are equal. (Note F = 204.0 / 20.8, which is about 9.8.)</div>
+  </section>
+
+  <!-- Q7 -->
+  <section class="q" data-c="3">
+    <p class="qh"><span class="n">7.</span><span class="tag">what ANOVA tells you</span></p>
+    <div class="qh" style="font-weight:400">The age ANOVA is significant. What does that tell us?</div>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Every age group differs from every other group</li>
+      <li><span class="lbl">B</span>The oldest group has the highest distress</li>
+      <li><span class="lbl">C</span>At least one age group differs from the rest</li>
+    </ol>
+    <div class="ans"><b>C.</b> ANOVA is an omnibus test: it flags that some difference exists but not which groups or in which direction. To find which pairs differ you run a follow-up such as <code>TukeyHSD()</code>.</div>
+  </section>
+
+  <!-- Q8 -->
+  <section class="q" data-c="2">
+    <p class="qh"><span class="n">8.</span><span class="tag">Type I error</span></p>
+    <div class="qh" style="font-weight:400">What is a Type I error?</div>
+    <figure>
+      <svg viewBox="0 0 420 150" width="420" height="150" role="img" aria-label="decision by truth grid">
+        <text x="195" y="14" font-size="10" fill="#5a6275" text-anchor="middle">no real effect</text>
+        <text x="335" y="14" font-size="10" fill="#5a6275" text-anchor="middle">real effect exists</text>
+        <text x="60" y="48" font-size="10" fill="#5a6275" text-anchor="middle">Reject null</text>
+        <text x="60" y="105" font-size="10" fill="#5a6275" text-anchor="middle">Keep null</text>
+        <rect x="120" y="25" width="140" height="48" fill="#ffe3e3" stroke="#e2445c"/>
+        <rect x="265" y="25" width="140" height="48" fill="#ebfbee" stroke="#2f9e44"/>
+        <rect x="120" y="78" width="140" height="48" fill="#ebfbee" stroke="#2f9e44"/>
+        <rect x="265" y="78" width="140" height="48" fill="#fff4e6" stroke="#b8860b"/>
+        <text x="190" y="46" font-size="11" font-weight="700" fill="#c92a3b" text-anchor="middle">Type I</text>
+        <text x="190" y="62" font-size="10" fill="#c92a3b" text-anchor="middle">false positive</text>
+        <text x="335" y="53" font-size="11" fill="#2f9e44" text-anchor="middle">correct</text>
+        <text x="190" y="106" font-size="11" fill="#2f9e44" text-anchor="middle">correct</text>
+        <text x="335" y="99" font-size="11" font-weight="700" fill="#b8860b" text-anchor="middle">Type II</text>
+        <text x="335" y="115" font-size="10" fill="#b8860b" text-anchor="middle">false negative</text>
+      </svg>
+      <figcaption>Type I has one stroke and is a false Positive. Type II has two strokes and is a false Negative.</figcaption>
+    </figure>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Failing to detect a real effect</li>
+      <li><span class="lbl">B</span>Claiming an effect that is not really there</li>
+      <li><span class="lbl">C</span>Picking the wrong test for your data</li>
+    </ol>
+    <div class="ans"><b>B.</b> A Type I error rejects a true null: a false positive, like convicting an innocent person. Its probability is alpha. Missing a real effect (option A) is a Type II error.</div>
+  </section>
+
+  <!-- Q9 -->
+  <section class="q" data-c="3">
+    <p class="qh"><span class="n">9.</span><span class="tag">which error is possible</span></p>
+    <div class="qh" style="font-weight:400">The gender test was significant, so we rejected the null. Which error could we be making?</div>
+    <ol class="opts">
+      <li><span class="lbl">A</span>A Type II error, missing a real effect</li>
+      <li><span class="lbl">B</span>No error is possible once a result is significant</li>
+      <li><span class="lbl">C</span>A Type I error, a false positive</li>
+    </ol>
+    <div class="ans"><b>C.</b> When you reject the null, the risk is a false positive (Type I): maybe there is truly no difference and this sample was unlucky. You can only make a Type II error when you fail to reject.</div>
+  </section>
+
+  <!-- Q10 -->
+  <section class="q" data-c="2">
+    <p class="qh"><span class="n">10.</span><span class="tag">multiple testing</span></p>
+    <div class="qh" style="font-weight:400">With 4 age groups, how many separate pairwise t-tests would cover every pair?</div>
+    <figure>
+      <svg viewBox="0 0 300 120" width="300" height="120" role="img" aria-label="six pairwise comparisons among four groups">
+        <circle cx="80" cy="30" r="13" fill="#a5b4f0"/><circle cx="220" cy="30" r="13" fill="#a5b4f0"/>
+        <circle cx="80" cy="95" r="13" fill="#a5b4f0"/><circle cx="220" cy="95" r="13" fill="#a5b4f0"/>
+        <g stroke="#e2445c" stroke-width="1.5">
+          <line x1="80" y1="30" x2="220" y2="30"/><line x1="80" y1="95" x2="220" y2="95"/>
+          <line x1="80" y1="30" x2="80" y2="95"/><line x1="220" y1="30" x2="220" y2="95"/>
+          <line x1="80" y1="30" x2="220" y2="95"/><line x1="220" y1="30" x2="80" y2="95"/>
+        </g>
+        <text x="150" y="115" font-size="11" fill="#5a6275" text-anchor="middle">4 groups, 6 connecting lines</text>
+      </svg>
+    </figure>
+    <ol class="opts">
+      <li><span class="lbl">A</span>4</li>
+      <li><span class="lbl">B</span>6</li>
+      <li><span class="lbl">C</span>12</li>
+    </ol>
+    <div class="ans"><b>B.</b> Four groups give 6 pairs. That is why we prefer a single ANOVA over six separate t-tests, as the next question shows.</div>
+  </section>
+
+  <!-- Q11 -->
+  <section class="q" data-c="3">
+    <p class="qh"><span class="n">11.</span><span class="tag">false positives pile up</span></p>
+    <div class="qh" style="font-weight:400">Run those 6 t-tests at alpha = 0.05. Roughly what is the chance of at least one false positive?</div>
+    <figure>
+      <svg viewBox="0 0 420 130" width="420" height="130" role="img" aria-label="false positive risk grows with number of tests">
+        <line x1="40" y1="105" x2="410" y2="105" stroke="#c3cad8"/>
+        <line x1="40" y1="20" x2="40" y2="105" stroke="#c3cad8"/>
+        <text x="20" y="24" font-size="9" fill="#5a6275">30%</text>
+        <rect x="80"  y="97" width="44" height="8"  fill="#2f9e44"/>
+        <rect x="200" y="82" width="44" height="23" fill="#b8860b"/>
+        <rect x="320" y="63" width="44" height="42" fill="#e2445c"/>
+        <text x="102" y="120" font-size="10" fill="#5a6275" text-anchor="middle">1 test</text>
+        <text x="222" y="120" font-size="10" fill="#5a6275" text-anchor="middle">3 tests</text>
+        <text x="342" y="120" font-size="10" fill="#5a6275" text-anchor="middle">6 tests</text>
+        <text x="102" y="92" font-size="10" fill="#2f9e44" text-anchor="middle">5%</text>
+        <text x="222" y="77" font-size="10" fill="#b8860b" text-anchor="middle">14%</text>
+        <text x="342" y="58" font-size="10" fill="#e2445c" text-anchor="middle">26%</text>
+      </svg>
+      <figcaption>Risk = 1 minus 0.95 to the power of the number of tests.</figcaption>
+    </figure>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Still 5%</li>
+      <li><span class="lbl">B</span>About 1%</li>
+      <li><span class="lbl">C</span>About 26%</li>
+    </ol>
+    <div class="ans"><b>C.</b> 1 minus 0.95 to the 6th power is about 0.26. Running many tests inflates the false-positive rate, so you would likely find a "significant" pair by chance even if no groups truly differ. ANOVA tests all groups at once and keeps the rate near 5%.</div>
+  </section>
+
+  <!-- Q12 -->
+  <section class="q" data-c="2">
+    <p class="qh"><span class="n">12.</span><span class="tag">why calculate sample size</span></p>
+    <div class="qh" style="font-weight:400">You give R the four values below and leave out n. What does <code>power.t.test()</code> give back?</div>
+    <pre><span class="k">power.t.test</span>(delta = 2, sd = 4.6, sig.level = 0.05, power = 0.80)
+<span class="c"># delta = difference worth detecting, sd = spread</span>
+<span class="c"># sig.level = false-positive rate, power = chance to detect</span></pre>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Proof that the intervention works</li>
+      <li><span class="lbl">B</span>The number of people needed per group</li>
+      <li><span class="lbl">C</span>The p-value your study will get</li>
+    </ol>
+    <div class="ans"><b>B.</b> You supply delta, sd, sig.level and power, and R solves for n, the sample size per group. Too few people leaves you underpowered and you miss real effects; too many wastes time and money. You do this before collecting data.</div>
+  </section>
+
+  <!-- Q13 -->
+  <section class="q" data-c="1">
+    <p class="qh"><span class="n">13.</span><span class="tag">power and effect size</span></p>
+    <div class="qh" style="font-weight:400">Your study has 80% power to detect a 2-point drop. If the true effect is actually 4 points, your chance of detecting it is...</div>
+    <figure>
+      <svg viewBox="0 0 440 120" width="440" height="120" role="img" aria-label="bigger effect means less overlap">
+        <text x="110" y="14" font-size="10" fill="#5a6275" text-anchor="middle">small effect: curves overlap a lot</text>
+        <path d="M30 95 Q70 35 110 95" fill="#a5b4f0" opacity=".5" stroke="#3b5bdb"/>
+        <path d="M80 95 Q120 35 160 95" fill="#9be0b4" opacity=".5" stroke="#2f9e44"/>
+        <text x="330" y="14" font-size="10" fill="#5a6275" text-anchor="middle">big effect: curves barely overlap</text>
+        <path d="M250 95 Q285 35 320 95" fill="#a5b4f0" opacity=".5" stroke="#3b5bdb"/>
+        <path d="M345 95 Q380 35 415 95" fill="#9be0b4" opacity=".5" stroke="#2f9e44"/>
+        <text x="220" y="112" font-size="10" fill="#5a6275" text-anchor="middle">less overlap means easier to detect</text>
+      </svg>
+    </figure>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Higher than 80%</li>
+      <li><span class="lbl">B</span>Lower than 80%</li>
+      <li><span class="lbl">C</span>Still exactly 80%</li>
+    </ol>
+    <div class="ans"><b>A.</b> Power was set for the smallest difference worth detecting. A bigger true effect separates the groups more, so it is easier to detect and your real power is even higher.</div>
+  </section>
+
+  <!-- Q14 -->
+  <section class="q" data-c="3">
+    <p class="qh"><span class="n">14.</span><span class="tag">sample size trade-off</span></p>
+    <div class="qh" style="font-weight:400">You change the difference worth detecting from 2 points down to 1 point, keeping everything else the same. The required n per group...</div>
+    <figure>
+      <svg viewBox="0 0 380 110" width="380" height="110" role="img" aria-label="smaller target difference needs more people">
+        <text x="80" y="16" font-size="10" fill="#5a6275" text-anchor="middle">detect 2 points</text>
+        <g fill="#3b5bdb"><circle cx="55" cy="40" r="5"/><circle cx="75" cy="40" r="5"/><circle cx="95" cy="40" r="5"/><circle cx="65" cy="58" r="5"/><circle cx="85" cy="58" r="5"/></g>
+        <text x="80" y="85" font-size="10" fill="#5a6275" text-anchor="middle">fewer needed</text>
+        <text x="180" y="55" font-size="20" fill="#8089a0">&#8594;</text>
+        <text x="290" y="16" font-size="10" fill="#5a6275" text-anchor="middle">detect 1 point</text>
+        <g fill="#e2445c"><circle cx="250" cy="34" r="5"/><circle cx="270" cy="34" r="5"/><circle cx="290" cy="34" r="5"/><circle cx="310" cy="34" r="5"/><circle cx="260" cy="50" r="5"/><circle cx="280" cy="50" r="5"/><circle cx="300" cy="50" r="5"/><circle cx="250" cy="66" r="5"/><circle cx="270" cy="66" r="5"/><circle cx="290" cy="66" r="5"/><circle cx="310" cy="66" r="5"/></g>
+        <text x="285" y="90" font-size="10" fill="#5a6275" text-anchor="middle">many more needed</text>
+      </svg>
+    </figure>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Goes down</li>
+      <li><span class="lbl">B</span>Stays the same</li>
+      <li><span class="lbl">C</span>Goes up</li>
+    </ol>
+    <div class="ans"><b>C.</b> A smaller target difference is harder to detect, so you need more people (roughly four times as many when you halve the difference). Raising the target power from 0.80 to 0.90 also increases n.</div>
+  </section>
+
+  <!-- Q15 -->
+  <section class="q" data-c="2">
+    <p class="qh"><span class="n">15.</span><span class="tag">building the table</span></p>
+    <div class="qh" style="font-weight:400">In the exercise table, why are the t/F and p-value shown only on the first row of each characteristic?</div>
+    <ol class="opts">
+      <li><span class="lbl">A</span>Because R can only print one number per block</li>
+      <li><span class="lbl">B</span>Because one test covers the whole characteristic, not each row</li>
+      <li><span class="lbl">C</span>Because the other rows had missing data</li>
+    </ol>
+    <div class="ans"><b>B.</b> Each characteristic gets a single group-level test (one t-test or one ANOVA), so its statistic and p-value belong to the whole block. The code uses <code>row_in_block == 1</code> to print them once instead of repeating them on every row.</div>
+  </section>
+
+</div>
+<script>
+  document.querySelectorAll('.q').forEach(q=>{
+    const c=+q.dataset.c, items=q.querySelectorAll('.opts li'), ans=q.querySelector('.ans');
+    items.forEach(li=>li.addEventListener('click',()=>{ans.classList.add('show');items[c-1].classList.add('correct');}));
+  });
+  function toggle(s){document.querySelectorAll('.q').forEach(q=>{
+    const c=+q.dataset.c, items=q.querySelectorAll('.opts li'), ans=q.querySelector('.ans');
+    if(s){ans.classList.add('show');items[c-1].classList.add('correct');}
+    else{ans.classList.remove('show');items[c-1].classList.remove('correct');}
+  });}
+</script>
+</body>
+</html>

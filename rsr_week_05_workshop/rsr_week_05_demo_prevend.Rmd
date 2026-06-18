@@ -1,0 +1,251 @@
+---
+title: "DEMO: A four-step recipe for a publication table"
+subtitle: "PREVEND systolic blood pressure by participant characteristic"
+author: "GRAPH Courses team"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+This demo gives you the recipe you will use in the exercise.
+
+We will ask whether systolic blood pressure differs by sex, age group, education, and statin use in the PREVEND teaching dataset.
+
+The same four steps appear in the exercise:
+
+1. Import and label the data.
+2. Calculate group summaries.
+3. Run the appropriate tests.
+4. Assemble a publication-style table.
+
+# Load packages and data
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, gt)
+pacman::p_load(openintro)
+```
+
+```{r load-data}
+prevend_raw <- openintro::prevend.samp
+
+glimpse(prevend_raw)
+```
+
+These are the raw variables we will use as predictors of systolic blood pressure:
+
+```{r predictor-preview}
+prevend_raw %>%
+  select(Gender, Age, Education, Statin) %>%
+  summary()
+```
+
+In this teaching dataset, `Statin` is a clean binary variable with no missing values.
+
+# Step 1: Import and label the data
+
+The PREVEND data are already imported. We still need to select the variables, give them readable names, and label the categorical variables.
+
+```{r step-1}
+prevend <- prevend_raw %>%
+  transmute(
+    systolic_bp = SBP,
+    age_yrs = Age,
+    sex = factor(
+      Gender,
+      levels = c(0, 1),
+      labels = c("Male", "Female")
+    ),
+    education = factor(
+      Education,
+      levels = c(0, 1, 2, 3),
+      labels = c(
+        "Primary school",
+        "Lower secondary",
+        "Higher secondary",
+        "University"
+      )
+    ),
+    statin_use = factor(
+      Statin,
+      levels = c(0, 1),
+      labels = c("No statin", "Statin")
+    )
+  ) %>%
+  mutate(
+    age_group = cut(
+      age_yrs,
+      breaks = c(35, 50, 65, Inf),
+      labels = c("36-50", "51-65", "66+")
+    )
+  )
+
+glimpse(prevend)
+```
+
+# Step 2: Descriptive stats for every group
+
+We first reshape the data to long form. This creates one column for the characteristic name and one column for the group label.
+
+```{r step-2-long}
+prevend_long <- prevend %>%
+  select(
+    systolic_bp,
+    Sex = sex,
+    `Age group` = age_group,
+    Education = education,
+    `Statin use` = statin_use
+  ) %>%
+  pivot_longer(
+    cols = -systolic_bp,
+    names_to = "variable",
+    values_to = "group"
+  ) %>%
+  filter(!is.na(group), !is.na(systolic_bp))
+
+prevend_long
+```
+
+Now we calculate the sample size, mean, standard deviation, standard error, and 95% confidence interval for each group.
+
+For example, this code counts the number of people in each group.
+
+```{r step-2-count-example}
+prevend_long %>%
+  group_by(variable, group) %>%
+  summarise(
+    n = n()
+  )
+```
+
+```{r step-2-summary}
+group_stats <- prevend_long %>%
+  group_by(variable, group) %>%
+  summarise(
+    n = n(),
+    mean = mean(systolic_bp),
+    sd = sd(systolic_bp),
+    se = sd / sqrt(n),
+    ci_lo = mean - qt(0.975, df = n - 1) * se,
+    ci_hi = mean + qt(0.975, df = n - 1) * se,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    variable = factor(
+      variable,
+      levels = c("Sex", "Age group", "Education", "Statin use")
+    )
+  ) %>%
+  arrange(variable, group)
+
+group_stats
+```
+
+# Step 3: The tests
+
+Use a two-sample t-test when the grouping variable has two groups.
+
+```{r step-3-t-tests}
+sex_t <- t.test(systolic_bp ~ sex, data = prevend, var.equal = TRUE)
+sex_t
+```
+
+Use one-way ANOVA when the grouping variable has three or more groups.
+
+```{r step-3-anova}
+age_aov <- aov(systolic_bp ~ age_group, data = prevend)
+summary(age_aov)
+
+education_aov <- aov(systolic_bp ~ education, data = prevend)
+summary(education_aov)
+```
+
+Use the same two-sample t-test for statin use, which has two groups.
+
+```{r step-3-statin}
+table(prevend$statin_use)
+
+statin_t <- t.test(
+  systolic_bp ~ statin_use,
+  data = prevend,
+  var.equal = TRUE
+)
+
+statin_t
+```
+
+# Step 4: Assemble the table
+
+The formatting code is longer than the statistics code. That is normal. Your job is to make sure the formatted table faithfully reports the tests above.
+
+```{r step-4-extract}
+age_f <- summary(age_aov)[[1]]$`F value`[1]
+age_p <- summary(age_aov)[[1]]$`Pr(>F)`[1]
+
+education_f <- summary(education_aov)[[1]]$`F value`[1]
+education_p <- summary(education_aov)[[1]]$`Pr(>F)`[1]
+```
+
+```{r step-4-build}
+results_table <- group_stats %>%
+  mutate(
+    `Mean (SD)` = paste0(
+      format(round(mean, 1), nsmall = 1),
+      " (",
+      format(round(sd, 1), nsmall = 1),
+      ")"
+    ),
+    `95% CI` = paste0(
+      format(round(ci_lo, 1), nsmall = 1),
+      ", ",
+      format(round(ci_hi, 1), nsmall = 1)
+    ),
+    statistic = case_when(
+      variable == "Sex" ~ as.numeric(sex_t$statistic),
+      variable == "Age group" ~ age_f,
+      variable == "Education" ~ education_f,
+      variable == "Statin use" ~ as.numeric(statin_t$statistic)
+    ),
+    p_value = case_when(
+      variable == "Sex" ~ sex_t$p.value,
+      variable == "Age group" ~ age_p,
+      variable == "Education" ~ education_p,
+      variable == "Statin use" ~ statin_t$p.value
+    ),
+    stat_text = as.character(round(statistic, 2)),
+    p_text = if_else(p_value < 0.001, "<0.001", as.character(round(p_value, 3)))
+  ) %>%
+  group_by(variable) %>%
+  mutate(row_in_block = row_number()) %>%
+  ungroup() %>%
+  mutate(
+    `t/F` = if_else(row_in_block == 1, stat_text, ""),
+    p = if_else(row_in_block == 1, p_text, "")
+  ) %>%
+  select(variable, group, `Mean (SD)`, `95% CI`, `t/F`, p)
+```
+
+```{r step-4-render}
+results_table %>%
+  gt(groupname_col = "variable", rowname_col = "group") %>%
+  tab_header(title = "Systolic blood pressure by participant characteristic") %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_row_groups()
+  ) %>%
+  tab_options(table.width = pct(100))
+```
+
+# Reading the results
+
+Sex has two groups, so the table reports a t statistic. Age group and education have more than two groups, so the table reports F statistics from ANOVA.
+
+A significant ANOVA tells us that at least one group mean differs. It does not tell us which pair of groups differs. For that, we would need a follow-up test such as Tukey's HSD.
