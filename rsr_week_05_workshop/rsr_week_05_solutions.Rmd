@@ -31,7 +31,7 @@ pacman::p_load_current_gh("the-graph-courses/inspectdf")
 ## Step 1: Import and label the data
 
 ```{r data-preview}
-survey <- read_excel(here("data/distress_data.xlsx"))
+survey <- read_excel(here("rsr_week_05_workshop/data/distress_data.xlsx"))
 ```
 
 ```{r glimpse-data}
@@ -271,6 +271,29 @@ glimpse(results_table)
 In your prompt, also refer to the current `gt` code from the `render-table` chunk above.
 
 One possible extension:
+
+```{r}
+library(gt)
+library(gtExtras)
+
+results_table %>%
+  # 1. Include the numeric 'mean' column in the selection
+  select(variable, group, mean, `Mean (SD)`, `95% CI`, `t/F`, p) %>%
+  gt(groupname_col = "variable", rowname_col = "group") %>%
+  
+  # 2. Add the inline bar chart (scaled = FALSE normalizes to the max value)
+  gt_plt_bar_pct(column = mean, fill = "steelblue", scaled = FALSE) %>%
+  
+  # 3. Label the new bar chart column
+  cols_label(mean = "Mean Trend") %>%
+  
+  tab_header(title = "Psychological distress (K6) by characteristic") %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_row_groups()
+  ) %>%
+  tab_options(table.width = pct(100))
+```
 
 ```{r llm-bars, eval=FALSE}
 pacman::p_load(gtExtras)

@@ -1,0 +1,271 @@
+---
+title: "EXERCISE: Simple linear regression"
+subtitle: "FEV lung function: age then height"
+author: "YOUR NAME HERE"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+In this exercise you will practice **simple linear regression** on lung-function data from youths ([Kahn/Tager, JSE 2005](https://doi.org/10.1080/10691898.2005.11910559)).
+
+- **Outcome (both models):** `fev_l`, forced expiratory volume in one second, in **litres**
+- **Dataset:** `data/fev_kahn.csv`, 654 youths
+- **Predictors:** `age_yrs` (years) and `height_in` (inches)
+
+There is **no separate demo file**. **Part 1** walks through a complete example (`fev_l ~ age_yrs`) with all code filled in. Run it and read the output carefully. **Part 2** asks you to repeat the same steps for **height**. **Part 3** compares the two models.
+
+This week's pre-work covered correlation, the SLR equation, $R^2$, and reading `summary(lm(...))`.
+
+When you are done, save your Rmd and submit it on the workshop page.
+
+# PART 1: Walkthrough: FEV and age (filled in)
+
+Read this section and **run every chunk**. The code is complete; treat this as your syntax reference for Part 2.
+
+## Load packages and data
+
+```{r demo-setup, echo=TRUE, message=FALSE, warning=FALSE}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, janitor)
+
+fev <- read_csv(here("data/fev_kahn.csv"))
+glimpse(fev)
+```
+
+**Checkpoint:** 654 rows, 5 columns. No missing values in `fev_l` or `age_yrs`.
+
+## Plot the relationship
+
+```{r demo-scatter, echo=TRUE}
+ggplot(fev, aes(x = age_yrs, y = fev_l)) +
+  geom_point(alpha = 0.35, color = "steelblue") +
+  labs(
+    title = "FEV vs age",
+    x = "Age (years)",
+    y = "FEV (litres)"
+  ) +
+  theme_minimal()
+```
+
+Older youths tend to have higher FEV. Lungs grow as children age.
+
+## Correlation
+
+```{r demo-cor, echo=TRUE}
+r_age <- cor(fev$fev_l, fev$age_yrs)
+round(r_age, 3)
+```
+
+$r \approx 0.76$, a strong **positive** linear association.
+
+## Fit the model and read the output
+
+```{r demo-fit, echo=TRUE}
+fev_age_model <- lm(fev_l ~ age_yrs, data = fev)
+summary(fev_age_model)
+```
+
+From the **`age_yrs` row** of the coefficients table:
+
+| Quantity | Approximate value | Meaning |
+|----------|-------------------|---------|
+| Estimate (slope $b_1$) | 0.22 | Litres of FEV gained per extra year of age |
+| `Pr(>\|t\|)` | $< 0.001$ | Test of $H_0: \beta_1 = 0$ |
+
+**Plain language:** each additional year of age is associated with about **0.22 litres** higher FEV, on average.
+
+## $R^2$
+
+```{r demo-r2, echo=TRUE}
+summary(fev_age_model)$r.squared
+r_age^2
+```
+
+$R^2 \approx 0.57$. Age alone explains about **57%** of person-to-person variation in FEV. For simple linear regression, $R^2 = r^2$.
+
+## Fitted line and a prediction
+
+```{r demo-line, echo=TRUE}
+ggplot(fev, aes(x = age_yrs, y = fev_l)) +
+  geom_point(alpha = 0.35, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "firebrick") +
+  labs(
+    title = "FEV vs age with fitted line",
+    x = "Age (years)",
+    y = "FEV (litres)"
+  ) +
+  theme_minimal()
+```
+
+```{r demo-predict, echo=TRUE}
+predict(fev_age_model, newdata = data.frame(age_yrs = 10))
+```
+
+Predicted FEV at age 10 is about **2.65 litres**.
+
+---
+
+**Before Part 2:** you should know how to go from scatter plot to `cor()`, then `lm()`, then `summary()`, then $R^2$, then `predict()`. Part 2 repeats that recipe with **height** as the predictor.
+
+# PART 2: Your turn: FEV and height
+
+Fill in the blanks (replace `_______`). Use Part 1 as your syntax guide.
+
+## Scatter plot
+
+```{r scatter-height}
+ggplot(fev, aes(x = _______, y = _______)) +
+  geom_point(alpha = 0.35, color = "steelblue") +
+  labs(
+    title = "FEV vs height",
+    x = "Height (inches)",
+    y = "FEV (litres)"
+  ) +
+  theme_minimal()
+```
+
+**Question:** Does FEV tend to increase or decrease with height?
+
+Answer: _______
+
+## Correlation
+
+```{r cor-height}
+r_height <- cor(_______, _______)
+round(r_height, 3)
+```
+
+**Question:** What is $r$ for height? Is the association positive or negative?
+
+Answer: _______
+
+## Fit the model
+
+```{r fit-height}
+fev_height_model <- _______(_______ ~ _______, data = fev)
+summary(fev_height_model)
+```
+
+**Question:** What is the slope for `height_in` (Estimate, rounded to 3 decimals)?
+
+Answer: _______
+
+**Question:** Interpret the slope in plain language (include units for FEV and height).
+
+Answer: _______
+
+**Question:** Is the slope statistically significant at $\alpha = 0.05$?
+
+Answer: _______
+
+## $R^2$
+
+```{r r2-height}
+r_squared_height <- summary(_______)$r.squared
+round(r_squared_height, 3)
+```
+
+**Question:** What is $R^2$ for the height model?
+
+Answer: _______
+
+**Question:** Confirm that $r^2$ from Part 2 matches $R^2$ (allowing for rounding).
+
+Answer: _______
+
+## Prediction
+
+Predict FEV for a youth who is **60 inches** tall.
+
+```{r predict-height}
+predict(
+  fev_height_model,
+  newdata = data.frame(_______ = 60)
+)
+```
+
+**Question:** Predicted FEV at 60 inches (litres)?
+
+Answer: _______
+
+## Fitted line
+
+```{r line-height}
+ggplot(fev, aes(x = height_in, y = fev_l)) +
+  geom_point(alpha = 0.35, color = "steelblue") +
+  geom_______(method = "lm", se = TRUE, color = "firebrick") +
+  labs(
+    title = "FEV vs height with fitted line",
+    x = "Height (inches)",
+    y = "FEV (litres)"
+  ) +
+  theme_minimal()
+```
+
+# PART 3: Compare age and height models
+
+Use your Part 1 walkthrough and your Part 2 answers.
+
+Fill in the code to put both $R^2$ values side by side:
+
+```{r compare-r2}
+tibble(
+  predictor = c("age_yrs", "height_in"),
+  r_squared = c(
+    summary(_______)$r.squared,
+    summary(_______)$r.squared
+  )
+) %>%
+  mutate(r_squared = round(r_squared, 3))
+```
+
+**Question:** Which predictor has the larger $|r|$, age or height?
+
+Answer: _______
+
+**Question:** Which model has the higher $R^2$?
+
+Answer: _______
+
+**Question:** In one or two sentences, which single predictor would you prefer for explaining FEV in this sample, and why?
+
+Answer: _______
+
+**Question:** Age and height both increase as children grow. Why might height be a stronger predictor of FEV than age alone?
+
+Answer: _______
+
+# PART 4 OPTIONAL UNGRADED CHALLENGE: Smoking
+
+The dataset includes `smoke` (0 = non-smoker, 1 = smoker). In this sample, smokers tend to be **older**, which can confuse a simple age-only story.
+
+```{r smoke-plot}
+ggplot(fev, aes(x = age_yrs, y = fev_l, color = factor(smoke))) +
+  geom_point(alpha = 0.4) +
+  labs(
+    title = "FEV vs age by smoking status",
+    x = "Age (years)",
+    y = "FEV (litres)",
+    color = "Smoker"
+  ) +
+  theme_minimal()
+```
+
+```{r residuals}
+par(mfrow = c(1, 2))
+plot(fev_age_model, which = 1:2)
+par(mfrow = c(1, 1))
+```
+
+**Question:** After seeing the smoking plot, why might neither an age-only nor a height-only model tell the whole story about FEV?
+
+Answer: _______
