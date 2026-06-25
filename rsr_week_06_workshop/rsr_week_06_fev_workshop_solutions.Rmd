@@ -1,0 +1,468 @@
+---
+title: "Workshop 6 Solutions: What Regression Is For"
+subtitle: "FEV lung function, age, height, and smoking"
+author: "GRAPH Courses team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+In this workshop you will use simple linear regression to study lung function in children and adolescents.
+
+The dataset contains 654 youths aged 3 to 19 from East Boston in the 1970s. The original teaching purpose of this dataset was to study smoking and lung function. The outcome is **forced expiratory volume** (`fev_l`), measured in litres. FEV measures how much air a person can forcefully breathe out in one second. Higher values mean better lung function.
+
+Using this dataset, the workshop will demonstrate the three main uses of regression:
+
+1. **Part 1: Describe** a relationship between variables.
+2. **Part 2: Predict** the outcome for a new value of the predictor.
+3. **Part 3: Control** for another variable, to (try to) isolate the independent effect of the predictor of interest.
+
+# Load packages and data
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here)
+```
+
+```{r load-data}
+fev <- read_csv(here("data/fev_kahn.csv"))
+glimpse(fev)
+```
+
+**Checkpoint:** `fev` should have **654 rows and 5 columns**.
+
+**Checkpoint answer:** `fev` has **654 rows and 5 columns**.
+
+The variables we will use are:
+
+- `fev_l`: forced expiratory volume in litres
+- `age_yrs`: age in years
+- `height_in`: height in inches
+- `smoke`: current smoking status, `non_smoker` or `smoker`
+
+# Part 1: Describing relationships
+
+The first use of regression is description. We often want to describe how two variables move together.
+
+For two continuous variables, one starting point is a scatterplot and a correlation. Let's implement this, then we will see how it compares with regression.
+
+## Part 1a: Age and FEV, worked example
+
+In this section, we will look at the relationship between age and FEV.
+
+The code for this section is filled in as a demo. Run the code and focus on reading the output.
+
+### Scatterplot
+
+```{r age-scatter}
+ggplot(fev, aes(x = age_yrs, y = fev_l)) +
+  geom_point(alpha = 0.45) +
+  labs(
+    title = "FEV by age",
+    x = "Age (years)",
+    y = "FEV (litres)"
+  ) +
+  theme_minimal()
+```
+
+**Question:** Is the relationship between age and FEV positive, negative, or close to zero?
+
+Ans:
+
+**Solution answer:** The relationship is positive.
+
+### Correlation
+
+Correlation summarizes the direction and strength of a linear relationship. It is always between -1 and +1.
+
+Let's calculate the correlation between age and FEV.
+
+```{r age-correlation}
+r_age_fev <- cor(fev$age_yrs, fev$fev_l)
+r_age_fev
+```
+
+The correlation is about **0.756**, a strong positive relationship.
+
+Correlation describes the strength of the relationship, but regression will give us at least three additional abilities:
+
+- a p-value that we can use to test whether the association is statistically significant
+- a prediction equation that we can use to predict lung function for someone whose age we know
+- the ability to control for another variable, to isolate the independent effect of the predictor of interest
+
+We'll touch on each of these in the next parts of the workshop.
+
+### Linear regression
+
+Regression gives us a fitted line:
+
+predicted y = intercept + slope * x
+
+where y is the outcome (in this case, FEV) and x is the predictor (in this case, age).
+
+Below, we fit a linear regression model for the age and FEV relationship. The outcome is `fev_l` and the predictor is `age_yrs`.
+
+```{r age-model}
+age_model <- lm(fev_l ~ age_yrs, data = fev)
+summary(age_model)
+```
+
+The `Estimate` column gives the intercept and slope.
+
+**Question:** Fill in the blanks.
+
+The fitted equation is
+
+predicted FEV = ______ + ______ * age
+
+The slope means: For each additional 1 year of age, predicted FEV is higher by about _______ litres, on average.
+
+The p-value tests the null hypothesis that the true slope is 0. Here the p-value is far below 0.05, so there is ______ (strong / weak) evidence that age and FEV have a nonzero linear association.
+
+**Solution answer:**
+
+The fitted equation is
+
+predicted FEV = 0.432 + 0.222 * age
+
+The slope means: For each additional 1 year of age, predicted FEV is higher by about **0.222 litres**, on average.
+
+The p-value is far below 0.05, so there is **strong** evidence that age and FEV have a nonzero linear association.
+
+### Drawing the fitted line
+
+We can extract the intercept and slope and draw the fitted line ourselves.
+
+```{r age-line-manual}
+age_intercept <- coef(age_model)[1]
+age_slope <- coef(age_model)[2]
+
+ggplot(fev, aes(x = age_yrs, y = fev_l)) +
+  geom_point(alpha = 0.45) +
+  geom_abline(
+    intercept = age_intercept,
+    slope = age_slope,
+    color = "#1f78b4",
+    linewidth = 1
+  ) +
+  labs(
+    title = "Manual regression line for age and FEV",
+    x = "Age (years)",
+    y = "FEV (litres)"
+  ) +
+  theme_minimal()
+```
+
+In practice, we usually let `geom_smooth()` do this.
+
+```{r age-line-smooth}
+ggplot(fev, aes(x = age_yrs, y = fev_l)) +
+  geom_point(alpha = 0.45) +
+  geom_smooth(method = "lm", se = FALSE, color = "#1f78b4") +
+  labs(
+    title = "Least-squares line for age and FEV",
+    x = "Age (years)",
+    y = "FEV (litres)"
+  ) +
+  theme_minimal()
+```
+
+### R-squared
+
+At the bottom of `summary(age_model)`, you will see the model's R-squared.
+
+```{r age-r-squared}
+summary(age_model)$r.squared
+```
+
+The R-squared is about **0.572**.
+
+This R-squared means that about 57.2% of the variation in FEV is explained by age in this simple linear regression.
+
+Interestingly, in simple linear regression with one predictor, R-squared is equal to the correlation squared:
+
+```{r age-r-squared-from-correlation}
+r_age_fev^2
+```
+
+## Part 1b: Height and FEV, your turn
+
+Age predicts FEV fairly well, but height is usually closer to lung size than age is.
+
+In this section, it is your turn to repeat the same steps for height, using the same syntax as Part 1a.
+
+### Scatterplot
+
+Make a scatterplot with height on the x-axis and FEV on the y-axis.
+
+```{r height-scatter-blank, eval=FALSE}
+# YOUR CODE HERE
+```
+
+**Solution:**
+
+```{r height-scatter}
+ggplot(fev, aes(x = height_in, y = fev_l)) +
+  geom_point(alpha = 0.45) +
+  labs(
+    title = "FEV by height",
+    x = "Height (inches)",
+    y = "FEV (litres)"
+  ) +
+  theme_minimal()
+```
+
+**Question:** Does the relationship look positive, negative, or close to zero?
+
+Ans:
+
+**Solution answer:** The relationship looks positive.
+
+### Correlation
+
+Calculate the correlation between height and FEV.
+
+```{r height-correlation-blank, eval=FALSE}
+r_height_fev <- cor(__________, __________)
+r_height_fev
+```
+
+**Solution:**
+
+```{r height-correlation}
+r_height_fev <- cor(fev$height_in, fev$fev_l)
+r_height_fev
+```
+
+**Question:** Fill in the blanks.
+
+The correlation is about ______. This relationship is ______ (positive / negative) and ______ (weak / moderate / strong).
+
+Ans:
+
+**Solution answer:** The correlation is about **0.868**. This relationship is **positive** and **strong**.
+
+### Linear regression
+
+Fit a simple linear regression with `fev_l` as the outcome and `height_in` as the predictor.
+
+```{r height-model-blank, eval=FALSE}
+height_model <- lm(__________ ~ __________, data = fev)
+summary(height_model)
+```
+
+**Solution:**
+
+```{r height-model}
+height_model <- lm(fev_l ~ height_in, data = fev)
+summary(height_model)
+```
+
+**Question:** Fill in the fitted equation.
+
+predicted FEV = ______ + ______ * height
+
+Ans:
+
+**Solution answer:**
+
+predicted FEV = -5.43 + 0.132 * height
+
+**Question:** The height slope is about **0.132**. Interpret this slope in one sentence.
+
+Ans:
+
+**Solution answer:** For each additional 1 inch of height, predicted FEV is higher by about **0.132 litres**, on average.
+
+**Question:** What is the p-value for `height_in`? At alpha = 0.05, do we reject or fail to reject the null hypothesis that the true slope is 0?
+
+Ans:
+
+**Solution answer:** The p-value is about `1.57e-200`, far below 0.05. We reject the null hypothesis that the true height slope is 0.
+
+### R-squared
+
+Extract the R-squared from the model summary.
+
+```{r height-r-squared-blank, eval=FALSE}
+summary(__________)$r.squared
+```
+
+**Solution:**
+
+```{r height-r-squared}
+summary(height_model)$r.squared
+```
+
+**Question:** The height model has R-squared about **0.754**. Fill in the blanks.
+
+About ______% of the variation in FEV is explained by ______ in this simple linear regression.
+
+Ans:
+
+**Solution answer:** About **75.4%** of the variation in FEV is explained by **height** in this simple linear regression.
+
+## Part 1c: Comparing the age and height models
+
+Use your results from Parts 1a and 1b.
+
+- Age model R-squared: about 0.572
+- Height model R-squared: about 0.754
+
+**Question:** Which predictor gives the better one-variable model for FEV, age or height? How do you know?
+
+Ans:
+
+**Solution answer:** Height gives the better one-variable model because it has the higher R-squared, about 0.754 compared with 0.572 for age.
+
+# Part 2: Predicting with regression
+
+Another use of regression is prediction. Once we have a fitted equation, we can plug in a new value of the predictor and get a predicted outcome.
+
+First, here is a fully worked prediction using the age model.
+
+```{r age-predict}
+new_age <- tibble(age_yrs = 12)
+new_age
+predict(age_model, newdata = new_age)
+```
+
+The model predicts that a 12-year-old has FEV about **3.10 litres**, on average.
+
+Now use the height model to predict FEV for a 60-inch-tall youth.
+
+```{r height-predict-blank, eval=FALSE}
+new_height <- tibble(height_in = _______)
+predict(__________, newdata = __________)
+```
+
+**Solution:**
+
+```{r height-predict}
+new_height <- tibble(height_in = 60)
+predict(height_model, newdata = new_height)
+```
+
+**Question:** What is the predicted FEV for a youth who is 60 inches tall?
+
+Ans:
+
+**Solution answer:** The predicted FEV is about **2.49 litres**.
+
+Finally, use the height model to predict FEV for a 20-inch-tall baby.
+
+```{r height-baby-predict-blank, eval=FALSE}
+baby_height <- tibble(height_in = _______)
+predict(__________, newdata = __________)
+```
+
+**Solution:**
+
+```{r height-baby-predict}
+baby_height <- tibble(height_in = 20)
+predict(height_model, newdata = baby_height)
+```
+
+**Question:** What prediction does the model give for a 20-inch-tall baby? Does that prediction make sense? What does this teach us about using regression models outside the observed data range?
+
+Ans:
+
+**Solution answer:** The prediction is about **-2.79 litres**, which does not make sense because FEV cannot be negative. This shows that a regression line should not be trusted far outside the observed range of the data. The observed heights in this dataset range from 46 to 74 inches.
+
+# Part 3: Optional Ungraded Challenge: Controlling for another variable
+
+This final part is a quick preview of the third use of regression: to **control** for another variable, in order to isolate the independent effect of the predictor of interest. This is also known as multiple regression.
+
+We have not taught multiple regression yet. The goal of this part is to get a glimpse of its usefulness.
+
+Below, we will work through the following parts:
+
+- **Part 3a:** Summarise age, height, and FEV by smoking status.
+- **Part 3b:** Fit a raw smoking model.
+- **Part 3c:** Control for age and height in a preview of multiple regression.
+
+## Part 3a: Summarise by smoking status
+
+The original dataset documentation says `smoke` records current smoking status for the participants. (You may be surprised to see that many children and teenagers in the dataset were smokers! These are children and teenagers from the 1970s, when youth smoking was more common than it is now.)
+
+Let's now ask a public-health question using regression:
+
+> Is smoking associated with lung function?
+
+To do this, we can create a summary to see the mean age, height and FEV for each smoking status.
+
+```{r smoke-summary}
+fev %>%
+  group_by(smoke) %>%
+  summarise(
+    n = n(),
+    mean_age = mean(age_yrs),
+    mean_height = mean(height_in),
+    mean_fev = mean(fev_l),
+    .groups = "drop"
+  )
+```
+
+**Question:** Which group has higher mean FEV, smokers or non-smokers?
+
+Ans:
+
+**Solution answer:** Smokers have higher mean FEV in the raw summary.
+
+**Question:** Which group is older on average? Which group is taller on average?
+
+Ans:
+
+**Solution answer:** Smokers are older on average and taller on average.
+
+The raw results may seem surprising. Smokers have higher mean FEV, which one might interpret to mean that smoking improves lung function. However, smokers are also much older and taller on average. Older and taller youths naturally have larger lungs.
+
+Thus we might need to control for age and height to isolate the independent effect of smoking on lung function.
+
+## Part 3b: Raw smoking model
+
+First let's fit a simple linear regression model to see the effect of smoking on lung function, without controlling for age or height.
+
+```{r smoke-raw-model}
+raw_model <- lm(fev_l ~ smoke, data = fev)
+summary(raw_model)
+```
+
+The row labeled `smokesmoker` compares smokers with the reference group, non-smokers. In the raw model, the smoking coefficient is about **0.711**. This is the difference in mean FEV between smokers and non-smokers.
+
+That does **not** mean smoking improves lung function. This is observational data, and smoking is tangled up with age and height.
+
+## Part 3c: Controlling for age and height
+
+Now here is the multiple regression model that controls for age and height. We simply add age and height to the model.
+```{r smoke-age-height-model}
+controlled_model <- lm(fev_l ~ smoke + age_yrs + height_in, data = fev)
+summary(controlled_model)
+```
+
+Now the row labeled `smokesmoker` has a coefficient of about **-0.110**, and its p-value is about **0.067**. After controlling for age and height, this model does not give strong evidence that smokers and non-smokers have different predicted FEV.
+
+**Question:** In one or two sentences, explain why the raw smoking comparison was misleading.
+
+Ans:
+
+**Solution answer:** The raw comparison was misleading because smokers were much older and taller than non-smokers. Older and taller youths naturally have higher FEV, so the raw comparison mixed smoking status with age and body size. After controlling for age and height, the apparent positive association between smoking and FEV disappears.
+
+# Wrap-up
+
+In this workshop, regression helped us do three things:
+
+1. **Part 1: Describe (1a, 1b, and 1c):** age and height both have positive linear relationships with FEV, and height gives the better one-variable model.
+2. **Part 2: Predict:** the height model can predict FEV for a new height value, but predictions outside the observed data range can become nonsensical.
+3. **Part 3: Control (3a, 3b, and 3c):** the smoking example showed why an observational association can change after accounting for other variables.
+
+You will learn multiple regression properly in coming lessons. For now, the key idea is that regression is not just a line on a plot. It is a way to ask clearer questions about relationships in data.
