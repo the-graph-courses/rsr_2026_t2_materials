@@ -296,11 +296,11 @@ predict(__________, newdata = __________)
 
 Ans:
 
-# Part 3: Optional Ungraded Challenge: Controlling for another variable
+# Part 3: Controlling for another variable
 
-This final part is a quick preview of the third use of regression: to **control** for another variable, in order to isolate the independent effect of the predictor of interest. This is also known as multiple regression. 
+This final part covers the third use of regression: to **control** for another variable, in order to isolate the independent effect of the predictor of interest. This is also known as multiple regression.
 
-We have not taught multiple regression yet. The goal of this part is to get a glimpse of its usefulness.
+The goal of this part is to see why multiple regression is useful.
 
 Below, we will work through the following parts:
 

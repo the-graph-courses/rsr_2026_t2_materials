@@ -378,11 +378,11 @@ Ans:
 
 **Solution answer:** The prediction is about **-2.79 litres**, which does not make sense because FEV cannot be negative. This shows that a regression line should not be trusted far outside the observed range of the data. The observed heights in this dataset range from 46 to 74 inches.
 
-# Part 3: Optional Ungraded Challenge: Controlling for another variable
+# Part 3: Controlling for another variable
 
-This final part is a quick preview of the third use of regression: to **control** for another variable, in order to isolate the independent effect of the predictor of interest. This is also known as multiple regression.
+This final part covers the third use of regression: to **control** for another variable, in order to isolate the independent effect of the predictor of interest. This is also known as multiple regression.
 
-We have not taught multiple regression yet. The goal of this part is to get a glimpse of its usefulness.
+The goal of this part is to see why multiple regression is useful.
 
 Below, we will work through the following parts:
 
