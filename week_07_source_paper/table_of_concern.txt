@@ -1,0 +1,14 @@
+The thing we will try to replicate is probably the first 5 variables here... and for only the simple linear
+
+Explanatory variables	Simple linear regression	Multiple linear regression
+Beta coefficients (β)	95% CI for β	Beta coefficients (β)	95% CI for β
+Chronological age	0.59	0.20 to 0.99	0.23	-0.02 to 0.49
+Sex	Female	Reference group
+Male	-0.66	-1.35 to 0.03	-1.09	-1.63 to -0.56
+Ownership of school	Private school		0		0
+Public school	0.55	-0.32 to 1.4	-0.32	-0.99 to 0.36
+Place of residence	Urban	Reference group
+Rural	1.46	0.57 to 2.34	0.89	0.13 to 1.65
+Grade level	Grade 9	Reference group
+Grade 10	0.63	-.12 to 1.38	0.52	-0.12 to 1.16
+Grade 12	0.95	0.12 to 1.77	1.14	0.29 to 1.97

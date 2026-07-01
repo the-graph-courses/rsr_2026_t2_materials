@@ -1,0 +1,390 @@
+---
+title: "SOLUTIONS: Building a simple linear regression table"
+subtitle: "Depression among adolescents in Jimma, Ethiopia"
+author: "GRAPH Courses team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+These are the completed solutions for the week 7 exercise. Each step first shows the blanked chunk from the exercise (not run), then the filled-in **Solution** chunk that runs. In Part 2 we illustrate one possible choice of two extra predictors (place of residence and Oslo social support); any two of the three clean predictors are acceptable.
+
+In this exercise we build the **simple linear regression** column of a published table, using the study's own data. We fit the first few rows together, then add more predictors, comparing our numbers to the paper and finding two places where the published table does not match a fresh analysis of the data.
+
+## The study
+
+- Girma et al. (2021), *Depression and its determinants among adolescents in Jimma town, Southwest Ethiopia*, PLOS ONE. A copy is in `paper/depression_paper.pdf`.
+- The survey data the authors released is in `data/depression_data.xls`.
+
+## The outcome: the PHQ-9 depression score
+
+The authors measured depression with the **PHQ-9 (Patient Health Questionnaire-9)**, a widely used screening tool. It asks how often, over the last two weeks, a person has been bothered by nine problems, for example *"Little interest or pleasure in doing things"* and *"Feeling down, depressed, or hopeless."* Each item is rated 0 ("Not at all") to 3 ("Nearly every day"). The nine items are summed into a total from 0 to 27 (higher = more symptoms), which we rename to `depression_score`.
+
+# PART 1: Build and check the first rows
+
+## Load packages
+
+*Exercise chunk (blanks):*
+
+```{r load-packages-q, eval=FALSE}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(readxl, tidyverse, here, janitor, ______, ______)
+```
+
+**Solution:** the two missing packages are `broom` and `gt`.
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(readxl, tidyverse, here, janitor, broom, gt)
+```
+
+## Step 1: Import, clean names, and label every predictor
+
+```{r data-import}
+survey <- read_excel(here("data/depression_data.xls"))
+```
+
+*Exercise chunk (blank):*
+
+```{r glimpse-raw-q, eval=FALSE}
+________(survey)
+```
+
+**Solution:**
+
+```{r glimpse-raw}
+glimpse(survey)
+```
+
+We pass the data through `janitor::clean_names()` to tidy the names, then `rename()` the six predictors and the outcome into clear English.
+
+```{r clean-rename}
+survey <- survey %>%
+  clean_names() %>%
+  rename(
+    depression_score = scoredep,
+    chronological_age = agechron,
+    oslo_social_support = osl3,
+    sex = sexrespo,
+    school_ownership = schoolty,
+    residence = residece, # fixes the original misspelling
+    grade_level = gradelev
+  )
+```
+
+Now label the four categorical variables, ordering the levels so the **reference group is first**.
+
+*Exercise chunk (blanks):*
+
+```{r label-q, eval=FALSE}
+survey <- survey %>%
+  mutate(
+    sex = factor(sex, levels = c(0, 1), labels = c("Female", "Male")),
+    school_ownership = factor(school_ownership, levels = ______, labels = ______),
+    residence = factor(residence, levels = c(0, 1), labels = ______),
+    grade_level = factor(
+      grade_level,
+      levels = ______,
+      labels = ______
+    )
+  ) %>%
+  select(
+    depression_score, chronological_age, oslo_social_support,
+    sex, school_ownership, residence, grade_level
+  )
+
+nrow(survey)
+```
+
+**Solution:**
+
+```{r label}
+survey <- survey %>%
+  mutate(
+    sex = factor(sex, levels = c(0, 1), labels = c("Female", "Male")),
+    school_ownership = factor(school_ownership, levels = c(0, 1), labels = c("Private", "Public")),
+    residence = factor(residence, levels = c(0, 1), labels = c("Urban", "Rural")),
+    grade_level = factor(
+      grade_level,
+      levels = c(1, 2, 3, 4),
+      labels = c("Grade 9", "Grade 10", "Grade 11", "Grade 12")
+    )
+  ) %>%
+  select(
+    depression_score, chronological_age, oslo_social_support,
+    sex, school_ownership, residence, grade_level
+  )
+
+nrow(survey)
+```
+
+Checkpoint: 546 rows and 7 columns.
+
+```{r glimpse-data}
+glimpse(survey)
+```
+
+**Question**: Which predictors are continuous, binary, or polytomous?
+
+**Answer:**
+
+- Continuous: `chronological_age`, `oslo_social_support`.
+- Binary: `sex`, `school_ownership`, `residence`.
+- Polytomous (3+ groups): `grade_level` (four grades).
+
+## Step 2: Run one simple linear regression per predictor
+
+*Exercise chunk (blanks):*
+
+```{r models-q, eval=FALSE}
+age_mod   <- lm(depression_score ~ chronological_age, data = survey)
+sex_mod   <- lm(___________ ~ ______, data = __________)
+grade_mod <- lm(___________ ~ ______, data = __________)
+```
+
+**Solution:**
+
+```{r models}
+age_mod   <- lm(depression_score ~ chronological_age, data = survey)
+sex_mod   <- lm(depression_score ~ sex, data = survey)
+grade_mod <- lm(depression_score ~ grade_level, data = survey)
+```
+
+```{r sex-summary}
+summary(sex_mod)
+```
+
+**Question**: Which sex is the reference group, and what does the `sexMale` coefficient tell you?
+
+**Answer:** Female is the reference group (the first factor level, folded into the intercept). The `sexMale` coefficient (about -0.66) is the difference in mean depression score for males versus females: males score about 0.66 PHQ-9 points lower on average.
+
+## Step 3: Extract the beta and 95% CI with `broom`
+
+```{r tidy-example}
+tidy(sex_mod, conf.int = TRUE)
+tidy(grade_mod, conf.int = TRUE)
+```
+
+### Helper for categorical predictors
+
+```{r helper-cat}
+reg_rows <- function(model, var_name, var_label, ref_label) {
+  # non-reference rows: drop the intercept, clean the level label
+  non_ref <- tidy(model, conf.int = TRUE) %>%
+    filter(term != "(Intercept)") %>%
+    mutate(level = str_remove(term, var_name)) %>%
+    transmute(variable = var_label, level, beta = estimate, low = conf.low, high = conf.high)
+
+  # the reference row: beta is 0 by definition, CI is blank
+  ref <- tibble(variable = var_label, level = ref_label, beta = 0, low = NA_real_, high = NA_real_)
+
+  bind_rows(ref, non_ref)
+}
+```
+
+```{r helper-cat-demo}
+reg_rows(sex_mod, var_name = "sex", var_label = "Sex", ref_label = "Female")
+```
+
+**Question**: Name one change that `reg_rows()` made compared with `tidy(sex_mod, conf.int = TRUE)`.
+
+**Answer:** It added a reference row for Female (β = 0, no CI), which `tidy()` did not show, and it cleaned the level label from `sexMale` to `Male` by stripping the variable name off the front. (It also renamed the columns and dropped the intercept row.)
+
+### Helper for continuous predictors
+
+```{r helper-cont}
+cont_row <- function(model, var_name, var_label, level_label) {
+  tidy(model, conf.int = TRUE) %>%
+    filter(term == var_name) %>%
+    transmute(variable = var_label, level = level_label, beta = estimate, low = conf.low, high = conf.high)
+}
+```
+
+```{r helper-cont-demo}
+cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase")
+```
+
+### Build the first three rows
+
+*Exercise chunk (blanks):*
+
+```{r combine-q, eval=FALSE}
+results <- bind_rows(
+  cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase"),
+  reg_rows(sex_mod, "______", "Sex", ref_label = "______"),
+  reg_rows(grade_mod, "grade_level", "Grade level", ref_label = "Grade 9")
+)
+
+results
+```
+
+**Solution:**
+
+```{r combine}
+results <- bind_rows(
+  cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase"),
+  reg_rows(sex_mod, "sex", "Sex", ref_label = "Female"),
+  reg_rows(grade_mod, "grade_level", "Grade level", ref_label = "Grade 9")
+)
+
+results
+```
+
+## Step 4: Assemble the table with `gt`
+
+```{r make-table-fn}
+make_table <- function(results_df) {
+  results_df %>%
+    mutate(
+      `Beta (95% CI)` = if_else(
+        is.na(low),
+        "Reference",
+        paste0(
+          format(round(beta, 2), nsmall = 2), " (",
+          format(round(low, 2), nsmall = 2), " to ",
+          format(round(high, 2), nsmall = 2), ")"
+        )
+      )
+    ) %>%
+    select(variable, level, `Beta (95% CI)`) %>%
+    gt(groupname_col = "variable", rowname_col = "level") %>%
+    tab_header(
+      title = "Depression (PHQ-9) score by participant characteristic",
+      subtitle = "Simple (bivariable) linear regression"
+    ) %>%
+    tab_style(style = cell_text(weight = "bold"), locations = cells_row_groups()) %>%
+    tab_options(table.width = pct(100))
+}
+```
+
+```{r make-table-call}
+make_table(results)
+```
+
+## Check these three rows against the paper
+
+```{r compare-1}
+results %>% filter(!is.na(low)) %>% mutate(across(c(beta, low, high), ~ round(.x, 2)))
+```
+
+**Question**: Which of these three predictors matches the paper exactly?
+
+**Answer:** **Sex** matches exactly: Male β = -0.66 (-1.35 to 0.03).
+
+**Question**: The chronological age row does not match (the paper's first error).
+
+**Answer:** Our model gives β = 0.45 (0.18 to 0.71). The paper reports 0.59 (0.20 to 0.99). Same positive direction, but the paper's magnitude and upper CI are too large. Recomputed from the raw data, our value is the correct simple-regression estimate.
+
+**Question**: The grade level rows do not match (the paper's second error).
+
+**Answer:** With Grade 9 as the reference (exactly what the paper says it used), our model gives Grade 10 β = 1.34 (0.47 to 2.21) and Grade 12 β = 1.64 (0.70 to 2.58). The paper reports 0.63 and 0.95, which are not consistent with a Grade-9-reference simple regression on its own data. Age and grade measure nearly the same thing (they correlate about 0.77), so it is telling that both of the paper's errors fall on this pair. The exact match on sex confirms our pipeline is correct, so the discrepancy is in the paper.
+
+# PART 2: Add two predictors of your own
+
+We illustrate with **place of residence** (binary) and **Oslo social support** (continuous). Any two of the three clean predictors work.
+
+*Exercise chunk (blanks):*
+
+```{r my-models-q, eval=FALSE}
+my_mod_1 <-
+my_mod_2 <-
+```
+
+**Solution:**
+
+```{r my-models}
+my_mod_1 <- lm(depression_score ~ residence, data = survey)
+my_mod_2 <- lm(depression_score ~ oslo_social_support, data = survey)
+```
+
+*Exercise chunk (blanks):*
+
+```{r my-rows-q, eval=FALSE}
+my_row_1 <- ______
+my_row_2 <- ______
+```
+
+**Solution:** residence is binary (use `reg_rows`), Oslo social support is continuous (use `cont_row`).
+
+```{r my-rows}
+my_row_1 <- reg_rows(my_mod_1, "residence", "Place of residence", ref_label = "Urban")
+my_row_2 <- cont_row(my_mod_2, "oslo_social_support", "Oslo social support", "Per 1-point increase")
+```
+
+Stack and inspect the two rows before binding into the full table.
+
+```{r check-my-rows}
+my_rows <- bind_rows(my_row_1, my_row_2)
+my_rows
+```
+
+```{r combine-full}
+results_full <- bind_rows(results, my_rows)
+
+make_table(results_full)
+```
+
+**Question**: For each predictor you added, does its 95% CI include 0?
+
+**Answer:** Neither CI includes 0. Place of residence: Rural β = 1.46 (0.57 to 2.34). Oslo social support: β = -0.62 (-0.73 to -0.50). Both are significantly associated with the depression score at alpha = 0.05.
+
+**Question**: Do your two added rows match the paper's simple linear regression column?
+
+**Answer:** Yes. Residence (Rural) 1.46 (0.57 to 2.34) matches exactly. Oslo social support -0.62 (-0.73 to -0.50) matches the paper's -0.62 (-0.73 to -0.49) to two decimals (the lower bound rounds at the -0.49/-0.50 boundary).
+
+# PART 3: One framework for t-tests, ANOVA, and continuous predictors
+
+## A binary predictor: regression and the t-test
+
+```{r ttest-vs-reg}
+t.test(depression_score ~ sex, data = survey, var.equal = TRUE)
+tidy(sex_mod)
+```
+
+**Question**: Compare the p-value from `t.test()` with the p-value for `sexMale` in `tidy(sex_mod)`. What do you notice?
+
+**Answer:** They are the same, p = 0.062. The t statistics are equal in size (1.87) and differ only in sign, which reflects the order the groups are subtracted. The equal-variance two-sample t-test *is* a simple linear regression with a binary predictor.
+
+**Question**: Compute the two group means and subtract female from male. Does it match the regression coefficient?
+
+```{r check-means}
+survey %>%
+  group_by(sex) %>%
+  summarise(mean_dep = mean(depression_score))
+```
+
+**Answer:** Female mean ≈ 7.03, male mean ≈ 6.37. Male minus female ≈ -0.66, which is exactly the `sexMale` coefficient. The slope for a binary predictor is just the difference in group means.
+
+## A polytomous predictor: regression and ANOVA
+
+```{r anova-vs-reg}
+summary(aov(depression_score ~ grade_level, data = survey))
+summary(grade_mod)
+```
+
+**Question**: Compare the p-value from the ANOVA with the p-value at the bottom of `summary(grade_mod)`. What do you notice?
+
+**Answer:** They are the same, p = 0.0023. The overall F test at the bottom of the regression summary is the one-way ANOVA.
+
+**Question**: Do the ANOVA F statistic and the F statistic from `summary(grade_mod)` match?
+
+**Answer:** Yes, both are F = 4.90 (on 3 and 542 degrees of freedom). A one-way ANOVA is a simple linear regression with a categorical predictor.
+
+## Continuous predictors
+
+**Question**: The paper's table mixes categorical predictors (sex, residence) with continuous ones (age, social support) in a single column. Why does regression make this easier than using t-tests and ANOVAs?
+
+**Answer:** One `lm()` call and one output format (β with 95% CI) work for every predictor type, so every row of the table comes from the same procedure. Continuous predictors like age or social support fit naturally as slopes, with no need to cut them into groups the way a t-test or ANOVA would require.
+
+# Summary
+
+Using one simple linear regression per predictor plus `broom::tidy(conf.int = TRUE)` and two small row-building helpers, we built the simple-regression column of the paper's table. Sex, school ownership, residence, and Oslo social support reproduce the paper exactly; recomputing revealed two errors in the paper (the age and grade rows), for which we report the correct values. Part 3 showed that this single regression framework reproduces the t-test and ANOVA from last week, and additionally handles continuous predictors.
