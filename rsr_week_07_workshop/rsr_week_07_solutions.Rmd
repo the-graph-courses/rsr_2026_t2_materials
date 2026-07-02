@@ -155,21 +155,21 @@ glimpse(survey)
 *Exercise chunk (blanks):*
 
 ```{r models-q, eval=FALSE}
-age_mod   <- lm(depression_score ~ chronological_age, data = survey)
-sex_mod   <- lm(___________ ~ ______, data = __________)
-grade_mod <- lm(___________ ~ ______, data = __________)
+age_model   <- lm(depression_score ~ chronological_age, data = survey)
+sex_model   <- lm(___________ ~ ______, data = __________)
+grade_model <- lm(___________ ~ ______, data = __________)
 ```
 
 **Solution:**
 
 ```{r models}
-age_mod   <- lm(depression_score ~ chronological_age, data = survey)
-sex_mod   <- lm(depression_score ~ sex, data = survey)
-grade_mod <- lm(depression_score ~ grade_level, data = survey)
+age_model   <- lm(depression_score ~ chronological_age, data = survey)
+sex_model   <- lm(depression_score ~ sex, data = survey)
+grade_model <- lm(depression_score ~ grade_level, data = survey)
 ```
 
 ```{r sex-summary}
-summary(sex_mod)
+summary(sex_model)
 ```
 
 **Question**: Which sex is the reference group, and what does the `sexMale` coefficient tell you?
@@ -179,8 +179,8 @@ summary(sex_mod)
 ## Step 3: Extract the beta and 95% CI with `broom`
 
 ```{r tidy-example}
-tidy(sex_mod, conf.int = TRUE)
-tidy(grade_mod, conf.int = TRUE)
+tidy(sex_model, conf.int = TRUE)
+tidy(grade_model, conf.int = TRUE)
 ```
 
 ### Helper for categorical predictors
@@ -201,10 +201,10 @@ reg_rows <- function(model, var_name, var_label, ref_label) {
 ```
 
 ```{r helper-cat-demo}
-reg_rows(sex_mod, var_name = "sex", var_label = "Sex", ref_label = "Female")
+reg_rows(sex_model, var_name = "sex", var_label = "Sex", ref_label = "Female")
 ```
 
-**Question**: Name one change that `reg_rows()` made compared with `tidy(sex_mod, conf.int = TRUE)`.
+**Question**: Name one change that `reg_rows()` made compared with `tidy(sex_model, conf.int = TRUE)`.
 
 **Answer:** It added a reference row for Female (β = 0, no CI), which `tidy()` did not show, and it cleaned the level label from `sexMale` to `Male` by stripping the variable name off the front. (It also renamed the columns and dropped the intercept row.)
 
@@ -219,7 +219,7 @@ cont_row <- function(model, var_name, var_label, level_label) {
 ```
 
 ```{r helper-cont-demo}
-cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase")
+cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase")
 ```
 
 ### Build the first three rows
@@ -228,9 +228,9 @@ cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase
 
 ```{r combine-q, eval=FALSE}
 results <- bind_rows(
-  cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase"),
-  reg_rows(sex_mod, "______", "Sex", ref_label = "______"),
-  reg_rows(grade_mod, "grade_level", "Grade level", ref_label = "Grade 9")
+  cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
+  reg_rows(sex_model, "______", "Sex", ref_label = "______"),
+  reg_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
 )
 
 results
@@ -240,9 +240,9 @@ results
 
 ```{r combine}
 results <- bind_rows(
-  cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase"),
-  reg_rows(sex_mod, "sex", "Sex", ref_label = "Female"),
-  reg_rows(grade_mod, "grade_level", "Grade level", ref_label = "Grade 9")
+  cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
+  reg_rows(sex_model, "sex", "Sex", ref_label = "Female"),
+  reg_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
 )
 
 results
@@ -304,15 +304,15 @@ We illustrate with **place of residence** (binary) and **Oslo social support** (
 *Exercise chunk (blanks):*
 
 ```{r my-models-q, eval=FALSE}
-my_mod_1 <-
-my_mod_2 <-
+my_model_1 <-
+my_model_2 <-
 ```
 
 **Solution:**
 
 ```{r my-models}
-my_mod_1 <- lm(depression_score ~ residence, data = survey)
-my_mod_2 <- lm(depression_score ~ oslo_social_support, data = survey)
+my_model_1 <- lm(depression_score ~ residence, data = survey)
+my_model_2 <- lm(depression_score ~ oslo_social_support, data = survey)
 ```
 
 *Exercise chunk (blanks):*
@@ -325,8 +325,8 @@ my_row_2 <- ______
 **Solution:** residence is binary (use `reg_rows`), Oslo social support is continuous (use `cont_row`).
 
 ```{r my-rows}
-my_row_1 <- reg_rows(my_mod_1, "residence", "Place of residence", ref_label = "Urban")
-my_row_2 <- cont_row(my_mod_2, "oslo_social_support", "Oslo social support", "Per 1-point increase")
+my_row_1 <- reg_rows(my_model_1, "residence", "Place of residence", ref_label = "Urban")
+my_row_2 <- cont_row(my_model_2, "oslo_social_support", "Oslo social support", "Per 1-point increase")
 ```
 
 Stack and inspect the two rows before binding into the full table.
@@ -356,10 +356,10 @@ make_table(results_full)
 
 ```{r ttest-vs-reg}
 t.test(depression_score ~ sex, data = survey, var.equal = TRUE)
-tidy(sex_mod)
+tidy(sex_model)
 ```
 
-**Question**: Compare the p-value from `t.test()` with the p-value for `sexMale` in `tidy(sex_mod)`. What do you notice?
+**Question**: Compare the p-value from `t.test()` with the p-value for `sexMale` in `tidy(sex_model)`. What do you notice?
 
 **Answer:** They are the same, p = 0.062. The t statistics are equal in size (1.87) and differ only in sign, which reflects the order the groups are subtracted. The equal-variance two-sample t-test *is* a simple linear regression with a binary predictor.
 
@@ -377,14 +377,14 @@ survey %>%
 
 ```{r anova-vs-reg}
 summary(aov(depression_score ~ grade_level, data = survey))
-summary(grade_mod)
+summary(grade_model)
 ```
 
-**Question**: Compare the p-value from the ANOVA with the p-value at the bottom of `summary(grade_mod)`. What do you notice?
+**Question**: Compare the p-value from the ANOVA with the p-value at the bottom of `summary(grade_model)`. What do you notice?
 
 **Answer:** They are the same, p = 0.0023. The overall F test at the bottom of the regression summary is the one-way ANOVA.
 
-**Question**: Do the ANOVA F statistic and the F statistic from `summary(grade_mod)` match?
+**Question**: Do the ANOVA F statistic and the F statistic from `summary(grade_model)` match?
 
 **Answer:** Yes, both are F = 4.90 (on 3 and 542 degrees of freedom). A one-way ANOVA is a simple linear regression with a categorical predictor.
 

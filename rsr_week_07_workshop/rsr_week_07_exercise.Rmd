@@ -94,13 +94,13 @@ survey <- survey_raw %>%
 glimpse(survey)
 ```
 
-**Question** Based on the study title "Depression and its determinants among adolescents in Jimma town, Southwest Ethiopia" and the list of of variables above, which is the outcome variable in our dataset?
+**Question**: Based on the study title "Depression and its determinants among adolescents in Jimma town, Southwest Ethiopia" and the list of variables above, which is the outcome variable in our dataset?
 
 Your answer: _______
 
 Let's take a look at the cleaned data with some exploratory data analysis functions: inspectdf::inspect_cat() and inspectdf::inspect_num().
 
-```{r}
+```{r eda-raw}
 inspect_cat(survey) %>% show_plot() # no categorical variables at the moment
 inspect_num(survey) %>% show_plot()
 ```
@@ -140,9 +140,9 @@ survey <- survey %>%
   )
 ```
 
-Now we can check again: 
+Now we can check again:
 
-```{r}
+```{r eda-labeled}
 inspect_cat(survey) %>% show_plot()
 inspect_num(survey) %>% show_plot()
 ```
@@ -162,18 +162,18 @@ We start with three predictors, one of each type: `chronological_age` (continuou
 The age model is filled in as an example. Fill in the predictors for the other two models.
 
 ```{r models}
-age_mod   <- lm(depression_score ~ chronological_age, data = survey)
-sex_mod   <- lm(___________ ~ ______, data = __________)
-grade_mod <- lm(___________ ~ ______, data = __________)
+age_model   <- lm(depression_score ~ chronological_age, data = survey)
+sex_model   <- lm(___________ ~ ______, data = __________)
+grade_model <- lm(___________ ~ ______, data = __________)
 ```
 
 Let's look at the sex model with `summary()`.
 
 ```{r sex-summary}
-summary(sex_mod)
+summary(sex_model)
 ```
 
-**Question**: In `summary(sex_mod)`, which sex is the reference group? In one sentence, what does the `sexMale` coefficient tell you?
+**Question**: In `summary(sex_model)`, which sex is the reference group? In one sentence, what does the `sexMale` coefficient tell you?
 
 Answer: _______
 
@@ -182,8 +182,8 @@ Answer: _______
 `summary()` is good for reading one model. To build a table we want the numbers in a data frame. `broom::tidy()` does that, and `conf.int = TRUE` adds the 95% CI as columns.
 
 ```{r tidy-example}
-tidy(sex_mod, conf.int = TRUE)
-tidy(grade_mod, conf.int = TRUE)
+tidy(sex_model, conf.int = TRUE)
+tidy(grade_model, conf.int = TRUE)
 ```
 
 
@@ -216,10 +216,10 @@ reg_rows <- function(model, var_name, var_label, ref_label) {
 Run it once on the sex model and compare the result to the raw `tidy()` output above.
 
 ```{r helper-cat-demo}
-reg_rows(sex_mod, var_name = "sex", var_label = "Sex", ref_label = "Female")
+reg_rows(sex_model, var_name = "sex", var_label = "Sex", ref_label = "Female")
 ```
 
-**Question**: Compared with `tidy(sex_mod, conf.int = TRUE)`, name one change that `reg_rows()` made.
+**Question**: Compared with `tidy(sex_model, conf.int = TRUE)`, name one change that `reg_rows()` made.
 
 Answer: _______
 
@@ -238,7 +238,7 @@ cont_row <- function(model, var_name, var_label, level_label) {
 ```
 
 ```{r helper-cont-demo}
-cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase")
+cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase")
 ```
 
 ### Build the first three rows
@@ -247,9 +247,9 @@ Now we stack age, sex, and grade into one results frame. Fill in the variable na
 
 ```{r combine}
 results <- bind_rows(
-  cont_row(age_mod, "chronological_age", "Chronological age", "Per 1-year increase"),
-  reg_rows(sex_mod, "______", "Sex", ref_label = "______"),
-  reg_rows(grade_mod, "grade_level", "Grade level", ref_label = "Grade 9")
+  cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
+  reg_rows(sex_model, "______", "Sex", ref_label = "______"),
+  reg_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
 )
 
 results
@@ -328,9 +328,9 @@ You have now used `chronological_age`, `sex`, and `grade_level`. Three predictor
 Fill in the blanks below.
 
 ```{r my-models}
-# Fit two models with lm() and `depression_score` as the outcome, then save them as my_mod_1 and my_mod_2
-my_mod_1 <- 
-my_mod_2 <- 
+# Fit two models with lm() and `depression_score` as the outcome, then save them as my_model_1 and my_model_2
+my_model_1 <- 
+my_model_2 <- 
 ```
 
 ```{r my-rows}
@@ -379,14 +379,14 @@ Run both below and compare the output.
 
 ```{r ttest-vs-reg}
 t.test(depression_score ~ sex, data = survey, var.equal = TRUE)
-tidy(sex_mod)
+tidy(sex_model)
 ```
 
-**Question**: Compare the p-value from `t.test()` with the p-value for `sexMale` in `tidy(sex_mod)`. What do you notice? (The t statistics may differ in sign depending on which group is subtracted from which; the p-values should match.)
+**Question**: Compare the p-value from `t.test()` with the p-value for `sexMale` in `tidy(sex_model)`. What do you notice? (The t statistics may differ in sign depending on which group is subtracted from which; the p-values should match.)
 
 Your answer:
 
-**Question**: The `sexMale` estimate in `tidy(sex_mod)` is the difference in mean depression score between males and females. Run the code below to compute those two group means yourself, then subtract female from male. Does your hand calculation match the regression coefficient (up to rounding)?
+**Question**: The `sexMale` estimate in `tidy(sex_model)` is the difference in mean depression score between males and females. Run the code below to compute those two group means yourself, then subtract female from male. Does your hand calculation match the regression coefficient (up to rounding)?
 
 ```{r check-means}
 survey %>%
@@ -400,20 +400,20 @@ Your answer:
 
 With more than two groups, there is no single slope. Instead, `lm()` creates one coefficient per non-reference level (Grade 10, Grade 11, Grade 12), each comparing that grade to Grade 9.
 
-A one-way ANOVA does not report those individual comparisons. It asks one **overall** question: is there any difference among the group means? That overall test comes from the regression too. Scroll to the bottom of `summary(grade_mod)` for the model's F statistic and p-value, which test whether the set of grade coefficients are all zero together.
+A one-way ANOVA does not report those individual comparisons. It asks one **overall** question: is there any difference among the group means? That overall test comes from the regression too. Scroll to the bottom of `summary(grade_model)` for the model's F statistic and p-value, which test whether the set of grade coefficients are all zero together.
 
 Run both below.
 
 ```{r anova-vs-reg}
 summary(aov(depression_score ~ grade_level, data = survey))
-summary(grade_mod)
+summary(grade_model)
 ```
 
-**Question**: Compare the p-value from the ANOVA with the p-value at the bottom of `summary(grade_mod)`. What do you notice?
+**Question**: Compare the p-value from the ANOVA with the p-value at the bottom of `summary(grade_model)`. What do you notice?
 
 Your answer:
 
-**Question**: Do the ANOVA F statistic and the F statistic from `summary(grade_mod)` match?
+**Question**: Do the ANOVA F statistic and the F statistic from `summary(grade_model)` match?
 
 Your answer:
 
