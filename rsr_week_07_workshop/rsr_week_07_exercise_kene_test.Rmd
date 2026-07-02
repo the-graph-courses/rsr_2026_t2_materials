@@ -16,19 +16,15 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # Introduction
 
-In this exercise we will build the **simple linear regression** column of a published table, using the study's own data. We will fit the first few rows together, then you will add one more predictor on your own. 
+In this exercise we will build the **simple linear regression** column of a published table, using the study's own data. We will fit the first few rows together, then you will add one more predictor on your own. Along the way we will compare our numbers to the paper and find two places where the published table does not match a fresh analysis of the data.
 
-Along the way we will compare our numbers to the paper and find two places in the published table that do not match the data the authors put out (a reminder that even published work can be mistake-ridden).
 
 ## The study
 
-The study is called "Depression and its determinants among adolescents in Jimma town, Southwest Ethiopia", and was published in PLOS ONE in 2021. A copy of the paper is in `paper/depression_paper.pdf`.
-
-The authors released the survey data they used in the study, which we will use in this exercise. This is available in `data/depression_data.xls`.
+- Girma et al. (2021), *Depression and its determinants among adolescents in Jimma town, Southwest Ethiopia*, PLOS ONE. A copy is in `paper/depression_paper.pdf`.
+- The survey data the authors released is in `data/depression_data.xls`.
 
 ## The outcome: the PHQ-9 depression score
-
-The authors looked at different socio-demographic factors that might predict depression among adolescents in a town in Southwest Ethiopia.
 
 The authors measured depression with the **PHQ-9 (Patient Health Questionnaire-9)**, a widely used screening tool. It asks how often, over the last two weeks, a person has been bothered by nine problems. For example, one item asks about *"Little interest or pleasure in doing things"* and another about *"Feeling down, depressed, or hopeless."* Each item is rated from 0 ("Not at all") to 3 ("Nearly every day").
 
@@ -38,43 +34,43 @@ The nine item scores are summed into a total from 0 to 27, where higher means mo
 
 ## The table we will build
 
-Table 2 of the paper reports, for each explanatory variable, a **simple linear regression** column (one predictor at a time) and a **multiple linear regression** column (all predictors together). We will build only the **simple linear regression** column. 
+Table 2 of the paper reports, for each explanatory variable, a **simple linear regression** column (one predictor at a time) and a **multiple linear regression** column (all predictors together). We will build only the **simple linear regression** column. Each cell is a **beta coefficient (β)** and its **95% confidence interval**.
 
 ![Table 2 from Girma et al. (2021). We reproduce the simple linear regression column.](paper/table2_with_values.png)
+
+## Parts of this exercise
+
+- **Part 1**: Fit and check the first three rows (age, sex, and grade level) and compare them to the paper.
+- **Part 2**: Add two more predictors of your own choosing.
+- **Part 3**: See how simple regression relates to the t-test and ANOVA from last week, and why that matters for continuous predictors.
 
 # PART 1: Build and check the first rows
 
 ## Load packages
 
-Use p_load() to load the following packages: readxl, tidyverse, here, janitor, broom, gt.
+Fill in the two missing package names. The others are already listed for you.
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(________)
-```
-
-We also load the GRAPH Courses fork of the inspectdf package, which is currently unavailable on CRAN.
-
-```{r load-inspectdf}
-pacman::p_load_gh("the-graph-courses/inspectdf")
+pacman::p_load(readxl, tidyverse, here, janitor, ______, ______)
 ```
 
 ## Step 1: Import, clean names, and label every predictor
 
-Import the data and `glimpse()` it to see what we are working with.
+First import the data and `glimpse()` it to see what we are working with.
 
 ```{r data-import}
-survey_raw <- read_excel(here("data/depression_data.xls"))
+survey <- read_excel(here("data/depression_data.xls"))
 ```
 
 ```{r glimpse-raw}
-________(survey_raw)
+________(survey)
 ```
 
-The raw column names are a little messy. Let's clean them, then subset to just the columns we will be using in the exercise. 
+The raw column names are cryptic and inconsistent (`AGECHRON`, `SEXRESPO`, `RESIDECE`; note the misspelling of "residence"). Let's pass the data through `janitor::clean_names()` to make every name lower case and tidy, then use `rename()` to give the six predictors we might use clear English names, plus the outcome.
 
 ```{r clean-rename}
-survey <- survey_raw %>%
+survey <- survey %>%
   clean_names() %>%
   rename(
     depression_score = scoredep,
@@ -82,69 +78,46 @@ survey <- survey_raw %>%
     oslo_social_support = osl3,
     sex = sexrespo,
     school_ownership = schoolty,
-    residence = residece,
+    residence = residece, # fixes the original misspelling
     grade_level = gradelev
-  ) %>%
-  select(
-    depression_score,
-    chronological_age, oslo_social_support,
-    sex, school_ownership, residence, grade_level
   )
-
-glimpse(survey)
 ```
 
-**Question** Based on the study title "Depression and its determinants among adolescents in Jimma town, Southwest Ethiopia" and the list of of variables above, which is the outcome variable in our dataset?
-
-Your answer: _______
-
-Let's take a look at the cleaned data with some exploratory data analysis functions: inspectdf::inspect_cat() and inspectdf::inspect_num().
-
-```{r}
-inspect_cat(survey) %>% show_plot() # no categorical variables at the moment
-inspect_num(survey) %>% show_plot()
-```
-
-Four of these predictors are categorical but stored as numeric codes, so we need to label them now. We order the levels according to what was done in the paper:
+Four of these predictors are categorical but stored as numeric codes, so we need to label them now. We are going to order the levels so the **reference group is first**, following the paper. The codes are below:
 
 - `sex` (0 = Female, 1 = Male)
 - `school_ownership` (0 = Private, 1 = Public)
 - `residence` (0 = Urban, 1 = Rural)
 - `grade_level` (1 = Grade 9, 2 = Grade 10, 3 = Grade 11, 4 = Grade 12)
 
-We show the `sex` factor as an example. Fill in the blanks for the other three categorical variable labels.
+We show the `sex` factor as an example. Fill in the blanks for the other three categorical variables.
 
 ```{r label}
 survey <- survey %>%
   mutate(
-    sex = factor(
-      sex,
-      levels = c(0, 1),
-      labels = c("Female", "Male")
-    ),
-    school_ownership = factor(
-      school_ownership,
-      levels = c(0, 1),
-      labels = ______
-    ),
-    residence = factor(
-      residence,
-      levels = c(0, 1),
-      labels = ______
-    ),
+    sex = factor(sex, levels = c(0, 1), labels = c("Female", "Male")),
+    school_ownership = factor(school_ownership, levels = ______, labels = ______),
+    residence = factor(residence, levels = c(0, 1), labels = ______),
     grade_level = factor(
       grade_level,
-      levels = c(1, 2, 3, 4),
+      levels = ______,
       labels = ______
     )
+  ) %>%
+  select(
+    depression_score, chronological_age, oslo_social_support,
+    sex, school_ownership, residence, grade_level
   )
+
+nrow(survey)
 ```
 
-Now we can check again: 
+Checkpoint: 546 rows and 7 columns.
 
-```{r}
-inspect_cat(survey) %>% show_plot()
-inspect_num(survey) %>% show_plot()
+Now we glimpse the labelled data. These six predictors are the ones you can use in the rest of the exercise.
+
+```{r glimpse-data}
+glimpse(survey)
 ```
 
 **Question**: Which predictors are **continuous**? Which are **binary** (two groups)? Which are **polytomous** (three or more groups)? List each predictor under one heading.

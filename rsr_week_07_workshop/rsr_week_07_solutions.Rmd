@@ -44,7 +44,7 @@ pacman::p_load(readxl, tidyverse, here, janitor, ______, ______)
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(readxl, tidyverse, here, janitor, broom, gt)
+pacman::p_load(readxl, tidyverse, here, janitor, broom, gt, inspectdf)
 ```
 
 ## Step 1: Import, clean names, and label every predictor
@@ -76,9 +76,18 @@ survey <- survey %>%
     oslo_social_support = osl3,
     sex = sexrespo,
     school_ownership = schoolty,
-    residence = residece, # fixes the original misspelling
+    residence = residece,
     grade_level = gradelev
+  ) %>%
+  select(
+    # outcome
+    depression_score,
+    # predictors
+    chronological_age, oslo_social_support,
+    sex, school_ownership, residence, grade_level
   )
+
+survey
 ```
 
 Now label the four categorical variables, ordering the levels so the **reference group is first**.
