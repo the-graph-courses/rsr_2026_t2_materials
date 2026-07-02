@@ -33,42 +33,52 @@ The authors measured depression with the **PHQ-9 (Patient Health Questionnaire-9
 
 ## Load packages
 
-*Exercise chunk (blanks):*
+Use `p_load()` to load: readxl, tidyverse, here, janitor, broom, gt.
+
+*Exercise chunk (blank):*
 
 ```{r load-packages-q, eval=FALSE}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(readxl, tidyverse, here, janitor, ______, ______)
+pacman::p_load(________)
 ```
 
-**Solution:** the two missing packages are `broom` and `gt`.
+**Solution:**
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(readxl, tidyverse, here, janitor, broom, gt, inspectdf)
+pacman::p_load(readxl, tidyverse, here, janitor, broom, gt)
+```
+
+We also load the GRAPH Courses fork of the inspectdf package, which is currently unavailable on CRAN.
+
+```{r load-inspectdf}
+pacman::p_load_gh("the-graph-courses/inspectdf")
 ```
 
 ## Step 1: Import, clean names, and label every predictor
 
+Import the data and `glimpse()` it to see what we are working with.
+
 ```{r data-import}
-survey <- read_excel(here("data/depression_data.xls"))
+survey_raw <- read_excel(here("data/depression_data.xls"))
 ```
 
 *Exercise chunk (blank):*
 
 ```{r glimpse-raw-q, eval=FALSE}
-________(survey)
+________(survey_raw)
 ```
 
 **Solution:**
 
 ```{r glimpse-raw}
-glimpse(survey)
+glimpse(survey_raw)
 ```
 
-We pass the data through `janitor::clean_names()` to tidy the names, then `rename()` the six predictors and the outcome into clear English.
+The raw column names are a little messy. We clean them, then subset to just the columns we will use.
 
 ```{r clean-rename}
-survey <- survey %>%
+survey <- survey_raw %>%
   clean_names() %>%
   rename(
     depression_score = scoredep,
@@ -80,38 +90,53 @@ survey <- survey %>%
     grade_level = gradelev
   ) %>%
   select(
-    # outcome
     depression_score,
-    # predictors
     chronological_age, oslo_social_support,
     sex, school_ownership, residence, grade_level
   )
 
-survey
+glimpse(survey)
 ```
 
-Now label the four categorical variables, ordering the levels so the **reference group is first**.
+**Question**: Based on the study title and the list of variables above, which is the outcome variable in our dataset?
+
+**Answer:** `depression_score` is the outcome. It is the PHQ-9 total the study set out to explain; the other variables are the potential determinants (predictors).
+
+Let's explore the cleaned data with `inspect_cat()` and `inspect_num()`.
+
+```{r eda-raw}
+inspect_cat(survey) %>% show_plot() # no categorical variables at the moment
+inspect_num(survey) %>% show_plot()
+```
+
+Four of these predictors are categorical but stored as numeric codes, so we label them now, ordering the levels according to the paper.
 
 *Exercise chunk (blanks):*
 
 ```{r label-q, eval=FALSE}
 survey <- survey %>%
   mutate(
-    sex = factor(sex, levels = c(0, 1), labels = c("Female", "Male")),
-    school_ownership = factor(school_ownership, levels = ______, labels = ______),
-    residence = factor(residence, levels = c(0, 1), labels = ______),
+    sex = factor(
+      sex,
+      levels = c(0, 1),
+      labels = c("Female", "Male")
+    ),
+    school_ownership = factor(
+      school_ownership,
+      levels = c(0, 1),
+      labels = ______
+    ),
+    residence = factor(
+      residence,
+      levels = c(0, 1),
+      labels = ______
+    ),
     grade_level = factor(
       grade_level,
-      levels = ______,
+      levels = c(1, 2, 3, 4),
       labels = ______
     )
-  ) %>%
-  select(
-    depression_score, chronological_age, oslo_social_support,
-    sex, school_ownership, residence, grade_level
   )
-
-nrow(survey)
 ```
 
 **Solution:**
@@ -119,27 +144,34 @@ nrow(survey)
 ```{r label}
 survey <- survey %>%
   mutate(
-    sex = factor(sex, levels = c(0, 1), labels = c("Female", "Male")),
-    school_ownership = factor(school_ownership, levels = c(0, 1), labels = c("Private", "Public")),
-    residence = factor(residence, levels = c(0, 1), labels = c("Urban", "Rural")),
+    sex = factor(
+      sex,
+      levels = c(0, 1),
+      labels = c("Female", "Male")
+    ),
+    school_ownership = factor(
+      school_ownership,
+      levels = c(0, 1),
+      labels = c("Private", "Public")
+    ),
+    residence = factor(
+      residence,
+      levels = c(0, 1),
+      labels = c("Urban", "Rural")
+    ),
     grade_level = factor(
       grade_level,
       levels = c(1, 2, 3, 4),
       labels = c("Grade 9", "Grade 10", "Grade 11", "Grade 12")
     )
-  ) %>%
-  select(
-    depression_score, chronological_age, oslo_social_support,
-    sex, school_ownership, residence, grade_level
   )
-
-nrow(survey)
 ```
 
-Checkpoint: 546 rows and 7 columns.
+Now we can check again — the four labelled variables show up as categorical.
 
-```{r glimpse-data}
-glimpse(survey)
+```{r eda-labeled}
+inspect_cat(survey) %>% show_plot()
+inspect_num(survey) %>% show_plot()
 ```
 
 **Question**: Which predictors are continuous, binary, or polytomous?
@@ -172,9 +204,11 @@ grade_model <- lm(depression_score ~ grade_level, data = survey)
 summary(sex_model)
 ```
 
-**Question**: Which sex is the reference group, and what does the `sexMale` coefficient tell you?
+**Question**: In `summary(sex_model)`, which sex is the reference group? Fill in the blanks in the sentence below to explain the relationship between sex and depression score.
 
-**Answer:** Female is the reference group (the first factor level, folded into the intercept). The `sexMale` coefficient (about -0.66) is the difference in mean depression score for males versus females: males score about 0.66 PHQ-9 points lower on average.
+**Answer:** Female is the reference group (the first factor level, folded into the intercept).
+
+> The reference group is **Female**. The `sexMale` coefficient is about **-0.66**, which means that on average, males score about **0.66** points **lower** on the PHQ-9 than females.
 
 ## Step 3: Extract the beta and 95% CI with `broom`
 
@@ -183,7 +217,23 @@ tidy(sex_model, conf.int = TRUE)
 tidy(grade_model, conf.int = TRUE)
 ```
 
+**Question**: What is the 95% CI for the `sexMale` coefficient? Fill in the blanks in the sentence below to interpret it.
+
+**Answer:**
+
+> The 95% CI for the difference in mean PHQ-9 score between males and females runs from about **-1.35** to **0.03**. Because this interval **includes** 0, the difference **is not** statistically significant at the 0.05 level.
+
+**Question**: The slope estimate for Grade 12 is 1.64. Fill in the blanks in the sentence below to explain the relationship between grade level and depression score.
+
+**Answer:**
+
+> Compared with **Grade 9** (the reference group), students in Grade 12 score about **1.64** points **higher** on the PHQ-9, on average.
+
 ### Helper for categorical predictors
+
+Now, to turn these regression results into a paper-style table, we create some helper functions. Most of the formatting is written for you; as before, focus on getting the statistics right and check the values against the model output.
+
+`reg_rows()` handles a categorical predictor: it drops the intercept, strips the variable name off `"sexMale"` to leave `"Male"`, and adds back a **reference row** with β = 0.
 
 ```{r helper-cat}
 reg_rows <- function(model, var_name, var_label, ref_label) {
@@ -285,17 +335,11 @@ make_table(results)
 results %>% filter(!is.na(low)) %>% mutate(across(c(beta, low, high), ~ round(.x, 2)))
 ```
 
-**Question**: Which of these three predictors matches the paper exactly?
+**Question**: Which of these three predictors matches the paper's numbers?
 
 **Answer:** **Sex** matches exactly: Male β = -0.66 (-1.35 to 0.03).
 
-**Question**: The chronological age row does not match (the paper's first error).
-
-**Answer:** Our model gives β = 0.45 (0.18 to 0.71). The paper reports 0.59 (0.20 to 0.99). Same positive direction, but the paper's magnitude and upper CI are too large. Recomputed from the raw data, our value is the correct simple-regression estimate.
-
-**Question**: The grade level rows do not match (the paper's second error).
-
-**Answer:** With Grade 9 as the reference (exactly what the paper says it used), our model gives Grade 10 β = 1.34 (0.47 to 2.21) and Grade 12 β = 1.64 (0.70 to 2.58). The paper reports 0.63 and 0.95, which are not consistent with a Grade-9-reference simple regression on its own data. Age and grade measure nearly the same thing (they correlate about 0.77), so it is telling that both of the paper's errors fall on this pair. The exact match on sex confirms our pipeline is correct, so the discrepancy is in the paper.
+**Chronological age** and **grade level** do not match — the paper's two errors. For age, the data give β = 0.45 (0.18 to 0.71) but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 (0.47 to 2.21) and Grade 12 = 1.64 (0.70 to 2.58) but the paper prints 0.63 and 0.95. Age and grade are closely related (they correlate about 0.77), so it is telling that both slips fall on this pair. The clean match on sex — and on residence and social support in Part 2 — confirms our pipeline is correct, so the discrepancy is in the published table, not our analysis.
 
 # PART 2: Add two predictors of your own
 
@@ -342,9 +386,9 @@ results_full <- bind_rows(results, my_rows)
 make_table(results_full)
 ```
 
-**Question**: For each predictor you added, does its 95% CI include 0?
+**Question**: For each predictor you added, does its 95% CI include 0? What does this mean about the significance of the predictor?
 
-**Answer:** Neither CI includes 0. Place of residence: Rural β = 1.46 (0.57 to 2.34). Oslo social support: β = -0.62 (-0.73 to -0.50). Both are significantly associated with the depression score at alpha = 0.05.
+**Answer:** Neither CI includes 0. Place of residence: Rural β = 1.46 (0.57 to 2.34). Oslo social support: β = -0.62 (-0.73 to -0.50). Because neither interval includes 0, both predictors are statistically significantly associated with the depression score at alpha = 0.05.
 
 **Question**: Do your two added rows match the paper's simple linear regression column?
 
@@ -352,7 +396,11 @@ make_table(results_full)
 
 # PART 3: One framework for t-tests, ANOVA, and continuous predictors
 
+Simple linear regression answers the same questions as a t-test and an ANOVA for categorical predictors, while also handling continuous predictors those tests cannot.
+
 ## A binary predictor: regression and the t-test
+
+A two-sample t-test compares two group means, asking whether the difference between them could plausibly be zero. Under equal variances, that test and the regression slope test are the same calculation.
 
 ```{r ttest-vs-reg}
 t.test(depression_score ~ sex, data = survey, var.equal = TRUE)
@@ -375,6 +423,8 @@ survey %>%
 
 ## A polytomous predictor: regression and ANOVA
 
+With more than two groups there is no single slope; `lm()` gives one coefficient per non-reference grade. A one-way ANOVA instead asks one overall question — is there any difference among the group means? — which is the F test at the bottom of `summary(grade_model)`.
+
 ```{r anova-vs-reg}
 summary(aov(depression_score ~ grade_level, data = survey))
 summary(grade_model)
@@ -389,6 +439,8 @@ summary(grade_model)
 **Answer:** Yes, both are F = 4.90 (on 3 and 542 degrees of freedom). A one-way ANOVA is a simple linear regression with a categorical predictor.
 
 ## Continuous predictors
+
+The t-test and ANOVA both compare group means, so they only work with categorical predictors — to use them on a continuous variable you would first have to cut it into groups, throwing away information. Regression has no such limit: a continuous predictor goes into the same `lm()` call and comes out as a single slope, as we saw with `chronological_age` in Part 1.
 
 **Question**: The paper's table mixes categorical predictors (sex, residence) with continuous ones (age, social support) in a single column. Why does regression make this easier than using t-tests and ANOVAs?
 

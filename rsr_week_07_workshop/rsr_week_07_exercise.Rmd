@@ -173,9 +173,9 @@ Let's look at the sex model with `summary()`.
 summary(sex_model)
 ```
 
-**Question**: In `summary(sex_model)`, which sex is the reference group? In one sentence, what does the `sexMale` coefficient tell you?
+**Question**: In `summary(sex_model)`, which sex is the reference group? Fill in the blanks in the sentence below to explain the relationship between sex and depression score.
 
-Answer: _______
+> The reference group is ______. The `sexMale` coefficient is about ______, which means that on average, males score about ______ points ______ (higher / lower) on the PHQ-9 than females.
 
 ## Step 3: Extract the beta and 95% CI with `broom`
 
@@ -186,10 +186,20 @@ tidy(sex_model, conf.int = TRUE)
 tidy(grade_model, conf.int = TRUE)
 ```
 
+**Question**: What is the 95% CI for the `sexMale` coefficient? Fill in the blanks in the sentence below to interpret it.
 
-To turn this into paper-style rows we use two small helpers, one for categorical predictors and one for continuous predictors.
+> The 95% CI for the difference in mean PHQ-9 score between males and females runs from about ______ to ______. Because this interval ______ (includes / excludes) 0, the difference ______ (is / is not) statistically significant at the 0.05 level.
+
+**Question**: The slope estimate for Grade 12 is 1.64. Fill in the blanks in the sentence below to explain the relationship between grade level and depression score.
+
+> Compared with ______ (the reference group), students in Grade 12 score about ______ points ______ (higher / lower) on the PHQ-9, on average.
 
 ### Helper for categorical predictors
+
+Now, to turn these regression results into a nice paper-style table, we will create some helper functions.
+
+Most of the formatting code below is fully written out for you. As in the previous table building exercise, we think it's most important to focus on getting the statistics right; formatting can be delegated to a template like this or to an LLM, **as long as you check the values against the model output**. 
+
 
 Below we write one helper function, `reg_rows()`, for categorical predictors.
 
@@ -243,7 +253,7 @@ cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increa
 
 ### Build the first three rows
 
-Now we stack age, sex, and grade into one results frame. Fill in the variable name for the grade model (the reference label is already filled in for you).
+Now we stack age, sex, and grade into one results frame. Fill in the two blanks for the sex row: the variable name R used inside `lm()`, and the name of the reference group.
 
 ```{r combine}
 results <- bind_rows(
@@ -257,7 +267,7 @@ results
 
 ## Step 4: Assemble the table with `gt`
 
-The formatting below is filled in for you. As in the previous table building exercise, we think it's most important to focus on getting the statistics right; formatting can be delegated to a template like this or to an LLM, **as long as you check the values against the model output**. 
+Now, we can assemble the table with `gt`.
 
 Below we write a function, `make_table()`, to assemble the table with `gt`.
 
@@ -303,17 +313,13 @@ Compare your three rows to the paper's simple linear regression column (the Tabl
 results %>% filter(!is.na(low)) %>% mutate(across(c(beta, low, high), ~ round(.x, 2)))
 ```
 
-**Question**: Which of these three predictors matches the paper exactly (to two decimals)?
+**Question**: Which of these three predictors matches the paper's numbers?
 
 Your answer:
 
-**Question**: The **chronological age** row does not match. What β and 95% CI does your model give, and what does the paper report? (This is the paper's first error.)
+You should find that **sex** matches the paper exactly, but **chronological age** and **grade level** do not — these are the two errors we promised at the start.
 
-Your answer:
-
-**Question**: The **grade level** rows also do not match. The paper states Grade 9 is the reference, but its Grade 10 and Grade 12 betas do not equal a Grade-9-reference regression on the data. What betas does your model give for Grade 10 and Grade 12, and what does the paper report? (This is the paper's second error. Note that age and grade are closely related — older students are in higher grades — so it is striking that both errors fall on this pair.)
-
-Your answer:
+For age, the data give β = 0.45 (0.18 to 0.71), but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 and Grade 12 = 1.64, but the paper prints 0.63 and 0.95. Age and grade are closely related (older students are in higher grades), so it is telling that both slips fall on this pair. The clean match on sex — and, as you will see in Part 2, on the other predictors too — tells us the problem is in the published table, not in our analysis.
 
 # PART 2: Add two predictors of your own
 
@@ -321,7 +327,7 @@ You have now used `chronological_age`, `sex`, and `grade_level`. Three predictor
 
 - `school_ownership`, binary (Private / Public)
 - `residence`, binary (Urban / Rural)
-- `oslo_social_support`, continuous (Oslo 3-item social support score)
+- `oslo_social_support`, continuous (Oslo 3-item social support scale). This sums three questions — the number of close confidants, how much concern other people show, and how easy it is to get practical help — into a score from 3 to 14, where higher means more social support.
 
 **Choose two** of these three and add them to the table. 
 
@@ -357,7 +363,7 @@ results_full <- bind_rows(results, my_rows)
 make_table(results_full)
 ```
 
-**Question**: For each predictor you added, does its 95% CI include 0?
+**Question**: For each predictor you added, does its 95% CI include 0? What does this mean about the significance of the predictor?
 
 Your answer:
 
@@ -367,11 +373,9 @@ Your answer:
 
 # PART 3: One framework for t-tests, ANOVA, and continuous predictors
 
-Last week you compared group means with a **t-test** (two groups) and **ANOVA** (three or more groups). This part shows that simple linear regression answers the same questions for categorical predictors, while also handling continuous predictors that those tests cannot take.
+Last week you compared group means with a **t-test** (two groups) and **ANOVA** (three or more groups). This part shows that simple linear regression answers the same questions for categorical predictors, while also handling continuous predictors that those tests cannot handle.
 
 ## A binary predictor: regression and the t-test
-
-When the predictor has two groups, `lm()` fits one mean for the reference group (in the intercept) and the **difference** between the other group and the reference (in the slope). For sex, the intercept is the mean depression score among females, and the `sexMale` coefficient is how much higher or lower males score on average.
 
 A two-sample t-test also compares the two group means. It asks whether the difference between them could plausibly be zero. Under equal variances, that test and the regression slope test are the same calculation.
 
@@ -400,7 +404,7 @@ Your answer:
 
 With more than two groups, there is no single slope. Instead, `lm()` creates one coefficient per non-reference level (Grade 10, Grade 11, Grade 12), each comparing that grade to Grade 9.
 
-A one-way ANOVA does not report those individual comparisons. It asks one **overall** question: is there any difference among the group means? That overall test comes from the regression too. Scroll to the bottom of `summary(grade_model)` for the model's F statistic and p-value, which test whether the set of grade coefficients are all zero together.
+A one-way ANOVA does not report those individual comparisons. It asks one **overall** question: is there any difference among the group means? That overall test can be accessed in the regression framework too. Scroll to the bottom of `summary(grade_model)` for the model's F statistic and p-value, which test whether the set of grade coefficients are all zero together.
 
 Run both below.
 
@@ -419,10 +423,8 @@ Your answer:
 
 ## Continuous predictors
 
-The t-test and ANOVA both compare group means, so they only work with categorical predictors. To use one with a continuous variable like age or social support, you would first have to cut it into groups, throwing away information in the process.
+The t-test and ANOVA both compare group means, so they only work with categorical predictors. To use a t test or ANOVA with a continuous variable like age or social support, you would first have to cut it into groups, throwing away information in the process.
 
 Regression has no such limit. You already saw this with `chronological_age` in Part 1: a continuous predictor goes into the same `lm()` call and comes out as a single slope, the change in mean depression score per one-unit increase in the predictor.
 
-**Question**: The paper's table mixes categorical predictors (sex, residence) with continuous ones (age, social support) in a single column. In one or two sentences, why does regression make this easier than using t-tests and ANOVAs?
 
-Your answer:
