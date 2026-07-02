@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 # Introduction
 
-These are the completed solutions for the week 7 exercise. Each step first shows the blanked chunk from the exercise (not run), then the filled-in **Solution** chunk that runs. In Part 2 we illustrate one possible choice of two extra predictors (place of residence and Oslo social support); any two of the three clean predictors are acceptable.
+These are the completed solutions for the week 7 exercise. Each step first shows the blanked chunk from the exercise (not run), then the filled-in **Solution** chunk that runs. In Part 2 we illustrate one possible choice of two extra predictors (place of residence and Oslo social support); any two of the three remaining predictors are acceptable.
 
 In this exercise we build the **simple linear regression** column of a published table, using the study's own data. We fit the first few rows together, then add more predictors, comparing our numbers to the paper and finding two places where the published table does not match a fresh analysis of the data.
 
@@ -210,6 +210,8 @@ summary(sex_model)
 
 > The reference group is **Female**. The `sexMale` coefficient is about **-0.66**, which means that on average, males score about **0.66** points **lower** on the PHQ-9 than females.
 
+(The coefficient keeps its minus sign, -0.66; the "points lower" phrase uses its size, 0.66, plus the direction word "lower".)
+
 ## Step 3: Extract the beta and 95% CI with `broom`
 
 ```{r tidy-example}
@@ -221,7 +223,7 @@ tidy(grade_model, conf.int = TRUE)
 
 **Answer:**
 
-> The 95% CI for the difference in mean PHQ-9 score between males and females runs from about **-1.35** to **0.03**. Because this interval **includes** 0, the difference **is not** statistically significant at the 0.05 level.
+> The 95% CI for the `sexMale` coefficient (the male − female difference) runs from about **-1.35** to **0.03**. Because this interval **includes** 0, the difference **is not** statistically significant at the 0.05 level.
 
 **Question**: The slope estimate for Grade 12 is 1.64. Fill in the blanks in the sentence below to explain the relationship between grade level and depression score.
 
@@ -339,11 +341,17 @@ results %>% filter(!is.na(low)) %>% mutate(across(c(beta, low, high), ~ round(.x
 
 **Answer:** **Sex** matches exactly: Male β = -0.66 (-1.35 to 0.03).
 
-**Chronological age** and **grade level** do not match — the paper's two errors. For age, the data give β = 0.45 (0.18 to 0.71) but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 (0.47 to 2.21) and Grade 12 = 1.64 (0.70 to 2.58) but the paper prints 0.63 and 0.95. Age and grade are closely related (they correlate about 0.77), so it is telling that both slips fall on this pair. The clean match on sex — and on residence and social support in Part 2 — confirms our pipeline is correct, so the discrepancy is in the published table, not our analysis.
+**Chronological age** and **grade level** do not match — the paper's two errors. For age, the data give β = 0.45 (0.18 to 0.71) but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 (0.47 to 2.21) and Grade 12 = 1.64 (0.70 to 2.58) but the paper prints 0.63 and 0.95. (The paper's table also drops the Grade 11 row altogether, even though those 103 students are in the data and in our model.) The exact match on sex — and on residence and social support in Part 2 — confirms our pipeline is correct, so the discrepancy is in the published table, not our analysis.
+
+Age and grade are closely related — older students are in higher grades — so it is telling that both slips fall on this same pair. We can check that correlation directly:
+
+```{r cor-age-grade}
+cor(survey$chronological_age, as.numeric(survey$grade_level))
+```
 
 # PART 2: Add two predictors of your own
 
-We illustrate with **place of residence** (binary) and **Oslo social support** (continuous). Any two of the three clean predictors work.
+We illustrate with **place of residence** (binary) and **Oslo social support** (continuous). Any two of the three remaining predictors work.
 
 *Exercise chunk (blanks):*
 
@@ -392,7 +400,7 @@ make_table(results_full)
 
 **Question**: Do your two added rows match the paper's simple linear regression column?
 
-**Answer:** Yes. Residence (Rural) 1.46 (0.57 to 2.34) matches exactly. Oslo social support -0.62 (-0.73 to -0.50) matches the paper's -0.62 (-0.73 to -0.49) to two decimals (the lower bound rounds at the -0.49/-0.50 boundary).
+**Answer:** Yes. Residence (Rural) 1.46 (0.57 to 2.34) matches exactly. Oslo social support -0.62 (-0.73 to -0.50) matches the paper's -0.62 (-0.73 to -0.49) to two decimals; the only difference is the upper bound, where the raw value -0.4987 sits right on the -0.49/-0.50 rounding boundary.
 
 # PART 3: One framework for t-tests, ANOVA, and continuous predictors
 
@@ -446,6 +454,31 @@ The t-test and ANOVA both compare group means, so they only work with categorica
 
 **Answer:** One `lm()` call and one output format (β with 95% CI) work for every predictor type, so every row of the table comes from the same procedure. Continuous predictors like age or social support fit naturally as slopes, with no need to cut them into groups the way a t-test or ANOVA would require.
 
+# Optional ungraded challenge: ask an LLM for a figure-table
+
+This is optional and ungraded. There is no single official solution; the point is to practice using an LLM for presentation code, while keeping responsibility for checking the numbers.
+
+The published table is clear, but some papers combine tables and graphics in one figure. For example, look at Fig 2 in this PLOS ONE paper: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0304487>
+
+The challenge is to use an LLM to turn the existing `results_full` table into a figure-table with:
+
+- a left panel with the variable and level labels
+- a column showing the beta and 95% CI as text
+- a forest plot showing the simple-regression slopes and 95% confidence intervals
+- stars beside rows where the 95% CI excludes 0
+
+Use `results_full`, which you already created. You do not need to rerun the models.
+
+Here is a suggested prompt:
+
+> I have an R data frame called `results_full` with columns `variable`, `level`, `beta`, `low`, and `high`. It contains rows from simple linear regression models of `depression_score`. Reference rows have `low` and `high` set to `NA`.
+>
+> I have attached a screenshot of the example figure style I want. Please help me make a similar figure-table with a left text panel, a text column showing beta and 95% CI, and a forest plot of `beta` with 95% confidence intervals. Add a star beside rows where the 95% CI excludes 0. Use `ggplot2` and `patchwork`.
+>
+> Before writing code, inspect this example script and borrow the overall strategy of building separate panels and combining them: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
+
+After the LLM gives you code, check at least three values against `results_full`: one reference row, one categorical coefficient, and one continuous coefficient.
+
 # Summary
 
-Using one simple linear regression per predictor plus `broom::tidy(conf.int = TRUE)` and two small row-building helpers, we built the simple-regression column of the paper's table. Sex, school ownership, residence, and Oslo social support reproduce the paper exactly; recomputing revealed two errors in the paper (the age and grade rows), for which we report the correct values. Part 3 showed that this single regression framework reproduces the t-test and ANOVA from last week, and additionally handles continuous predictors.
+Using one simple linear regression per predictor plus `broom::tidy(conf.int = TRUE)` and two small row-building helpers, we built the simple-regression column of the paper's table. Sex, residence, and Oslo social support reproduce the paper exactly; recomputing revealed two errors in the paper (the age and grade rows), for which we report the correct values. Part 3 showed that this single regression framework reproduces the t-test and ANOVA from last week, and additionally handles continuous predictors.

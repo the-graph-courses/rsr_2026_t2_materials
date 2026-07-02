@@ -16,9 +16,9 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # Introduction
 
-In this exercise we will build the **simple linear regression** column of a published table, using the study's own data. We will fit the first few rows together, then you will add one more predictor on your own. 
+In this exercise we will build the **simple linear regression** column of a published table, using the study's own data. We will fit the first few rows together, then you will add two more predictors on your own.
 
-Along the way we will compare our numbers to the paper and find two places in the published table that do not match the data the authors put out (a reminder that even published work can be mistake-ridden).
+Along the way we will compare our numbers to the paper and find two places in the published table that do not match the data the authors released (a reminder that even published work can be mistake-ridden).
 
 ## The study
 
@@ -177,6 +177,8 @@ summary(sex_model)
 
 > The reference group is ______. The `sexMale` coefficient is about ______, which means that on average, males score about ______ points ______ (higher / lower) on the PHQ-9 than females.
 
+(Hint: the coefficient keeps its minus sign; the "points ... higher / lower" phrase uses the *size* of that number plus the matching direction word.)
+
 ## Step 3: Extract the beta and 95% CI with `broom`
 
 `summary()` is good for reading one model. To build a table we want the numbers in a data frame. `broom::tidy()` does that, and `conf.int = TRUE` adds the 95% CI as columns.
@@ -188,7 +190,7 @@ tidy(grade_model, conf.int = TRUE)
 
 **Question**: What is the 95% CI for the `sexMale` coefficient? Fill in the blanks in the sentence below to interpret it.
 
-> The 95% CI for the difference in mean PHQ-9 score between males and females runs from about ______ to ______. Because this interval ______ (includes / excludes) 0, the difference ______ (is / is not) statistically significant at the 0.05 level.
+> The 95% CI for the `sexMale` coefficient (the male − female difference) runs from about ______ to ______. Because this interval ______ (includes / excludes) 0, the difference ______ (is / is not) statistically significant at the 0.05 level.
 
 **Question**: The slope estimate for Grade 12 is 1.64. Fill in the blanks in the sentence below to explain the relationship between grade level and depression score.
 
@@ -198,7 +200,7 @@ tidy(grade_model, conf.int = TRUE)
 
 Now, to turn these regression results into a nice paper-style table, we will create some helper functions.
 
-Most of the formatting code below is fully written out for you. As in the previous table building exercise, we think it's most important to focus on getting the statistics right; formatting can be delegated to a template like this or to an LLM, **as long as you check the values against the model output**. 
+Most of the formatting code below is fully written out for you. As in the previous table building exercise, we think it's most important to focus on getting the statistics right; formatting can be delegated to a template like this or to an LLM, **as long as you check the values that come out of the fancy code very carefully**.
 
 
 Below we write one helper function, `reg_rows()`, for categorical predictors.
@@ -319,7 +321,7 @@ Your answer:
 
 You should find that **sex** matches the paper exactly, but **chronological age** and **grade level** do not — these are the two errors we promised at the start.
 
-For age, the data give β = 0.45 (0.18 to 0.71), but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 and Grade 12 = 1.64, but the paper prints 0.63 and 0.95. Age and grade are closely related (older students are in higher grades), so it is telling that both slips fall on this pair. The clean match on sex — and, as you will see in Part 2, on the other predictors too — tells us the problem is in the published table, not in our analysis.
+For age, the data give β = 0.45 (0.18 to 0.71), but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 and Grade 12 = 1.64, but the paper prints 0.63 and 0.95. (The paper's table also drops the Grade 11 row altogether, even though those 103 students are in the data and in our model.) Age and grade are closely related — older students are in higher grades — so it is telling that both slips fall on this pair. The exact match on sex — and, as you will see in Part 2, on the other predictors too — tells us the problem is in the published table, not in our analysis.
 
 # PART 2: Add two predictors of your own
 
@@ -428,3 +430,25 @@ The t-test and ANOVA both compare group means, so they only work with categorica
 Regression has no such limit. You already saw this with `chronological_age` in Part 1: a continuous predictor goes into the same `lm()` call and comes out as a single slope, the change in mean depression score per one-unit increase in the predictor.
 
 
+# Optional ungraded challenge: ask an LLM for a figure-table
+
+This is optional and ungraded. The goal is to practice using an LLM for **presentation code**, while still checking the statistical values yourself.
+
+The published table is clear, but some papers combine tables and graphics in one figure. For example, look at Fig 2 in this PLOS ONE paper: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0304487>
+
+Your challenge: use your LLM to turn your existing `results_full` table into a figure-table with:
+
+- a left panel with the variable and level labels
+- a column showing the beta and 95% CI as text
+- a forest plot showing the simple-regression slopes and 95% confidence intervals
+- stars beside rows where the 95% CI excludes 0
+
+Use `results_full`, which you already created. 
+
+Here is an example prompt. Be sure to include a screenshot or download of the example figure style in your prompt.
+
+> I have an R data frame called `results_full` with columns `variable`, `level`, `beta`, `low`, and `high`. It contains rows from simple linear regression models of `depression_score`. Reference rows have `low` and `high` set to `NA`. The data frame is pasted below.
+> [PASTE YOUR DATA FRAME HERE]
+> I have attached a screenshot of the example figure style I want. Please help me make a similar figure-table with a left text panel, a text column showing beta and 95% CI, and a forest plot of `beta` with 95% confidence intervals. Add a star beside rows where the 95% CI excludes 0. Use `ggplot2` and `patchwork`. Before writing code, inspect this example script and borrow the overall strategy of building separate panels and combining them: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
+
+When you get code back, check at least three values against `results_full`: one reference row, one categorical coefficient, and one continuous coefficient. Do not trust the plot until those values match.
