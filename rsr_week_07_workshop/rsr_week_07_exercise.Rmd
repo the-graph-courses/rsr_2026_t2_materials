@@ -203,7 +203,7 @@ Now, to turn these regression results into a nice paper-style table, we will cre
 Most of the formatting code below is fully written out for you. As in the previous table building exercise, we think it's most important to focus on getting the statistics right; formatting can be delegated to a template like this or to an LLM, **as long as you check the values that come out of the fancy code very carefully**.
 
 
-Below we write one helper function, `reg_rows()`, for categorical predictors.
+Below we write one helper function, `cat_rows()`, for categorical predictors.
 
 It will:
 - drop the intercept
@@ -211,7 +211,7 @@ It will:
 - add back a **reference row** with β = 0
 
 ```{r helper-cat}
-reg_rows <- function(model, var_name, var_label, ref_label) {
+cat_rows <- function(model, var_name, var_label, ref_label) {
   # non-reference rows: drop the intercept, clean the level label
   non_ref <- tidy(model, conf.int = TRUE) %>%
     filter(term != "(Intercept)") %>%
@@ -228,21 +228,21 @@ reg_rows <- function(model, var_name, var_label, ref_label) {
 Run it once on the sex model and compare the result to the raw `tidy()` output above.
 
 ```{r helper-cat-demo}
-reg_rows(sex_model, var_name = "sex", var_label = "Sex", ref_label = "Female")
+cat_rows(sex_model, var_name = "sex", var_label = "Sex", ref_label = "Female")
 ```
 
-**Question**: Compared with `tidy(sex_model, conf.int = TRUE)`, name one change that `reg_rows()` made.
+**Question**: Compared with `tidy(sex_model, conf.int = TRUE)`, name one change that `cat_rows()` made.
 
 Answer: _______
 
 ### Helper for continuous predictors
 
-Next, we write one helper function, `cont_row()`, for continuous predictors.
+Next, we write one helper function, `cont_rows()`, for continuous predictors.
 
-A continuous predictor has no reference group and just one row, so `cont_row()` is simpler: it keeps the single slope row and labels it.
+A continuous predictor has no reference group and just one row, so `cont_rows()` is simpler: it keeps the single slope row and labels it.
 
 ```{r helper-cont}
-cont_row <- function(model, var_name, var_label, level_label) {
+cont_rows <- function(model, var_name, var_label, level_label) {
   tidy(model, conf.int = TRUE) %>%
     filter(term == var_name) %>%
     transmute(variable = var_label, level = level_label, beta = estimate, low = conf.low, high = conf.high)
@@ -250,7 +250,7 @@ cont_row <- function(model, var_name, var_label, level_label) {
 ```
 
 ```{r helper-cont-demo}
-cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase")
+cont_rows(age_model, "chronological_age", "Chronological age", "Per 1-year increase")
 ```
 
 ### Build the first three rows
@@ -259,9 +259,9 @@ Now we stack age, sex, and grade into one results frame. Fill in the two blanks 
 
 ```{r combine}
 results <- bind_rows(
-  cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
-  reg_rows(sex_model, "______", "Sex", ref_label = "______"),
-  reg_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
+  cont_rows(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
+  cat_rows(sex_model, "______", "Sex", ref_label = "______"),
+  cat_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
 )
 
 results
@@ -319,9 +319,11 @@ results %>% filter(!is.na(low)) %>% mutate(across(c(beta, low, high), ~ round(.x
 
 Your answer:
 
-You should find that **sex** matches the paper exactly, but **chronological age** and **grade level** do not — these are the two errors we promised at the start.
+You should find that **sex** matches the paper exactly, but **chronological age** and **grade level** do not. These are the two errors we mentioned at the start.
 
-For age, the data give β = 0.45 (0.18 to 0.71), but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 and Grade 12 = 1.64, but the paper prints 0.63 and 0.95. (The paper's table also drops the Grade 11 row altogether, even though those 103 students are in the data and in our model.) Age and grade are closely related — older students are in higher grades — so it is telling that both slips fall on this pair. The exact match on sex — and, as you will see in Part 2, on the other predictors too — tells us the problem is in the published table, not in our analysis.
+For age, the data give β = 0.45 (0.18 to 0.71), but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 and Grade 12 = 1.64, but the paper prints 0.63 and 0.95. (The paper's table also drops the Grade 11 row altogether, even though those 103 students are in the data and in our model.)
+
+If you find errors in published work, it is sometimes helpful to contact the authors and ask them to correct the table. For now, we ignore the errors and continue with the exercise.
 
 # PART 2: Add two predictors of your own
 
@@ -329,7 +331,7 @@ You have now used `chronological_age`, `sex`, and `grade_level`. Three predictor
 
 - `school_ownership`, binary (Private / Public)
 - `residence`, binary (Urban / Rural)
-- `oslo_social_support`, continuous (Oslo 3-item social support scale). This sums three questions — the number of close confidants, how much concern other people show, and how easy it is to get practical help — into a score from 3 to 14, where higher means more social support.
+- `oslo_social_support`, continuous (Oslo 3-item social support scale). This sums three questions (number of close confidants, concern shown by others, and ease of getting practical help) into a score from 3 to 14, where higher means more social support.
 
 **Choose two** of these three and add them to the table. 
 
@@ -343,8 +345,8 @@ my_model_2 <-
 
 ```{r my-rows}
 # Now turn each model into table rows.
-# Binary:    reg_rows(model, "var_name", "Nice label", ref_label = "Reference level")
-# Continuous: cont_row(model, "var_name", "Nice label", "Per 1-point increase")
+# Binary:    cat_rows(model, "var_name", "Nice label", ref_label = "Reference level")
+# Continuous: cont_rows(model, "var_name", "Nice label", "Per 1-point increase")
 
 my_row_1 <- ______
 my_row_2 <- ______
@@ -357,7 +359,7 @@ my_rows <- bind_rows(my_row_1, my_row_2)
 my_rows
 ```
 
-If anything looks wrong (for example, a missing reference row or a level label that still includes the variable name), fix the lines above before continuing.
+If anything looks wrong, fix the lines before continuing.
 
 ```{r combine-full}
 results_full <- bind_rows(results, my_rows)
@@ -447,8 +449,12 @@ Use `results_full`, which you already created.
 
 Here is an example prompt. Be sure to include a screenshot or download of the example figure style in your prompt.
 
-> I have an R data frame called `results_full` with columns `variable`, `level`, `beta`, `low`, and `high`. It contains rows from simple linear regression models of `depression_score`. Reference rows have `low` and `high` set to `NA`. The data frame is pasted below.
-> [PASTE YOUR DATA FRAME HERE]
-> I have attached a screenshot of the example figure style I want. Please help me make a similar figure-table with a left text panel, a text column showing beta and 95% CI, and a forest plot of `beta` with 95% confidence intervals. Add a star beside rows where the 95% CI excludes 0. Use `ggplot2` and `patchwork`. Before writing code, inspect this example script and borrow the overall strategy of building separate panels and combining them: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
+> Consider the R Data frame below :
+
+> [PASTE YOUR resultsDATA FRAME HERE]
+
+> I have attached a screenshot of the example figure style I want. With a forest plot of the coefficients and 95% CIs. Give me code to build it. 
+
+> The authors shared this script that shows how to build such a table: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
 
 When you get code back, check at least three values against `results_full`: one reference row, one categorical coefficient, and one continuous coefficient. Do not trust the plot until those values match.

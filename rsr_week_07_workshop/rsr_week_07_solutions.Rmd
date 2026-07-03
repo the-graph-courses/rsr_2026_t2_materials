@@ -167,7 +167,7 @@ survey <- survey %>%
   )
 ```
 
-Now we can check again — the four labelled variables show up as categorical.
+Now we can check again: the four labelled variables show up as categorical.
 
 ```{r eda-labeled}
 inspect_cat(survey) %>% show_plot()
@@ -235,10 +235,10 @@ tidy(grade_model, conf.int = TRUE)
 
 Now, to turn these regression results into a paper-style table, we create some helper functions. Most of the formatting is written for you; as before, focus on getting the statistics right and check the values against the model output.
 
-`reg_rows()` handles a categorical predictor: it drops the intercept, strips the variable name off `"sexMale"` to leave `"Male"`, and adds back a **reference row** with β = 0.
+`cat_rows()` handles a categorical predictor: it drops the intercept, strips the variable name off `"sexMale"` to leave `"Male"`, and adds back a **reference row** with β = 0.
 
 ```{r helper-cat}
-reg_rows <- function(model, var_name, var_label, ref_label) {
+cat_rows <- function(model, var_name, var_label, ref_label) {
   # non-reference rows: drop the intercept, clean the level label
   non_ref <- tidy(model, conf.int = TRUE) %>%
     filter(term != "(Intercept)") %>%
@@ -253,17 +253,17 @@ reg_rows <- function(model, var_name, var_label, ref_label) {
 ```
 
 ```{r helper-cat-demo}
-reg_rows(sex_model, var_name = "sex", var_label = "Sex", ref_label = "Female")
+cat_rows(sex_model, var_name = "sex", var_label = "Sex", ref_label = "Female")
 ```
 
-**Question**: Name one change that `reg_rows()` made compared with `tidy(sex_model, conf.int = TRUE)`.
+**Question**: Name one change that `cat_rows()` made compared with `tidy(sex_model, conf.int = TRUE)`.
 
 **Answer:** It added a reference row for Female (β = 0, no CI), which `tidy()` did not show, and it cleaned the level label from `sexMale` to `Male` by stripping the variable name off the front. (It also renamed the columns and dropped the intercept row.)
 
 ### Helper for continuous predictors
 
 ```{r helper-cont}
-cont_row <- function(model, var_name, var_label, level_label) {
+cont_rows <- function(model, var_name, var_label, level_label) {
   tidy(model, conf.int = TRUE) %>%
     filter(term == var_name) %>%
     transmute(variable = var_label, level = level_label, beta = estimate, low = conf.low, high = conf.high)
@@ -271,7 +271,7 @@ cont_row <- function(model, var_name, var_label, level_label) {
 ```
 
 ```{r helper-cont-demo}
-cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase")
+cont_rows(age_model, "chronological_age", "Chronological age", "Per 1-year increase")
 ```
 
 ### Build the first three rows
@@ -280,9 +280,9 @@ cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increa
 
 ```{r combine-q, eval=FALSE}
 results <- bind_rows(
-  cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
-  reg_rows(sex_model, "______", "Sex", ref_label = "______"),
-  reg_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
+  cont_rows(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
+  cat_rows(sex_model, "______", "Sex", ref_label = "______"),
+  cat_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
 )
 
 results
@@ -292,9 +292,9 @@ results
 
 ```{r combine}
 results <- bind_rows(
-  cont_row(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
-  reg_rows(sex_model, "sex", "Sex", ref_label = "Female"),
-  reg_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
+  cont_rows(age_model, "chronological_age", "Chronological age", "Per 1-year increase"),
+  cat_rows(sex_model, "sex", "Sex", ref_label = "Female"),
+  cat_rows(grade_model, "grade_level", "Grade level", ref_label = "Grade 9")
 )
 
 results
@@ -339,15 +339,11 @@ results %>% filter(!is.na(low)) %>% mutate(across(c(beta, low, high), ~ round(.x
 
 **Question**: Which of these three predictors matches the paper's numbers?
 
-**Answer:** **Sex** matches exactly: Male β = -0.66 (-1.35 to 0.03).
+**Answer:** **Sex** matches the paper exactly (Male β = -0.66, -1.35 to 0.03), but **chronological age** and **grade level** do not: the two errors we mentioned at the start.
 
-**Chronological age** and **grade level** do not match — the paper's two errors. For age, the data give β = 0.45 (0.18 to 0.71) but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 (0.47 to 2.21) and Grade 12 = 1.64 (0.70 to 2.58) but the paper prints 0.63 and 0.95. (The paper's table also drops the Grade 11 row altogether, even though those 103 students are in the data and in our model.) The exact match on sex — and on residence and social support in Part 2 — confirms our pipeline is correct, so the discrepancy is in the published table, not our analysis.
+For age, the data give β = 0.45 (0.18 to 0.71), but the paper prints 0.59 (0.20 to 0.99). For grade, with Grade 9 as the stated reference group, the data give Grade 10 = 1.34 (0.47 to 2.21) and Grade 12 = 1.64 (0.70 to 2.58), but the paper prints 0.63 and 0.95. (The paper's table also drops the Grade 11 row altogether, even though those 103 students are in the data and in our model.)
 
-Age and grade are closely related — older students are in higher grades — so it is telling that both slips fall on this same pair. We can check that correlation directly:
-
-```{r cor-age-grade}
-cor(survey$chronological_age, as.numeric(survey$grade_level))
-```
+If you find errors in published work, it is sometimes helpful to contact the authors and ask them to correct the table. For now, we ignore the errors and continue with the exercise.
 
 # PART 2: Add two predictors of your own
 
@@ -374,11 +370,11 @@ my_row_1 <- ______
 my_row_2 <- ______
 ```
 
-**Solution:** residence is binary (use `reg_rows`), Oslo social support is continuous (use `cont_row`).
+**Solution:** residence is binary (use `cat_rows`), Oslo social support is continuous (use `cont_rows`).
 
 ```{r my-rows}
-my_row_1 <- reg_rows(my_model_1, "residence", "Place of residence", ref_label = "Urban")
-my_row_2 <- cont_row(my_model_2, "oslo_social_support", "Oslo social support", "Per 1-point increase")
+my_row_1 <- cat_rows(my_model_1, "residence", "Place of residence", ref_label = "Urban")
+my_row_2 <- cont_rows(my_model_2, "oslo_social_support", "Oslo social support", "Per 1-point increase")
 ```
 
 Stack and inspect the two rows before binding into the full table.
@@ -431,7 +427,7 @@ survey %>%
 
 ## A polytomous predictor: regression and ANOVA
 
-With more than two groups there is no single slope; `lm()` gives one coefficient per non-reference grade. A one-way ANOVA instead asks one overall question — is there any difference among the group means? — which is the F test at the bottom of `summary(grade_model)`.
+With more than two groups there is no single slope; `lm()` gives one coefficient per non-reference grade. A one-way ANOVA instead asks one overall question (is there any difference among the group means?), which is the F test at the bottom of `summary(grade_model)`.
 
 ```{r anova-vs-reg}
 summary(aov(depression_score ~ grade_level, data = survey))
@@ -448,7 +444,7 @@ summary(grade_model)
 
 ## Continuous predictors
 
-The t-test and ANOVA both compare group means, so they only work with categorical predictors — to use them on a continuous variable you would first have to cut it into groups, throwing away information. Regression has no such limit: a continuous predictor goes into the same `lm()` call and comes out as a single slope, as we saw with `chronological_age` in Part 1.
+The t-test and ANOVA both compare group means, so they only work with categorical predictors; to use them on a continuous variable you would first have to cut it into groups, throwing away information. Regression has no such limit: a continuous predictor goes into the same `lm()` call and comes out as a single slope, as we saw with `chronological_age` in Part 1.
 
 **Question**: The paper's table mixes categorical predictors (sex, residence) with continuous ones (age, social support) in a single column. Why does regression make this easier than using t-tests and ANOVAs?
 
