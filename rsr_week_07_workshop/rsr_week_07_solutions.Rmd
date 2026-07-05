@@ -387,6 +387,8 @@ my_rows
 ```{r combine-full}
 results_full <- bind_rows(results, my_rows)
 
+results_full
+
 make_table(results_full)
 ```
 
@@ -450,28 +452,11 @@ The t-test and ANOVA both compare group means, so they only work with categorica
 
 **Answer:** One `lm()` call and one output format (β with 95% CI) work for every predictor type, so every row of the table comes from the same procedure. Continuous predictors like age or social support fit naturally as slopes, with no need to cut them into groups the way a t-test or ANOVA would require.
 
-# Optional ungraded challenge: ask an LLM for a figure-table
+# Optional challenge: add a forest plot
 
-This is optional and ungraded. There is no single official solution; the point is to practice using an LLM for presentation code, while keeping responsibility for checking the numbers.
+This is optional. Ask an LLM to help you add a **forest plot** to your final table output, using the beta estimates and 95% confidence intervals in `results_full`.
 
-The published table is clear, but some papers combine tables and graphics in one figure. For example, look at Fig 2 in this PLOS ONE paper: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0304487>
-
-The challenge is to use an LLM to turn the existing `results_full` table into a figure-table with:
-
-- a left panel with the variable and level labels
-- a column showing the beta and 95% CI as text
-- a forest plot showing the simple-regression slopes and 95% confidence intervals
-- stars beside rows where the 95% CI excludes 0
-
-Use `results_full`, which you already created. You do not need to rerun the models.
-
-Here is a suggested prompt:
-
-> I have an R data frame called `results_full` with columns `variable`, `level`, `beta`, `low`, and `high`. It contains rows from simple linear regression models of `depression_score`. Reference rows have `low` and `high` set to `NA`.
->
-> I have attached a screenshot of the example figure style I want. Please help me make a similar figure-table with a left text panel, a text column showing beta and 95% CI, and a forest plot of `beta` with 95% confidence intervals. Add a star beside rows where the 95% CI excludes 0. Use `ggplot2` and `patchwork`.
->
-> Before writing code, inspect this example script and borrow the overall strategy of building separate panels and combining them: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
+You will probably want to paste your `results_full` data frame into the chat and ask for R code that plots `beta` on the x-axis, with confidence intervals from `low` to `high`, one row per table row. You can also ask it to add stars for rows where the 95% CI excludes 0.
 
 After the LLM gives you code, check at least three values against `results_full`: one reference row, one categorical coefficient, and one continuous coefficient.
 
