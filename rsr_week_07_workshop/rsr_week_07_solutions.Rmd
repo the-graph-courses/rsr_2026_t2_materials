@@ -27,7 +27,7 @@ In this exercise we build the **simple linear regression** column of a published
 
 ## The outcome: the PHQ-9 depression score
 
-The authors measured depression with the **PHQ-9 (Patient Health Questionnaire-9)**, a widely used screening tool. It asks how often, over the last two weeks, a person has been bothered by nine problems, for example *"Little interest or pleasure in doing things"* and *"Feeling down, depressed, or hopeless."* Each item is rated 0 ("Not at all") to 3 ("Nearly every day"). The nine items are summed into a total from 0 to 27 (higher = more symptoms), which we rename to `depression_score`.
+The authors measured depression with the **PHQ-9 (Patient Health Questionnaire-9)**, a widely used screening tool. It asks how often, over the last two weeks, a person has been bothered by nine problems, for example *"Little interest or pleasure in doing things"* and *"Feeling down, depressed, or hopeless."* Each item is rated 0 ("Not at all") to 3 ("Nearly every day"). The nine items are summed into a total from 0 to 27 (higher = more symptoms), which we rename to `depression_score`. Even though PHQ-9 is based on categorical item responses, composite scale scores like this are often treated as approximately continuous for modeling, and we follow that convention here to reproduce the paper's linear regression analysis.
 
 # PART 1: Build and check the first rows
 
@@ -174,11 +174,11 @@ inspect_cat(survey) %>% show_plot()
 inspect_num(survey) %>% show_plot()
 ```
 
-**Question**: Which predictors are continuous, binary, or polytomous?
+**Question**: Which predictors are numeric/scale, binary, or polytomous?
 
 **Answer:**
 
-- Continuous: `chronological_age`, `oslo_social_support`.
+- Numeric/scale: `chronological_age`, `oslo_social_support`.
 - Binary: `sex`, `school_ownership`, `residence`.
 - Polytomous (3+ groups): `grade_level` (four grades).
 
@@ -260,7 +260,7 @@ cat_rows(sex_model, var_name = "sex", var_label = "Sex", ref_label = "Female")
 
 **Answer:** It added a reference row for Female (β = 0, no CI), which `tidy()` did not show, and it cleaned the level label from `sexMale` to `Male` by stripping the variable name off the front. (It also renamed the columns and dropped the intercept row.)
 
-### Helper for continuous predictors
+### Helper for numeric/scale predictors
 
 ```{r helper-cont}
 cont_rows <- function(model, var_name, var_label, level_label) {
@@ -347,7 +347,7 @@ If you find errors in published work, it is sometimes helpful to contact the aut
 
 # PART 2: Add two predictors of your own
 
-We illustrate with **place of residence** (binary) and **Oslo social support** (continuous). Any two of the three remaining predictors work.
+We illustrate with **place of residence** (binary) and **Oslo social support** (numeric/scale). The Oslo score runs from 3 to 14, where higher means more social support; for this exercise, we treat it like a continuous predictor and interpret the coefficient per 1-point increase. Any two of the three remaining predictors work.
 
 *Exercise chunk (blanks):*
 
@@ -370,7 +370,7 @@ my_row_1 <- ______
 my_row_2 <- ______
 ```
 
-**Solution:** residence is binary (use `cat_rows`), Oslo social support is continuous (use `cont_rows`).
+**Solution:** residence is binary (use `cat_rows`), Oslo social support is a numeric/scale score treated like a continuous predictor (use `cont_rows`).
 
 ```{r my-rows}
 my_row_1 <- cat_rows(my_model_1, "residence", "Place of residence", ref_label = "Urban")
@@ -400,9 +400,9 @@ make_table(results_full)
 
 **Answer:** Yes. Residence (Rural) 1.46 (0.57 to 2.34) matches exactly. Oslo social support -0.62 (-0.73 to -0.50) matches the paper's -0.62 (-0.73 to -0.49) to two decimals; the only difference is the upper bound, where the raw value -0.4987 sits right on the -0.49/-0.50 rounding boundary.
 
-# PART 3: One framework for t-tests, ANOVA, and continuous predictors
+# PART 3: One framework for t-tests, ANOVA, and numeric/scale predictors
 
-Simple linear regression answers the same questions as a t-test and an ANOVA for categorical predictors, while also handling continuous predictors those tests cannot.
+Simple linear regression answers the same questions as a t-test and an ANOVA for categorical predictors, while also handling numeric/scale predictors those tests cannot.
 
 ## A binary predictor: regression and the t-test
 
@@ -444,22 +444,30 @@ summary(grade_model)
 
 **Answer:** Yes, both are F = 4.90 (on 3 and 542 degrees of freedom). A one-way ANOVA is a simple linear regression with a categorical predictor.
 
-## Continuous predictors
+# Optional challenge: add a forest plot using LLM assistance
 
-The t-test and ANOVA both compare group means, so they only work with categorical predictors; to use them on a continuous variable you would first have to cut it into groups, throwing away information. Regression has no such limit: a continuous predictor goes into the same `lm()` call and comes out as a single slope, as we saw with `chronological_age` in Part 1.
+The published table is clear, but some papers combine tables and graphics in one figure. For example, look at Fig 2 this paper: <https://gh.bmj.com/content/10/12/e018739#F2>
 
-**Question**: The paper's table mixes categorical predictors (sex, residence) with continuous ones (age, social support) in a single column. Why does regression make this easier than using t-tests and ANOVAs?
+![Example figure-table style with coefficient text and forest plots.](paper/figure2_forest_plot_example.jpg)
 
-**Answer:** One `lm()` call and one output format (β with 95% CI) work for every predictor type, so every row of the table comes from the same procedure. Continuous predictors like age or social support fit naturally as slopes, with no need to cut them into groups the way a t-test or ANOVA would require.
+The authors shared this script that shows how to build such a table: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
 
-# Optional challenge: add a forest plot
+We would like to replicate something like this for our own table. And we can use an LLM to help us with the code. We'd recommend using Claude or the paid version of ChatGPT for this. (Free ChatGPT may not be smart enough to handle the task.)
 
-This is optional. Ask an LLM to help you add a **forest plot** to your final table output, using the beta estimates and 95% confidence intervals in `results_full`.
+To prompt the LLM, you will probably want to paste your `results_full` data frame into the chat, as well as the link to the script (most modern LLMs can access such links). An example prompt could look like this:
 
-You will probably want to paste your `results_full` data frame into the chat and ask for R code that plots `beta` on the x-axis, with confidence intervals from `low` to `high`, one row per table row. You can also ask it to add stars for rows where the 95% CI excludes 0.
+> Here is my `results_full` table:
+>
+> {PASTE YOUR TABLE OUTPUT HERE}
+>
+> Please write R code to make a composite ggplot table with the coefficients, CIs, and a forest plot of these values. Add stars where the 95% CI excludes 0.
+>
+> Here is a link to a script that shows how to build such a table: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
 
-After the LLM gives you code, check at least three values against `results_full`: one reference row, one categorical coefficient, and one continuous coefficient.
+When you run the LLM-generated code, if you get any errors, you can paste them back into the LLM chat to get help.
+
+When done, be sure to check the values in the plot/table against the values in `results_full`.
 
 # Summary
 
-Using one simple linear regression per predictor plus `broom::tidy(conf.int = TRUE)` and two small row-building helpers, we built the simple-regression column of the paper's table. Sex, residence, and Oslo social support reproduce the paper exactly; recomputing revealed two errors in the paper (the age and grade rows), for which we report the correct values. Part 3 showed that this single regression framework reproduces the t-test and ANOVA from last week, and additionally handles continuous predictors.
+Using one simple linear regression per predictor plus `broom::tidy(conf.int = TRUE)` and two small row-building helpers, we built the simple-regression column of the paper's table. Sex, residence, and Oslo social support reproduce the paper exactly; recomputing revealed two errors in the paper (the age and grade rows), for which we report the correct values. Part 3 showed that this single regression framework reproduces the t-test and ANOVA from last week, and additionally handles numeric/scale predictors.

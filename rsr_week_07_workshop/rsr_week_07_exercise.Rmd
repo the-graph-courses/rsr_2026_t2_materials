@@ -34,11 +34,11 @@ The authors measured depression with the **PHQ-9 (Patient Health Questionnaire-9
 
 ![The nine PHQ-9 items and response scale.](paper/phq9_questionnaire.png)
 
-The nine item scores are summed into a total from 0 to 27, where higher means more depressive symptoms. In the data this total is the column we rename to `depression_score`.
+The nine item scores are summed into a total from 0 to 27, where higher means more depressive symptoms. In the data this total is the column we rename to `depression_score`. Even though PHQ-9 is based on categorical item responses, composite scale scores like this are often treated as approximately continuous for modeling, and we follow that convention here to reproduce the paper's linear regression analysis.
 
 ## The table we will build
 
-Table 2 of the paper reports, for each explanatory variable, a **simple linear regression** column (one predictor at a time) and a **multiple linear regression** column (all predictors together). We will build only the **simple linear regression** column. 
+Table 2 of the paper reports, for each explanatory variable, a **simple linear regression** column (one predictor at a time) and a **multiple linear regression** column (all predictors together). We will build only the **simple linear regression** column.
 
 ![Table 2 from Girma et al. (2021). We reproduce the simple linear regression column.](paper/table2_with_values.png)
 
@@ -147,17 +147,17 @@ inspect_cat(survey) %>% show_plot()
 inspect_num(survey) %>% show_plot()
 ```
 
-**Question**: Which predictors are **continuous**? Which are **binary** (two groups)? Which are **polytomous** (three or more groups)? List each predictor under one heading.
+**Question**: Which predictors are **numeric/scale** variables? Which are **binary** (two groups)? Which are **polytomous** (three or more groups)? List each predictor under one heading.
 
 Answer:
 
-- Continuous: _______
+- Numeric/scale: _______
 - Binary: _______
 - Polytomous: _______
 
 ## Step 2: Run one simple linear regression per predictor
 
-We start with three predictors, one of each type: `chronological_age` (continuous), `sex` (binary), and `grade_level` (polytomous). A simple regression uses **one predictor at a time**. The outcome is always `depression_score`.
+We start with three predictors, one of each type: `chronological_age` (numeric), `sex` (binary), and `grade_level` (polytomous). A simple regression uses **one predictor at a time**. The outcome is always `depression_score`.
 
 The age model is filled in as an example. Fill in the predictors for the other two models.
 
@@ -235,11 +235,11 @@ cat_rows(sex_model, var_name = "sex", var_label = "Sex", ref_label = "Female")
 
 Answer: _______
 
-### Helper for continuous predictors
+### Helper for numeric/scale predictors
 
-Next, we write one helper function, `cont_rows()`, for continuous predictors.
+Next, we write one helper function, `cont_rows()`, for numeric/scale predictors.
 
-A continuous predictor has no reference group and just one row, so `cont_rows()` is simpler: it keeps the single slope row and labels it.
+A numeric/scale predictor has no reference group and just one row, so `cont_rows()` is simpler: it keeps the single slope row and labels it.
 
 ```{r helper-cont}
 cont_rows <- function(model, var_name, var_label, level_label) {
@@ -331,7 +331,7 @@ You have now used `chronological_age`, `sex`, and `grade_level`. Three predictor
 
 - `school_ownership`, binary (Private / Public)
 - `residence`, binary (Urban / Rural)
-- `oslo_social_support`, continuous (Oslo 3-item social support scale). This sums three questions (number of close confidants, concern shown by others, and ease of getting practical help) into a score from 3 to 14, where higher means more social support.
+- `oslo_social_support`, numeric/scale score (Oslo 3-item social support scale). This sums three questions (number of close confidants, concern shown by others, and ease of getting practical help) into a score from 3 to 14, where higher means more social support. You can see an example of the scale [here](https://imgv2-1-f.scribdassets.com/img/document/999298757/original/817065c305/1?v=1). For this exercise, treat it like a continuous predictor and interpret the coefficient per 1-point increase.
 
 **Choose two** of these three and add them to the table. 
 
@@ -346,7 +346,7 @@ my_model_2 <-
 ```{r my-rows}
 # Now turn each model into table rows.
 # Binary:    cat_rows(model, "var_name", "Nice label", ref_label = "Reference level")
-# Continuous: cont_rows(model, "var_name", "Nice label", "Per 1-point increase")
+# Numeric/scale: cont_rows(model, "var_name", "Nice label", "Per 1-point increase")
 
 my_row_1 <- ______
 my_row_2 <- ______
@@ -375,9 +375,9 @@ Your answer:
 
 Your answer:
 
-# PART 3: One framework for t-tests, ANOVA, and continuous predictors
+# PART 3: One framework for t-tests, ANOVA, and numeric/scale predictors
 
-Last week you compared group means with a **t-test** (two groups) and **ANOVA** (three or more groups). This part shows that simple linear regression answers the same questions for categorical predictors, while also handling continuous predictors that those tests cannot handle.
+Last week you compared group means with a **t-test** (two groups) and **ANOVA** (three or more groups). This part shows that simple linear regression answers the same questions for categorical predictors, while also handling numeric/scale predictors that those tests cannot handle.
 
 ## A binary predictor: regression and the t-test
 
@@ -425,17 +425,26 @@ Your answer:
 
 Your answer:
 
-## Continuous predictors
+# Optional challenge: add a forest plot using LLM assistance
 
-The t-test and ANOVA both compare group means, so they only work with categorical predictors. To use a t test or ANOVA with a continuous variable like age or social support, you would first have to cut it into groups, throwing away information in the process.
+The published table is clear, but some papers combine tables and graphics in one figure. For example, look at Fig 2 this paper: <https://gh.bmj.com/content/10/12/e018739#F2>
 
-Regression has no such limit. You already saw this with `chronological_age` in Part 1: a continuous predictor goes into the same `lm()` call and comes out as a single slope, the change in mean depression score per one-unit increase in the predictor.
+![Example figure-table style with coefficient text and forest plots.](paper/figure2_forest_plot_example.jpg)
 
+The authors shared this script that shows how to build such a table: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
 
-# Optional challenge: add a forest plot
+We would like to replicate something like this for our own table. And we can use an LLM to help us with the code. We'd recommend using Claude or the paid version of ChatGPT for this. (Free ChatGPT may not be smart enough to handle the task.)
 
-This is optional. Ask an LLM to help you add a **forest plot** to your final table output, using the beta estimates and 95% confidence intervals in `results_full`.
+To prompt the LLM, you will probably want to paste your `results_full` data frame into the chat, as well as the link to the script (most modern LLMs can access such links). An example prompt could look like this:
 
-You will probably want to paste your `results_full` data frame into the chat and ask for R code that plots `beta` on the x-axis, with confidence intervals from `low` to `high`, one row per table row. You can also ask it to add stars for rows where the 95% CI excludes 0.
+> Here is my `results_full` table:
+>
+> {PASTE YOUR TABLE OUTPUT HERE}
+>
+> Please write R code to make a composite ggplot table with the coefficients, CIs, and a forest plot of these values. Add stars where the 95% CI excludes 0.
+>
+> Here is a link to a script that shows how to build such a table: <https://github.com/kendavidn/yaounde_serocovpop_shared/blob/v1.0.0/scripts/infection_regn_2.R>
 
-When you get code back, check at least three values against `results_full`: one reference row, one categorical coefficient, and one continuous coefficient. Do not trust the plot until those values match.
+When you run the LLM-generated code, if you get any errors, you can paste them back into the LLM chat to get help.
+
+When done, be sure to check the values in the plot/table against the values in `results_full`.
