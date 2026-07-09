@@ -1,0 +1,363 @@
+---
+title: "SOLUTIONS: Estimating the smoking effect on FEV"
+subtitle: "Adjusted effect sizes, confounding, and a short interaction check"
+author: "GRAPH Courses team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+These are the completed solutions for the interaction version. Each blank exercise chunk is kept, then followed by a runnable solution chunk.
+
+In this workshop, our main question is:
+
+> What is the estimated effect of smoking on FEV in children and adolescents?
+
+The smoking coefficient is treated as an **effect size estimate**: the estimated difference in mean FEV between smokers and non-smokers, in litres.
+
+# Load packages and data
+
+*Exercise chunk (blank):*
+
+```{r load-packages-q, eval=FALSE}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(________)
+```
+
+**Solution:**
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, broom, gt)
+```
+
+```{r load-data}
+fev <- read_csv(here("data/fev_kahn.csv"))
+glimpse(fev)
+```
+
+**Checkpoint answer:** `fev` has **654 rows and 5 columns**.
+
+# Part 1: Define the effect and the confounding problem
+
+## Part 1a: The raw smoking difference
+
+```{r smoke-summary}
+fev %>%
+  group_by(smoke) %>%
+  summarise(
+    n = n(),
+    mean_age = mean(age_yrs),
+    mean_height = mean(height_in),
+    mean_fev = mean(fev_l),
+    .groups = "drop"
+  )
+```
+
+**Answer:** Smokers have higher mean FEV in the raw summary.
+
+**Answer:** Smokers are older and taller on average.
+
+## Part 1b: A simple DAG for confounding
+
+```text
+age ----------> smoking
+  \              |
+   \             v
+    ----------> FEV
+
+height -------> smoking
+  \              |
+   \             v
+    ----------> FEV
+```
+
+```text
+smoking -----> airway irritation -----> FEV
+```
+
+**Answer:** Age and height are reasonable variables to adjust for because they are related to smoking status in this dataset and strongly related to FEV. They also precede or are not caused by smoking, so they are plausible confounders rather than mediators.
+
+**Answer:** Examples include airway irritation, respiratory symptoms, reduced lung growth, or early lung damage caused by smoking. If our goal is the total effect of smoking, adjusting for a variable on that pathway could remove part of the effect we want to estimate.
+
+# Part 2: Fit a sequence of effect-size models
+
+## Part 2a: Model 1, smoking only
+
+*Exercise chunk (blank):*
+
+```{r model-1-q, eval=FALSE}
+m1_smoke <- lm(________ ~ ________, data = fev)
+summary(m1_smoke)
+```
+
+**Solution:**
+
+```{r model-1}
+m1_smoke <- lm(fev_l ~ smoke, data = fev)
+summary(m1_smoke)
+```
+
+**Answer:** The raw `smokesmoker` coefficient is about **+0.711** litres. In the smoking-only model, smokers have predicted FEV about 0.711 litres higher than non-smokers, on average.
+
+## Part 2b: Model 2, add age
+
+*Exercise chunk (blank):*
+
+```{r model-2-q, eval=FALSE}
+m2_age <- lm(fev_l ~ smoke + ________, data = fev)
+summary(m2_age)
+```
+
+**Solution:**
+
+```{r model-2}
+m2_age <- lm(fev_l ~ smoke + age_yrs, data = fev)
+summary(m2_age)
+```
+
+**Answer:** The smoking coefficient changes from **+0.711** to about **-0.209** litres. Adjusting for age reverses the direction of the estimated smoking effect.
+
+## Part 2c: Model 3, add height
+
+*Exercise chunk (blank):*
+
+```{r model-3-q, eval=FALSE}
+m3_age_height <- lm(fev_l ~ smoke + age_yrs + ________, data = fev)
+summary(m3_age_height)
+```
+
+**Solution:**
+
+```{r model-3}
+m3_age_height <- lm(fev_l ~ smoke + age_yrs + height_in, data = fev)
+summary(m3_age_height)
+```
+
+**Answer:** Holding age and height constant, smokers have predicted FEV about **0.110 litres lower** than non-smokers, on average. The p-value is about 0.067, so this estimate is not statistically significant at alpha = 0.05.
+
+## Part 2d: Model 4, add sex
+
+*Exercise chunk (blank):*
+
+```{r model-4-q, eval=FALSE}
+m4_age_height_sex <- lm(fev_l ~ smoke + age_yrs + height_in + ______, data = fev)
+summary(m4_age_height_sex)
+```
+
+**Solution:**
+
+```{r model-4}
+m4_age_height_sex <- lm(fev_l ~ smoke + age_yrs + height_in + sex, data = fev)
+summary(m4_age_height_sex)
+```
+
+**Answer:** Holding age, height, and sex constant, smokers have predicted FEV about **0.087 litres lower** than non-smokers, on average. The p-value is about 0.141.
+
+# Part 3: Track effect sizes and model fit
+
+## Part 3a: Build a comparison table
+
+```{r model-comparison}
+model_list <- list(
+  "1. Smoking only" = m1_smoke,
+  "2. + age" = m2_age,
+  "3. + height" = m3_age_height,
+  "4. + sex" = m4_age_height_sex
+)
+
+effect_table <- imap_dfr(
+  model_list,
+  ~ tidy(.x, conf.int = TRUE) %>%
+    filter(term == "smokesmoker") %>%
+    transmute(
+      model = .y,
+      smoking_beta = estimate,
+      ci_low = conf.low,
+      ci_high = conf.high,
+      p_value = p.value
+    )
+)
+
+fit_table <- imap_dfr(
+  model_list,
+  ~ glance(.x) %>%
+    transmute(
+      model = .y,
+      r_squared = r.squared,
+      adjusted_r_squared = adj.r.squared
+    )
+)
+
+model_summary <- left_join(effect_table, fit_table, by = "model")
+model_summary
+```
+
+**Answer:** The estimated smoking effect changes from **+0.711** litres in the raw model to **-0.209** after age adjustment, **-0.110** after height adjustment, and **-0.087** after adding sex.
+
+**Answer:** R-squared and adjusted R-squared increase as stronger predictors of FEV are added. R-squared rises from about **0.060** in the smoking-only model to about **0.775** in the fully adjusted model.
+
+## Part 3b: Format the comparison table
+
+```{r formatted-comparison}
+model_summary %>%
+  mutate(
+    `Smoking beta (95% CI)` = paste0(
+      format(round(smoking_beta, 3), nsmall = 3),
+      " (",
+      format(round(ci_low, 3), nsmall = 3),
+      " to ",
+      format(round(ci_high, 3), nsmall = 3),
+      ")"
+    ),
+    p = if_else(p_value < 0.001, "<0.001", as.character(round(p_value, 3))),
+    `R-squared` = round(r_squared, 3),
+    `Adjusted R-squared` = round(adjusted_r_squared, 3)
+  ) %>%
+  select(model, `Smoking beta (95% CI)`, p, `R-squared`, `Adjusted R-squared`) %>%
+  gt() %>%
+  tab_header(
+    title = "Estimated smoking effect on FEV",
+    subtitle = "Outcome: FEV in litres"
+  )
+```
+
+**Answer:** I would choose Model 4 as the main estimate because it adjusts for age, height, and sex, all of which are plausible pre-smoking or background variables related to FEV. The estimated smoking effect is about **-0.087 litres**, with a 95% CI from about **-0.204 to 0.029**.
+
+# Part 4: Brief interaction check
+
+So far, every model assumed the smoking effect is the same at every age, height, and sex. That is an **additive** model.
+
+An **interaction** asks whether the smoking association differs across levels of another predictor. For example:
+
+> Is the smoking association with FEV different for shorter and taller youths?
+
+```{r interaction-model}
+m5_interaction <- lm(
+  fev_l ~ smoke * height_in + age_yrs + sex,
+  data = fev
+)
+
+summary(m5_interaction)
+```
+
+The `smoke * height_in` shortcut expands to:
+
+```r
+smoke + height_in + smoke:height_in
+```
+
+**Answer:** The p-value for `smokesmoker:height_in` is about **0.022** in this model.
+
+**Answer:** In an interaction model, the smoking coefficient depends on height. The plain `smokesmoker` coefficient is the smoking difference when `height_in = 0`, which is not a meaningful height here. To get the smoking difference at a real height, combine the plain smoking coefficient with the interaction term multiplied by that height.
+
+## Part 4a: Compare predicted smoking gaps at two heights
+
+*Exercise chunk (blank):*
+
+```{r interaction-predictions-q, eval=FALSE}
+interaction_profiles <- tibble(
+  smoke = rep(c("non_smoker", "smoker"), times = 2),
+  height_in = rep(c(55, 70), each = 2),
+  age_yrs = 12,
+  sex = "male"
+)
+
+interaction_profiles %>%
+  mutate(predicted_fev = predict(________, newdata = interaction_profiles))
+```
+
+**Solution:**
+
+```{r interaction-predictions}
+interaction_profiles <- tibble(
+  smoke = rep(c("non_smoker", "smoker"), times = 2),
+  height_in = rep(c(55, 70), each = 2),
+  age_yrs = 12,
+  sex = "male"
+)
+
+interaction_profiles %>%
+  mutate(predicted_fev = predict(m5_interaction, newdata = interaction_profiles))
+```
+
+**Answer:** No. In this model, the smoker versus non-smoker gap changes with height. At 55 inches, the smoker prediction is lower than the non-smoker prediction. At 70 inches, the gap is smaller and can even move in the opposite direction depending on the fitted equation.
+
+**Answer:** I would treat this as a quick exploratory check unless there was a strong prior reason to believe the smoking effect should differ by height. Interactions make interpretation more complicated and should usually be chosen because they answer a specific research question.
+
+# Part 5: Prediction from the adjusted additive model
+
+Return to Model 4, the adjusted additive model, to predict FEV for two otherwise similar 12-year-old, 60-inch-tall males.
+
+*Exercise chunk (blank):*
+
+```{r predict-nonsmoker-q, eval=FALSE}
+new_nonsmoker <- tibble(
+  smoke = "__________",
+  age_yrs = ______,
+  height_in = ______,
+  sex = "____"
+)
+
+predict(__________, newdata = __________)
+```
+
+**Solution:**
+
+```{r predict-nonsmoker}
+new_nonsmoker <- tibble(
+  smoke = "non_smoker",
+  age_yrs = 12,
+  height_in = 60,
+  sex = "male"
+)
+
+predict(m4_age_height_sex, newdata = new_nonsmoker)
+```
+
+*Exercise chunk (blank):*
+
+```{r predict-smoker-q, eval=FALSE}
+new_smoker <- tibble(
+  smoke = "______",
+  age_yrs = ______,
+  height_in = ______,
+  sex = "____"
+)
+
+predict(__________, newdata = __________)
+```
+
+**Solution:**
+
+```{r predict-smoker}
+new_smoker <- tibble(
+  smoke = "smoker",
+  age_yrs = 12,
+  height_in = 60,
+  sex = "male"
+)
+
+predict(m4_age_height_sex, newdata = new_smoker)
+```
+
+**Answer:** The smoker prediction is about **0.087 litres lower** than the non-smoker prediction. That is the smoking coefficient in Model 4, because the two prediction profiles have the same age, height, and sex.
+
+# Part 6: Report the result
+
+**Example answer:** In the raw model, smokers had predicted FEV **0.711 litres higher** than non-smokers. After adjusting for age, height, and sex in the additive model, smokers had predicted FEV **0.087 litres lower** than non-smokers, although the 95% CI included 0 and the p-value was 0.141. The final additive model explained about **77.5%** of the variation in FEV. A quick height-by-smoking interaction check suggested the smoking association may vary by height, but because these are observational data and the interaction was exploratory, the results should be interpreted cautiously as adjusted associations rather than definitive causal effects.
+
+# Wrap-up
+
+In this workshop, multiple regression was used as an effect-size estimation tool. The smoking coefficient changed from a misleading positive raw association to a small negative adjusted association after accounting for age, height, and sex. The interaction check showed how the estimated smoking association can be allowed to vary across another predictor, but interactions should usually be chosen from a clear research question rather than searched for automatically.

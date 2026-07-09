@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 340" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <!-- Confounder node -->
+  <rect x="200" y="30" width="220" height="66" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+  <text x="310" y="58" text-anchor="middle" font-size="17" font-weight="bold" fill="#1e3a8a">Confounders</text>
+  <text x="310" y="80" text-anchor="middle" font-size="14" fill="#1e3a8a">age, height, sex</text>
+
+  <!-- Exposure node -->
+  <rect x="70" y="240" width="170" height="60" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="155" y="277" text-anchor="middle" font-size="17" font-weight="bold" fill="#92400e">Smoking</text>
+
+  <!-- Outcome node -->
+  <rect x="380" y="240" width="170" height="60" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="465" y="277" text-anchor="middle" font-size="17" font-weight="bold" fill="#166534">FEV</text>
+
+  <!-- Confounders -> Smoking -->
+  <path d="M 250 96 L 175 236" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Confounders -> FEV -->
+  <path d="M 370 96 L 445 236" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Smoking -> FEV (effect of interest) -->
+  <path d="M 240 270 L 376 270" fill="none" stroke="#dc2626" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="308" y="258" text-anchor="middle" font-size="12.5" font-style="italic" fill="#dc2626">effect of interest</text>
+</svg>

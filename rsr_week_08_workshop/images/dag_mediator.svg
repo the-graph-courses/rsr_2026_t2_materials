@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 230" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <!-- Exposure node -->
+  <rect x="30" y="80" width="170" height="60" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="115" y="117" text-anchor="middle" font-size="17" font-weight="bold" fill="#92400e">Smoking</text>
+
+  <!-- Mediator node -->
+  <rect x="255" y="68" width="210" height="84" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+  <text x="360" y="104" text-anchor="middle" font-size="16" font-weight="bold" fill="#6b21a8">Chronic cough</text>
+  <text x="360" y="128" text-anchor="middle" font-size="13" fill="#6b21a8">days per week</text>
+
+  <!-- Outcome node -->
+  <rect x="520" y="80" width="170" height="60" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="605" y="117" text-anchor="middle" font-size="17" font-weight="bold" fill="#166534">FEV</text>
+
+  <!-- Smoking -> Mediator -->
+  <path d="M 200 110 L 251 110" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow2)"/>
+  <!-- Mediator -> FEV -->
+  <path d="M 465 110 L 516 110" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <text x="360" y="190" text-anchor="middle" font-size="13" font-style="italic" fill="#6b21a8">on the causal pathway: exclude when estimating the total effect</text>
+</svg>

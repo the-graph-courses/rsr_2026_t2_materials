@@ -1,0 +1,298 @@
+---
+title: "EXERCISE: Estimating the smoking effect on FEV"
+subtitle: "Effect sizes, confounding, and prediction"
+author: "YOUR NAME HERE"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+In a previous workshop, we used a dataset of forced expiratory volume (FEV) from East Boston in the 1970s to learn about the uses of regression: describing relationships, predicting outcomes, and controlling for another variable. 
+
+In this workshop, we revisit that dataset to again look at the effect of smoking on FEV. Our goal is to answer the question: what is the estimated effect of smoking on FEV in children and adolescents?
+
+## Dataset description
+
+The dataset contains 654 youths aged 3 to 19 from East Boston in the 1970s. The outcome is **forced expiratory volume** (`fev_l`), measured in litres. Higher values mean better lung function.
+
+# Load packages and data
+
+Use `p_load()` to load `tidyverse`, `here`, `modelsummary`, `ggstatsplot`, and `inspectdf`.
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(________)
+pacman::p_load_gh("the-graph-courses/inspectdf")
+```
+
+Now, glimpse, then inspect the data with the inspect_cat() and inspect_num() functions from inspectdf. 
+
+```{r load-data}
+fev <- read_csv(here("data/fev_kahn.csv"))
+glimpse(fev)
+inspect_cat(fev) %>% show_plot()
+inspect_num(fev) %>% show_plot()
+```
+
+**Checkpoint:** `fev` should have **654 rows and 5 columns**.
+
+Question: Which of the variables are numeric and normally distributed?
+
+# Part 1: Define the effect and the confounding problem
+
+## Part 1a: The raw smoking difference
+
+Start by calculating the mean FEV, mean height, and mean age for smokers and non-smokers.
+
+```{r smoke-summary}
+fev %>%
+  group_by(_______) %>%
+  summarise(
+    mean_fev = ___________,
+    mean_height = ___________,
+    mean_age = ___________
+  )
+```
+
+**Question:** Which group has higher mean FEV in the raw summary and plot?
+
+Ans:
+
+**Question:** Which group is older and taller on average?
+
+Ans:
+
+We can easily visualise the FEV difference with `ggbetweenstats()` from the `ggstatsplot` package.
+
+```{r smoke-plot}
+ggbetweenstats(
+  data = fev,
+  x = smoke,
+  y = fev_l
+)
+```
+
+Let's now fit a model with smoking as the only predictor.
+
+```{r model-1}
+m1_smoke <- ___________
+summary(m1_smoke)
+```
+
+**Question:** What is the `smokesmoker` coefficient? Write a one-sentence interpretation of it.
+
+Ans:
+
+**Question:** In one sentence, why might the raw comparison be misleading?
+
+Ans:
+
+## Part 1b: Confounders, mediators, and a simple DAG
+
+The raw difference in Part 1a can be misleading because smokers and non-smokers differ in other ways that also affect FEV. To estimate the smoking effect cleanly, we want to adjust for **confounders**: variables that might affect both whether a youth smokes and their FEV.
+
+In this dataset, age, height, and sex are all plausible confounders. The DAG below shows this structure:
+
+![Confounder DAG: age, height, and sex each affect both smoking and FEV](images/dag_confounder.svg){width=70%}
+
+We will therefore want to control for these . 
+
+Note that we are deciding these *before* fitting the model(s). This is what modern guidelines recommend: choosing which variables to adjust for ahead of time, based on subject-matter knowledge (including drawing a DAG like the one above), rather than fishing through the variables for significant ones.
+
+That kind of fishing (selecting variables based on their significance in the data) is more defensible when the only goal is to *predict* the outcome as accurately as possible, rather than to *explain* the effect of one particular exposure..
+
+# Part 2: Fit a sequence of adjusted models
+
+In Part 1a, the raw model showed a misleading smoking effect. Now we add confounders one at a time. Each model has the same outcome (`fev_l`).
+
+Write the full `lm()` call for each model. 
+
+## Part 2a: Model 2, add age
+
+Age is a plausible confounder because smokers are older on average, and FEV increases strongly with age. Write an lm() call to predict `fev_l` from `smoke` and `age_yrs`.
+
+```{r model-2}
+m2_age <- ___________
+summary(m2_age)
+```
+
+**Question:** What happened to the smoking coefficient after adjusting for age?
+
+Ans:
+
+## Part 2b: Model 3, add height
+
+Height is also a plausible confounder because smokers are taller on average, and height is strongly related to lung volume. Add height to the model.
+
+```{r model-3}
+m3_age_height <- ___________
+summary(m3_age_height)
+```
+
+**Question:** Interpret the smoking coefficient in this model using the phrase "holding age and height constant."
+
+Ans:
+
+## Part 2c: Model 4, add sex
+
+Finally, add sex. Sex may be related to body size and lung function, and it could also differ between smokers and non-smokers.
+
+```{r model-4}
+m4_age_height_sex <- ___________
+summary(m4_age_height_sex)
+```
+
+**Question:** Again, interpret the smoking coefficient in this model. At alpha = 0.05, is the adjusted smoking coefficient statistically significant in Model 4?
+
+Ans:
+
+# Part 3: Compare models side by side
+
+Now, we can put all four models into a list, then use `modelsummary()` to compare them in one table. This shows how the smoking coefficient and model fit change as we add confounders.
+
+```{r model-comparison}
+model_list <- list(
+  "1. Smoking only" = m1_smoke,
+  "2. + age" = m2_age,
+  "3. + height" = m3_age_height,
+  "4. + sex" = m4_age_height_sex
+)
+
+modelsummary(
+  model_list,
+  coef_map = c(
+    "smokesmoker" = "Smoking (smoker vs non-smoker)",
+    "age_yrs" = "Age (years)",
+    "height_in" = "Height (inches)",
+    "sexmale" = "Sex (male vs female)"
+  ),
+  gof_map = c("nobs", "r.squared", "adj.r.squared"), # goodness-of-fit statistics to show
+  output = "gt" # render as a nicely formatted gt table
+) 
+```
+
+The table reports two related measures of model fit:
+
+- **R-squared** is the proportion of the variation in FEV that the model explains, from 0 to 1. A problem with R-squared is that it can *only go up* when you add a predictor, even if that predictor is useless. So it always rewards bigger models.
+- **Adjusted R-squared** fixes this by adding a small penalty for each extra predictor. It only rises if a new predictor improves the fit by more than we would expect from chance. This makes it more honest when comparing models with different numbers of predictors.
+
+**Question:** Look at the R-squared row across the four models. What happens to it as we add predictors, and does the adjusted R-squared behave the same way?
+
+Ans:
+
+
+### A note on mediators
+
+In this dataset, we will end up using all the available predictors in the model. But in general, you should not include every measured variable just because it is available.
+
+Importantly, a type of variable called a **mediator** should not be adjusted for. This is a variable that would be on the causal pathway from smoking to FEV, so it is one of the ways smoking might lower lung function. If we adjust for a mediator, we block part of the effect we are trying to measure.
+
+For example, suppose we also measured **chronic cough** (days per week with a productive cough). Cough is a consequence of smoking and can lower FEV, so it lies on the pathway from smoking to FEV:
+
+![Mediator DAG: smoking affects chronic cough, which in turn affects FEV](images/dag_mediator.svg){width=80%}
+
+Adjusting for chronic cough would statistically hold cough constant across smokers and non-smokers, blocking one route by which smoking harms lung function.
+
+**Question:** Label each of these variables as more likely to be a potential confounder or mediator in the context of the smoking effect on FEV. And indicate whether you would include it in the regression model when estimating the smoking effect.
+
+- Neighbourhood of residence: ______
+- Parental smoking status: ______
+- Frequency of respiratory infections: ______
+
+# Part 4: Prediction from the adjusted model
+
+Our main goal in this workshop was to *explain* the smoking effect, not to build the best possible prediction model. Even so, once we have fitted a regression model, we can also use it to predict FEV for new individuals.
+
+Model 4 has this form:
+
+predicted FEV = intercept + smoking coefficient * smoking + age slope * age + height slope * height + sex coefficient * sex
+
+For smoking, R uses an indicator variable:
+
+- non-smoker: `smokesmoker = 0`
+- smoker: `smokesmoker = 1`
+
+## Part 4a: Predict with `predict()`
+
+Use Model 4 to predict FEV for two otherwise similar 12-year-old, 60-inch-tall males: one non-smoker and one smoker.
+
+```{r predict-nonsmoker}
+new_nonsmoker <- tibble(
+  smoke = "non_smoker",
+  age_yrs = 12,
+  height_in = 60,
+  sex = "male"
+)
+
+predict(m4_age_height_sex, newdata = new_nonsmoker)
+```
+
+```{r predict-smoker}
+new_smoker <- tibble(
+  smoke = "______",
+  age_yrs = ______,
+  height_in = ______,
+  sex = "____"
+)
+
+predict(__________, newdata = __________)
+```
+
+**Question:** How far apart are the two predictions? How does that difference relate to the smoking coefficient in Model 4?
+
+Ans:
+
+## Part 4b: Build the prediction by hand
+
+Extract the coefficients and calculate the smoker prediction by hand.
+
+```{r coefficients}
+coef(m4_age_height_sex)
+```
+
+```{r prediction-by-hand}
+b <- coef(m4_age_height_sex)
+
+b["(Intercept)"] +
+  b["height_in"] * ______ +
+  b["age_yrs"] * ______ +
+  b["sexmale"] * ______ +
+  b["smokesmoker"] * ______
+```
+
+**Question:** Does your hand calculation match `predict()`?
+
+Ans:
+
+# Part 5: Report the result
+
+Write a short results paragraph. Include:
+
+- the raw smoking estimate from Model 1
+- the fully adjusted smoking estimate from Model 4
+- adjusted R-squared for the final model
+- a cautious interpretation, because this is observational data
+
+Your answer:
+
+# Wrap-up
+
+In this workshop, multiple regression was used as an effect-size estimation tool. You:
+
+1. compared smokers and non-smokers with summaries, `ggbetweenstats()`, and a raw model;
+2. added confounders one at a time and compared models with `modelsummary()`;
+3. used DAGs to think about confounders versus mediators;
+4. predicted FEV from the final adjusted model.
+
+The most important phrase is: **holding the other variables constant**.
