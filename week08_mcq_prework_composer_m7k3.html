@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 8 Prework MCQ — MLR &amp; Interactions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #dfe8ea;
+      --paper: #f7f4ed;
+      --ink: #101418;
+      --muted: #665f51;
+      --teal: #0d7377;
+      --teal-soft: #e3f3f3;
+      --gold: #f0c808;
+      --gold-soft: #fff3cc;
+      --rose: #b83b5e;
+      --rose-soft: #fdeef1;
+      --green: #2c8a4a;
+      --green-soft: #e8f5ec;
+      --blue: #2f5f98;
+      --blue-soft: #e7eef7;
+      --violet: #6b4f9a;
+      --violet-soft: #f0ebf8;
+      --white: #fffef9;
+      --shadow: rgba(16, 20, 24, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Space Grotesk', Arial, sans-serif;
+      line-height: 1.35;
+    }
+    .toolbar {
+      max-width: 920px;
+      margin: 20px auto 12px;
+      padding: 0 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .toolbar h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: var(--teal);
+      letter-spacing: -0.02em;
+    }
+    .toolbar p { margin: 4px 0 0; font-size: 0.85rem; color: var(--muted); }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 var(--shadow);
+    }
+    button.primary { background: var(--teal); color: #fff; }
+    .deck {
+      max-width: 920px;
+      margin: 0 auto 40px;
+      padding: 0 16px;
+      display: grid;
+      gap: 20px;
+    }
+    .card {
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: 6px 6px 0 var(--shadow);
+      overflow: hidden;
+    }
+    .card-head {
+      background: var(--teal);
+      color: #fff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .card-body { padding: 16px 18px 18px; }
+    .prompt {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 0 0 12px;
+    }
+    .visual {
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: var(--white);
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .visual svg { display: block; width: 100%; height: auto; }
+    .caption {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 6px;
+    }
+    .r-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      margin-bottom: 4px;
+    }
+    .r-table th, .r-table td {
+      border: 1px solid #c8c0ae;
+      padding: 5px 8px;
+      text-align: left;
+    }
+    .r-table th { background: #eef6f6; }
+    .r-table .hl-int { color: var(--blue); font-weight: 700; }
+    .r-table .hl-slope { color: var(--rose); font-weight: 700; }
+    .r-table .hl-slope2 { color: var(--green); font-weight: 700; }
+    .r-table .hl-intx { color: var(--violet); font-weight: 700; }
+    .r-code {
+      background: #1d2229;
+      color: #f0ecdf;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      margin-bottom: 8px;
+      white-space: pre;
+    }
+    .options {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .options li {
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--white);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+    .options .key {
+      display: inline-block;
+      min-width: 1.4em;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      color: var(--teal);
+    }
+    .answer {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--green-soft);
+      border: 2px solid var(--green);
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .answers-visible .answer { display: block; }
+    .answer .correct {
+      color: var(--green);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .explain {
+      margin-top: 6px;
+      font-weight: 500;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    @media print {
+      body { background: #fff; }
+      .toolbar { display: none; }
+      .card { break-inside: avoid; box-shadow: none; }
+      .answer { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div>
+      <h1>Week 8 Prework MCQ</h1>
+      <p>Multiple linear regression &amp; interaction terms · 10 questions · 3 options each</p>
+    </div>
+    <button type="button" class="primary" id="toggleAnswers">Show answers</button>
+  </div>
+
+  <div class="deck" id="deck">
+
+    <!-- Q1 -->
+    <article class="card">
+      <div class="card-head"><span>Question 1</span><span>Confounding</span></div>
+      <div class="card-body">
+        <p class="prompt">In this DAG, variable C is a confounder of the relationship between exposure E and outcome Y. What does adjusting for C in a regression model do?</p>
+        <div class="visual">
+          <svg viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+            <rect width="520" height="150" fill="#fff"/>
+            <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#101418"/></marker></defs>
+            <rect x="200" y="18" width="120" height="40" rx="8" fill="#fdeef1" stroke="#b83b5e" stroke-width="2"/>
+            <text x="260" y="44" text-anchor="middle" font-size="14" font-weight="800" fill="#b83b5e">C</text>
+            <rect x="60" y="95" width="120" height="40" rx="8" fill="#fff3cc" stroke="#d97706" stroke-width="2"/>
+            <text x="120" y="121" text-anchor="middle" font-size="14" font-weight="800" fill="#92400e">E</text>
+            <rect x="340" y="95" width="120" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+            <text x="400" y="121" text-anchor="middle" font-size="14" font-weight="800" fill="#166534">Y</text>
+            <path d="M230 58 L130 93" fill="none" stroke="#101418" stroke-width="2" marker-end="url(#a1)"/>
+            <path d="M290 58 L390 93" fill="none" stroke="#101418" stroke-width="2" marker-end="url(#a1)"/>
+            <path d="M180 115 L336 115" fill="none" stroke="#dc2626" stroke-width="2.5" marker-end="url(#a1)"/>
+            <text x="258" y="108" text-anchor="middle" font-size="10" fill="#dc2626" font-style="italic">effect of interest</text>
+          </svg>
+          <div class="caption">C affects both E and Y, and is not on the pathway from E to Y.</div>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> Blocks part of the true effect of E on Y</li>
+          <li><span class="key">B.</span> Closes a back-door path through C, helping isolate the E→Y association</li>
+          <li><span class="key">C.</span> Makes the model purely causal without any further assumptions</li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">A confounder opens a spurious path E←C→Y. Adjusting for C holds C constant so the E coefficient is less distorted by that path.</div></div>
+      </div>
+    </article>
+
+    <!-- Q2 -->
+    <article class="card">
+      <div class="card-head"><span>Question 2</span><span>Interpretation</span></div>
+      <div class="card-body">
+        <p class="prompt">A model is fitted as <code>outcome ~ exposure + covariate</code>. The coefficient on <code>exposure</code> is 2.4. What is the correct interpretation?</p>
+        <div class="visual">
+          <div class="r-code">lm(outcome ~ exposure + covariate, data = dat)
+
+              Estimate
+(Intercept)      10.0
+exposure          2.4
+covariate        -0.6</div>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> Each one-unit increase in exposure is associated with 2.4 more units of outcome, holding covariate constant</li>
+          <li><span class="key">B.</span> Each one-unit increase in exposure is associated with 2.4 more units of outcome, ignoring covariate</li>
+          <li><span class="key">C.</span> Covariate must be held at zero for the 2.4 to apply</li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: A</span><div class="explain">In multiple regression, each slope is read "holding the other predictors constant" (also called adjusting for or controlling for them).</div></div>
+      </div>
+    </article>
+
+    <!-- Q3 -->
+    <article class="card">
+      <div class="card-head"><span>Question 3</span><span>Confounding</span></div>
+      <div class="card-body">
+        <p class="prompt">A one-predictor model gives exposure slope +3.1. After adding a plausible confounder, the slope becomes −0.8. What is the best explanation?</p>
+        <div class="visual">
+          <table class="r-table">
+            <tr><th>Model</th><th>Formula</th><th>Exposure slope</th></tr>
+            <tr><td>1</td><td>outcome ~ exposure</td><td class="hl-slope">+3.1</td></tr>
+            <tr><td>2</td><td>outcome ~ exposure + confounder</td><td class="hl-slope">−0.8</td></tr>
+          </table>
+          <div class="caption">The raw positive association was largely explained by confounding.</div>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> The confounder is a mediator and should be removed</li>
+          <li><span class="key">B.</span> The raw association was misleading because exposure and outcome both differed with the confounder</li>
+          <li><span class="key">C.</span> Adding any extra predictor always reverses the sign of the exposure slope</li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">A single-predictor slope can be distorted when a third variable is related to both exposure and outcome. Adjustment can flip or shrink the coefficient.</div></div>
+      </div>
+    </article>
+
+    <!-- Q4 -->
+    <article class="card">
+      <div class="card-head"><span>Question 4</span><span>Mediators</span></div>
+      <div class="card-body">
+        <p class="prompt">You want the <em>total</em> effect of exposure on outcome. Variable M lies on the pathway exposure → M → outcome. Should you adjust for M?</p>
+        <div class="visual">
+          <svg viewBox="0 0 520 120" xmlns="http://www.w3.org/2000/svg">
+            <rect width="520" height="120" fill="#fff"/>
+            <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#101418"/></marker></defs>
+            <rect x="40" y="40" width="110" height="40" rx="8" fill="#fff3cc" stroke="#d97706" stroke-width="2"/>
+            <text x="95" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#92400e">Exposure</text>
+            <rect x="205" y="35" width="110" height="50" rx="8" fill="#f0ebf8" stroke="#9333ea" stroke-width="2"/>
+            <text x="260" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#6b21a8">M</text>
+            <rect x="370" y="40" width="110" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+            <text x="425" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#166534">Outcome</text>
+            <path d="M150 60 L201 60" fill="none" stroke="#101418" stroke-width="2" marker-end="url(#a2)"/>
+            <path d="M315 60 L366 60" fill="none" stroke="#101418" stroke-width="2" marker-end="url(#a2)"/>
+          </svg>
+          <div class="caption">M is caused by exposure and affects outcome.</div>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> Yes, because it improves R-squared</li>
+          <li><span class="key">B.</span> No, because adjusting for M blocks part of the total effect you want to estimate</li>
+          <li><span class="key">C.</span> Yes, because M is related to both exposure and outcome</li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">Mediators sit on the causal pathway. Adjusting for them estimates a direct effect, not the total effect running through M.</div></div>
+      </div>
+    </article>
+
+    <!-- Q5 -->
+    <article class="card">
+      <div class="card-head"><span>Question 5</span><span>Interactions</span></div>
+      <div class="card-body">
+        <p class="prompt">Two groups are plotted below. Which model structure matches the <em>right</em> panel?</p>
+        <div class="visual">
+          <svg viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg">
+            <rect width="520" height="140" fill="#fff"/>
+            <text x="130" y="16" text-anchor="middle" font-size="11" font-weight="800">Additive model</text>
+            <text x="390" y="16" text-anchor="middle" font-size="11" font-weight="800">Interaction model</text>
+            <line x1="20" y1="110" x2="250" y2="110" stroke="#665f51" stroke-width="1.2"/>
+            <line x1="20" y1="30" x2="20" y2="110" stroke="#665f51" stroke-width="1.2"/>
+            <line x1="30" y1="95" x2="240" y2="55" stroke="#2f5f98" stroke-width="2.5"/>
+            <line x1="30" y1="70" x2="240" y2="30" stroke="#b83b5e" stroke-width="2.5"/>
+            <line x1="280" y1="110" x2="500" y2="110" stroke="#665f51" stroke-width="1.2"/>
+            <line x1="280" y1="30" x2="280" y2="110" stroke="#665f51" stroke-width="1.2"/>
+            <line x1="290" y1="98" x2="490" y2="42" stroke="#2f5f98" stroke-width="2.5"/>
+            <line x1="290" y1="62" x2="490" y2="48" stroke="#b83b5e" stroke-width="2.5"/>
+            <text x="135" y="128" text-anchor="middle" font-size="9" fill="#665f51">parallel lines</text>
+            <text x="390" y="128" text-anchor="middle" font-size="9" fill="#665f51">different slopes</text>
+          </svg>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> <code>y ~ x + group</code></li>
+          <li><span class="key">B.</span> <code>y ~ x + group + x:group</code></li>
+          <li><span class="key">C.</span> <code>y ~ x</code></li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">An additive model gives parallel lines (same slope, different intercepts). An interaction lets each group have its own slope.</div></div>
+      </div>
+    </article>
+
+    <!-- Q6 -->
+    <article class="card">
+      <div class="card-head"><span>Question 6</span><span>R syntax</span></div>
+      <div class="card-body">
+        <p class="prompt">In R, how do you write an interaction between predictors <code>x</code> and <code>group</code> in an <code>lm()</code> formula?</p>
+        <div class="visual">
+          <div class="r-code"># Which formula includes the interaction term?
+
+lm(y ~ x + group + ________, data = dat)</div>
+          <div class="caption">The shorthand <code>x * group</code> expands to main effects plus interaction.</div>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> <code>x - group</code></li>
+          <li><span class="key">B.</span> <code>x:group</code></li>
+          <li><span class="key">C.</span> <code>x / group</code></li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">A colon between two variables creates the interaction term. Asterisk (<code>x * group</code>) adds main effects and interaction together.</div></div>
+      </div>
+    </article>
+
+    <!-- Q7 -->
+    <article class="card">
+      <div class="card-head"><span>Question 7</span><span>Reading interactions</span></div>
+      <div class="card-body">
+        <p class="prompt">Reference group = 0. What is the slope of <code>x</code> for group = 1?</p>
+        <div class="visual">
+          <table class="r-table">
+            <tr><th>Term</th><th>Estimate</th></tr>
+            <tr><td class="hl-int">(Intercept)</td><td>50</td></tr>
+            <tr><td class="hl-slope">x</td><td>2.0</td></tr>
+            <tr><td class="hl-slope2">group1</td><td>10</td></tr>
+            <tr><td class="hl-intx">x:group1</td><td>−0.5</td></tr>
+          </table>
+          <div class="caption">Non-reference slope = reference slope + interaction coefficient.</div>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> 2.0</li>
+          <li><span class="key">B.</span> 1.5</li>
+          <li><span class="key">C.</span> 2.5</li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">Reference group slope is the plain <code>x</code> row (2.0). Group 1 slope = 2.0 + (−0.5) = 1.5.</div></div>
+      </div>
+    </article>
+
+    <!-- Q8 -->
+    <article class="card">
+      <div class="card-head"><span>Question 8</span><span>Study design</span></div>
+      <div class="card-body">
+        <p class="prompt">When estimating an exposure effect, modern guidelines recommend choosing adjustment variables:</p>
+        <div class="visual">
+          <svg viewBox="0 0 520 90" xmlns="http://www.w3.org/2000/svg">
+            <rect width="520" height="90" fill="#fff"/>
+            <rect x="20" y="20" width="140" height="50" rx="8" fill="#e3f3f3" stroke="#0d7377" stroke-width="2"/>
+            <text x="90" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#0a5d61">1. Draw DAG</text>
+            <text x="90" y="58" text-anchor="middle" font-size="9" fill="#0a5d61">subject-matter</text>
+            <text x="180" y="48" font-size="18" fill="#101418">→</text>
+            <rect x="200" y="20" width="140" height="50" rx="8" fill="#fff3cc" stroke="#d97706" stroke-width="2"/>
+            <text x="270" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#92400e">2. Pre-specify</text>
+            <text x="270" y="58" text-anchor="middle" font-size="9" fill="#92400e">adjustment set</text>
+            <text x="360" y="48" font-size="18" fill="#101418">→</text>
+            <rect x="380" y="20" width="120" height="50" rx="8" fill="#e8f5ec" stroke="#2c8a4a" stroke-width="2"/>
+            <text x="440" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#166534">3. Fit model</text>
+            <text x="440" y="58" text-anchor="middle" font-size="9" fill="#166534">explain effect</text>
+          </svg>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> After fitting many models and keeping variables that change the estimate most</li>
+          <li><span class="key">B.</span> Ahead of time, based on subject-matter knowledge (e.g. a DAG)</li>
+          <li><span class="key">C.</span> Only if they are statistically significant in bivariate tests</li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">For effect estimation, the adjustment set should be chosen a priori. Data-driven selection is more defensible for prediction than explanation.</div></div>
+      </div>
+    </article>
+
+    <!-- Q9 -->
+    <article class="card">
+      <div class="card-head"><span>Question 9</span><span>Coefficients</span></div>
+      <div class="card-body">
+        <p class="prompt">Model output is shown below. Can you conclude that predictor A has a "bigger effect" than predictor B?</p>
+        <div class="visual">
+          <table class="r-table">
+            <tr><th>Term</th><th>Estimate</th><th>Units</th></tr>
+            <tr><td class="hl-slope">A</td><td>0.05</td><td>per minute of exposure</td></tr>
+            <tr><td class="hl-slope2">B</td><td>4.0</td><td>per sibling in household</td></tr>
+          </table>
+          <div class="caption">Slopes are per one unit of each predictor in its own scale.</div>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> Yes, because 4.0 is larger than 0.05</li>
+          <li><span class="key">B.</span> No, because the predictors use different units and realistic changes differ</li>
+          <li><span class="key">C.</span> Yes, if both p-values are below 0.05</li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">A bigger coefficient is not necessarily a bigger real-world effect. Compare meaningful changes in each variable (e.g. 60 minutes vs 1 extra sibling).</div></div>
+      </div>
+    </article>
+
+    <!-- Q10 -->
+    <article class="card">
+      <div class="card-head"><span>Question 10</span><span>Causal claims</span></div>
+      <div class="card-body">
+        <p class="prompt">After adjusting for measured confounders in an observational regression, which statement is most appropriate?</p>
+        <div class="visual">
+          <table class="r-table">
+            <tr><th>What the model gives</th><th>What it does not automatically prove</th></tr>
+            <tr><td>Adjusted association between exposure and outcome</td><td>That exposure <em>caused</em> the outcome</td></tr>
+            <tr><td>Effect estimate holding covariates constant</td><td>That all confounding is removed</td></tr>
+          </table>
+        </div>
+        <ul class="options">
+          <li><span class="key">A.</span> "Exposure significantly causes a lower outcome, controlling for measured confounders"</li>
+          <li><span class="key">B.</span> "Exposure is significantly associated with outcome, after adjusting for measured confounders"</li>
+          <li><span class="key">C.</span> "The DAG proves exposure caused the outcome"</li>
+        </ul>
+        <div class="answer"><span class="correct">Answer: B</span><div class="explain">Observational regression gives adjusted associations. Unmeasured confounding and reverse causation may remain; causal claims need stronger designs.</div></div>
+      </div>
+    </article>
+
+  </div>
+
+  <script>
+    const btn = document.getElementById('toggleAnswers');
+    const deck = document.getElementById('deck');
+    let shown = false;
+    btn.addEventListener('click', () => {
+      shown = !shown;
+      deck.classList.toggle('answers-visible', shown);
+      btn.textContent = shown ? 'Hide answers' : 'Show answers';
+    });
+  </script>
+</body>
+</html>

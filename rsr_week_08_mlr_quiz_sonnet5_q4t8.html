@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RSR Week 8 Prework Quiz — Multiple Regression &amp; Interactions</title>
+<style>
+  :root {
+    --dark-teal: #00565e;
+    --light-teal: #5fbfbf;
+    --light-teal-soft: #e3f4f4;
+    --gold: #f5c542;
+    --rose: #b83b5e;
+    --ink: #173234;
+    --muted: #5d7475;
+    --page: #f4f7f7;
+    --card: #ffffff;
+    --border: #d0dede;
+    --good: #287a4d;
+    --good-bg: #e8f8ef;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 1.5rem 0 4rem;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 1rem; }
+  header {
+    background: var(--dark-teal);
+    color: #fff;
+    border-radius: 10px;
+    border-left: 6px solid var(--gold);
+    padding: 1.4rem 1.7rem;
+    margin-bottom: 1.6rem;
+  }
+  header .eyebrow {
+    color: var(--gold);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  header h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
+  header p { margin: 0.5rem 0 0; color: #d3eded; font-size: 0.95rem; max-width: 600px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.3rem 1.5rem 1.5rem;
+    margin-bottom: 1.6rem;
+    page-break-inside: avoid;
+  }
+  .qnum {
+    display: inline-block;
+    background: var(--dark-teal);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.85rem;
+    border-radius: 999px;
+    padding: 0.25rem 0.8rem;
+    margin-bottom: 0.7rem;
+  }
+  .qtext { font-size: 1.12rem; font-weight: 700; margin: 0 0 0.9rem; }
+
+  .clue {
+    background: var(--light-teal-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin: 0 0 1rem;
+    overflow-x: auto;
+  }
+  .clue pre {
+    margin: 0;
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    font-size: 0.86rem;
+    white-space: pre;
+    color: #123638;
+  }
+  .clue svg { display: block; margin: 0 auto; max-width: 100%; }
+  .clue-caption { font-size: 0.82rem; color: var(--muted); margin-top: 0.4rem; text-align: center; }
+
+  .opts { display: grid; gap: 0.55rem; margin-bottom: 1rem; }
+  .opt {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.98rem;
+    display: flex;
+    gap: 0.6rem;
+  }
+  .opt .letter {
+    font-weight: 800;
+    color: var(--dark-teal);
+    flex: 0 0 auto;
+  }
+  .opt.correct {
+    border-color: var(--good);
+    background: var(--good-bg);
+  }
+
+  details.answer {
+    border-top: 2px dashed var(--border);
+    padding-top: 0.8rem;
+  }
+  details.answer summary {
+    cursor: pointer;
+    font-weight: 800;
+    color: var(--rose);
+    list-style: none;
+  }
+  details.answer summary::-webkit-details-marker { display: none; }
+  details.answer summary::before {
+    content: "▶ ";
+  }
+  details.answer[open] summary::before {
+    content: "▼ ";
+  }
+  .answer-body {
+    margin-top: 0.6rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .answer-body strong.ans { color: var(--good); }
+
+  .toolbar {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 1.4rem;
+  }
+  .toolbar button {
+    background: var(--dark-teal);
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.5rem 1.1rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .toolbar button:hover { background: #003f45; }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">RSR — Prework Revision Quiz</div>
+  <h1>Multiple Linear Regression &amp; Interaction Terms</h1>
+  <p>10 questions covering the multiple regression and interaction-terms prework. Each card shows the question, three options, and a hidden answer you can click to reveal — screenshot each card for Blooket.</p>
+</header>
+
+<div class="toolbar">
+  <button onclick="document.querySelectorAll('details.answer').forEach(d => d.open = true)">Open all answers</button>
+  <button onclick="document.querySelectorAll('details.answer').forEach(d => d.open = false)">Close all answers</button>
+</div>
+
+<!-- Q1 -->
+<div class="card">
+  <span class="qnum">Question 1</span>
+  <p class="qtext">Which R formula correctly fits a multiple linear regression predicting <code>sick_days</code> from <code>washes</code> and <code>kids</code>?</p>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span><code>lm(sick_days + washes ~ kids, data = handwashing)</code></span></div>
+    <div class="opt"><span class="letter">B.</span><span><code>lm(sick_days ~ washes + kids, data = handwashing)</code></span></div>
+    <div class="opt"><span class="letter">C.</span><span><code>lm(washes ~ sick_days + kids, data = handwashing)</code></span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: B.</strong> The outcome always goes on the left of the tilde (<code>~</code>); every predictor is added on the right with <code>+</code>. Option A puts two variables on the left, and option C swaps the outcome and a predictor.</div>
+  </details>
+</div>
+
+<!-- Q2 -->
+<div class="card">
+  <span class="qnum">Question 2</span>
+  <p class="qtext">Below is the naive (one-predictor) model of sick days on hand washes, plus a plot colored by number of kids at home. What does the colored plot suggest?</p>
+  <div class="clue">
+    <pre>ggplot(handwashing, aes(washes, sick_days, color = factor(kids))) + geom_point() + geom_smooth(method="lm", se=FALSE)</pre>
+    <svg viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
+      <line x1="40" y1="190" x2="400" y2="190" stroke="#5d7475" stroke-width="1.5"/>
+      <line x1="40" y1="190" x2="40" y2="20" stroke="#5d7475" stroke-width="1.5"/>
+      <text x="220" y="212" font-size="11" fill="#5d7475" text-anchor="middle">washes per day</text>
+      <text x="14" y="105" font-size="11" fill="#5d7475" text-anchor="middle" transform="rotate(-90 14 105)">sick days</text>
+      <!-- 0 kids cluster (rose), low washes, low sick days -->
+      <circle cx="70" cy="150" r="4" fill="#b83b5e"/>
+      <circle cx="90" cy="140" r="4" fill="#b83b5e"/>
+      <circle cx="105" cy="130" r="4" fill="#b83b5e"/>
+      <circle cx="120" cy="120" r="4" fill="#b83b5e"/>
+      <line x1="60" y1="158" x2="130" y2="112" stroke="#b83b5e" stroke-width="2"/>
+      <!-- 1 kid cluster (green), mid washes, mid sick days -->
+      <circle cx="170" cy="110" r="4" fill="#287a4d"/>
+      <circle cx="190" cy="100" r="4" fill="#287a4d"/>
+      <circle cx="205" cy="90" r="4" fill="#287a4d"/>
+      <circle cx="220" cy="80" r="4" fill="#287a4d"/>
+      <line x1="160" y1="118" x2="230" y2="72" stroke="#287a4d" stroke-width="2"/>
+      <!-- 2 kids cluster (blue), high washes, high sick days -->
+      <circle cx="290" cy="70" r="4" fill="#2f5f98"/>
+      <circle cx="310" cy="60" r="4" fill="#2f5f98"/>
+      <circle cx="330" cy="50" r="4" fill="#2f5f98"/>
+      <circle cx="350" cy="40" r="4" fill="#2f5f98"/>
+      <line x1="280" y1="78" x2="360" y2="32" stroke="#2f5f98" stroke-width="2"/>
+      <text x="360" y="28" font-size="10" fill="#2f5f98">2 kids</text>
+      <text x="230" y="68" font-size="10" fill="#287a4d">1 kid</text>
+      <text x="60" y="165" font-size="10" fill="#b83b5e">0 kids</text>
+    </svg>
+    <div class="clue-caption">Sick days vs. washes, colored by number of kids at home</div>
+  </div>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span>All points have exactly the same value of <code>kids</code>, so there is no problem.</span></div>
+    <div class="opt"><span class="letter">B.</span><span>People with more kids tend to have both more washes and more sick days — <code>kids</code> is a plausible confounder.</span></div>
+    <div class="opt"><span class="letter">C.</span><span>The outcome has no variation, so regression cannot be used.</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: B.</strong> Each kids-group shifts up and to the right together — more kids means both more hand washing and more sick days. A confounder is a variable connected to both the predictor and the outcome, which is exactly this pattern.</div>
+  </details>
+</div>
+
+<!-- Q3 -->
+<div class="card">
+  <span class="qnum">Question 3</span>
+  <p class="qtext">In the naive model, the <code>washes</code> slope was about <strong>+0.64</strong> (more washing, more sick days). After adding <code>kids</code> to the model, the <code>washes</code> slope becomes about <strong>−0.95</strong>. What best explains this sign flip?</p>
+  <div class="clue">
+    <pre>mod_naive    &lt;- lm(sick_days ~ washes, data = handwashing)          # washes: +0.64
+mod_adjusted &lt;- lm(sick_days ~ washes + kids, data = handwashing)    # washes: -0.95, kids: +5.77</pre>
+  </div>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span>R made a calculation error; the two models should always agree.</span></div>
+    <div class="opt"><span class="letter">B.</span><span>Once <code>kids</code> is held constant, the true (adjusted) relationship between washing and sick days is revealed to be negative — the naive slope was confounded by <code>kids</code>.</span></div>
+    <div class="opt"><span class="letter">C.</span><span>Adding a second predictor always reverses the sign of the first.</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: B.</strong> This is the classic confounding story: kids drove up both washing and sick days, masking the fact that, at a fixed number of kids, more hand washing is associated with fewer sick days. Adding a predictor does not "always" flip a sign (C is false) — it does so here because of the specific confounding structure.</div>
+  </details>
+</div>
+
+<!-- Q4 -->
+<div class="card">
+  <span class="qnum">Question 4</span>
+  <p class="qtext">Using the rounded adjusted equation below, what is the predicted number of sick days for someone who washes 6 times per day and has 2 kids?</p>
+  <div class="clue">
+    <pre>sick_days_hat = 12.32 - 0.95 * washes + 5.77 * kids</pre>
+  </div>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span><code>12.32 - 0.95 + 5.77 = 17.14</code></span></div>
+    <div class="opt"><span class="letter">B.</span><span><code>12.32 - 0.95*6 + 5.77*2 = 18.16</code></span></div>
+    <div class="opt"><span class="letter">C.</span><span><code>-0.95*6 + 5.77*2 = 5.84</code> (dropping the intercept)</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: B.</strong> A prediction from a fitted equation always includes the intercept, then multiplies each slope by the plugged-in predictor value: 12.32 − 0.95×6 + 5.77×2 = 18.16. Option C is the common mistake of forgetting the intercept.</div>
+  </details>
+</div>
+
+<!-- Q5 -->
+<div class="card">
+  <span class="qnum">Question 5</span>
+  <p class="qtext">In the FEV lung-function workshop, the height model predicted an FEV of about <strong>−2.79 litres</strong> for a 20-inch-tall "baby," even though FEV can never be negative. What lesson does this illustrate?</p>
+  <div class="clue">
+    <pre>height_model &lt;- lm(fev_l ~ height_in, data = fev)   # fitted on heights 46-74 inches
+predict(height_model, newdata = tibble(height_in = 20))
+#&gt; -2.79   (nonsense: FEV cannot be negative)</pre>
+  </div>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span>The model is broken and should never be used again.</span></div>
+    <div class="opt"><span class="letter">B.</span><span>Predictions become unreliable when extrapolated far outside the range of observed predictor values.</span></div>
+    <div class="opt"><span class="letter">C.</span><span>R-squared must be recalculated for every new prediction.</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: B.</strong> The model was fit on heights from 46-74 inches; a 20-inch height is far outside that range. Straight-line fits can produce nonsensical predictions when extrapolated, so predictions should stay within (or close to) the observed data range.</div>
+  </details>
+</div>
+
+<!-- Q6 -->
+<div class="card">
+  <span class="qnum">Question 6</span>
+  <p class="qtext">The plot below shows systolic blood pressure (sysBP) vs. BMI, split by whether someone is on blood pressure medication. The two fitted lines are clearly not parallel. What does that indicate?</p>
+  <div class="clue">
+    <svg viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
+      <line x1="40" y1="190" x2="400" y2="190" stroke="#5d7475" stroke-width="1.5"/>
+      <line x1="40" y1="190" x2="40" y2="20" stroke="#5d7475" stroke-width="1.5"/>
+      <text x="220" y="212" font-size="11" fill="#5d7475" text-anchor="middle">BMI</text>
+      <text x="14" y="105" font-size="11" fill="#5d7475" text-anchor="middle" transform="rotate(-90 14 105)">systolic BP</text>
+      <!-- no meds: teal, steep slope -->
+      <line x1="60" y1="170" x2="380" y2="40" stroke="#00565e" stroke-width="2.5"/>
+      <text x="385" y="38" font-size="10" fill="#00565e">no meds (steep)</text>
+      <!-- yes meds: rose, flat slope, higher intercept -->
+      <line x1="60" y1="70" x2="380" y2="55" stroke="#b83b5e" stroke-width="2.5"/>
+      <text x="385" y="53" font-size="10" fill="#b83b5e">on meds (flat)</text>
+    </svg>
+    <div class="clue-caption">Non-parallel fitted lines for two BPMeds groups</div>
+  </div>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span>The two groups have different intercepts but the exact same BMI slope.</span></div>
+    <div class="opt"><span class="letter">B.</span><span>BMI has no relationship with systolic BP in either group.</span></div>
+    <div class="opt"><span class="letter">C.</span><span>The slope of BMI on systolic BP differs between the two medication groups — an interaction.</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: C.</strong> Parallel lines would mean equal slopes (no interaction, just an intercept shift). Non-parallel lines mean the BMI slope itself depends on medication status — that is exactly what an interaction term captures.</div>
+  </details>
+</div>
+
+<!-- Q7 -->
+<div class="card">
+  <span class="qnum">Question 7</span>
+  <p class="qtext">Fitting <code>lm(sysBP ~ BMI + BPMeds + BMI:BPMeds, data = fram)</code> gives the coefficient table below. What is the BMI slope for the group <strong>on medication</strong> (<code>yes</code>)?</p>
+  <div class="clue">
+    <pre>  (Intercept)           BMI     BPMedsyes  BMI:BPMedsyes
+        87.64          1.70         57.11          -0.99</pre>
+  </div>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span><code>1.70</code>, because the plain BMI row applies to everyone.</span></div>
+    <div class="opt"><span class="letter">B.</span><span><code>1.70 + (-0.99) = 0.71</code>, adding the interaction row to the reference slope.</span></div>
+    <div class="opt"><span class="letter">C.</span><span><code>-0.99</code>, treating the interaction row as the slope directly.</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: B.</strong> The reference group's slope is the plain <code>BMI</code> row (1.70). Every non-reference level's slope is the reference slope <em>plus</em> its <code>BMI:BPMeds_</code> interaction row: 1.70 + (−0.99) = 0.71. The interaction coefficient by itself is only the difference in slopes, not the slope.</div>
+  </details>
+</div>
+
+<!-- Q8 -->
+<div class="card">
+  <span class="qnum">Question 8</span>
+  <p class="qtext"><code>Diet</code> in the ChickWeight interaction model has 4 levels (1 = reference, 2, 3, 4). How many <code>Time:Diet</code> interaction rows does <code>lm(weight ~ Time + Diet + Time:Diet, data = ChickWeight)</code> produce?</p>
+  <div class="clue">
+    <pre>(Intercept)   Time   Diet2   Diet3   Diet4   Time:Diet2   Time:Diet3   Time:Diet4
+     30.93   6.84   -2.30  -12.68   -0.14        1.77         4.58         2.87</pre>
+  </div>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span>Four — one per diet, including the reference.</span></div>
+    <div class="opt"><span class="letter">B.</span><span>One — a single interaction term covers the whole variable.</span></div>
+    <div class="opt"><span class="letter">C.</span><span>Three — one for each non-reference level.</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: C.</strong> The reference level (Diet 1) is the baseline and has no row of its own — it is folded into the intercept and the plain <code>Time</code> slope. Each of the other three levels gets its own main-effect row (intercept shift) and its own <code>Time:Diet_</code> row (slope shift), as seen in the table above.</div>
+  </details>
+</div>
+
+<!-- Q9 -->
+<div class="card">
+  <span class="qnum">Question 9</span>
+  <p class="qtext">A student fits every possible pairwise interaction in their dataset, then keeps only the ones that came out statistically significant, and reports those p-values. What is wrong with this approach?</p>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span>Nothing — interactions should always be chosen this way.</span></div>
+    <div class="opt"><span class="letter">B.</span><span>Interactions can only be fit between two continuous variables, never two categorical ones.</span></div>
+    <div class="opt"><span class="letter">C.</span><span>This is p-hacking: testing many interactions and reporting only the "winners" invalidates those p-values.</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: C.</strong> A good reason to fit an interaction is that it answers the research question or is motivated by prior subject-matter knowledge. Searching over every pairwise interaction and reporting only the significant ones is p-hacking — the reported p-values no longer mean what they claim to mean. Otherwise, the simpler additive model is preferred.</div>
+  </details>
+</div>
+
+<!-- Q10 -->
+<div class="card">
+  <span class="qnum">Question 10</span>
+  <p class="qtext">A published stepwise multiple regression predicting psychological distress (K6 score) includes "emotional control" (how hard it is to control one's emotions) and "epidemic-related dreams" as predictors, both with huge F statistics in the unadjusted table below. Why might a careful reader be cautious about interpreting these two as causal "risk factors" for distress?</p>
+  <div class="clue">
+    <pre>Variable                  F (unadjusted)   p
+Emotional control            1863.07      &lt;0.001
+Epidemic-related dreams      1642.78      &lt;0.001
+Coping style (t)                37.41     &lt;0.001</pre>
+  </div>
+  <div class="opts">
+    <div class="opt"><span class="letter">A.</span><span>F statistics that large are always a sign of a coding error, so the results should be discarded.</span></div>
+    <div class="opt"><span class="letter">B.</span><span>Difficulty controlling one's emotions and having distressing dreams are themselves symptoms very close to psychological distress, so the association could reflect the outcome causing (or overlapping with) the "predictor" rather than the reverse — a reverse-causation / tautology concern.</span></div>
+    <div class="opt"><span class="letter">C.</span><span>Unadjusted F statistics can never be trusted, only the stepwise model's t values matter.</span></div>
+  </div>
+  <details class="answer">
+    <summary>Reveal answer</summary>
+    <div class="answer-body"><strong class="ans">Answer: B.</strong> These "predictors" were measured at the same time as distress and describe closely related psychological states (poor emotional control, disturbing dreams), so it is hard to know whether they cause distress, are caused by it, or are just different facets of the same underlying construct. Large F/t statistics measure strength of association, not causal direction — this is a good moment to add a caveat rather than take the "risk factor" language at face value.</div>
+  </details>
+</div>
+
+<footer>RSR — Week 8 prework revision quiz · Multiple linear regression &amp; interaction terms · Generated by Claude (Sonnet 5)</footer>
+
+</div>
+</body>
+</html>
