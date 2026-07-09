@@ -1,0 +1,337 @@
+---
+title: "EXERCISE: Replicating a multiple linear regression table"
+subtitle: "COVID-19 psychological distress (K6) and adjusted coefficients"
+author: "YOUR NAME HERE"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+In week 5, we used the COVID-19 psychological distress paper to reproduce part of a descriptive table. This week we return to the same paper and try to reproduce its **multiple linear regression** table.
+
+The paper is:
+
+- Wang et al. (2020), *The psychological distress and coping styles in the early stages of the 2019 coronavirus disease (COVID-19) epidemic in the general mainland Chinese population*
+- A copy is in `paper/distress_paper.pdf`
+
+The outcome is the **Kessler Psychological Distress Scale (K6)** total score, called `total_scores_of_K6` in the raw data. Higher values mean more psychological distress.
+
+## What we are reproducing
+
+The paper's Table 4 reports a stepwise multiple linear regression for K6 score. The final table includes:
+
+- marriage
+- history of visiting Wuhan
+- changes over living situations
+- emotional control
+- epidemic-related dreams
+- coping style
+
+## Important caveat
+
+This exercise is about reproducing and interpreting a published regression table. It is **not** evidence that the predictors cause psychological distress.
+
+Several predictors in the table are measured at the same time as distress and are emotionally close to the outcome, especially `emotional_control`, `epidemic_related_dreams`, and `coping_style`. It is plausible that distress influences these responses, that these responses influence distress, or that both are symptoms of a shared underlying state. Because the study is cross-sectional, use cautious language such as **"associated with, adjusting for..."**, not causal language.
+
+# Load packages and data
+
+Use `p_load()` to load `readxl`, `tidyverse`, `here`, `janitor`, `broom`, and `gt`.
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(________)
+```
+
+Import the dataset.
+
+```{r data-import}
+survey_raw <- read_excel(here("data/distress_data.xlsx"))
+```
+
+Inspect the raw data.
+
+```{r glimpse-raw}
+________(survey_raw)
+```
+
+**Question:** How many rows and columns are in the raw dataset?
+
+Ans:
+
+# Part 1: Prepare the variables
+
+## Part 1a: Clean names and select the variables
+
+The raw names include spaces and mixed capitalization. We will clean them and keep only the columns needed for Table 4.
+
+```{r clean-select}
+survey <- survey_raw %>%
+  clean_names() %>%
+  select(
+    total_scores_of_k6,
+    age,
+    marriage,
+    history_of_visiting_sea,
+    history_of_epidemics_occurring_in_the_community,
+    concern_with_media_reports_related_to_the_epidemic,
+    changes_over_living_situations,
+    emotional_control,
+    epidemic_related_dreams,
+    coping_style
+  )
+
+glimpse(survey)
+```
+
+**Question:** Which variable is the outcome?
+
+Ans:
+
+## Part 1b: Check the coding
+
+Table 3 in the paper describes how variables were coded for the regression model. Run the code below to see the observed values in our selected data.
+
+```{r value-check}
+survey %>%
+  summarise(
+    across(
+      everything(),
+      ~ paste(sort(unique(.x)), collapse = ", ")
+    )
+  ) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "observed_values")
+```
+
+**Question:** Which selected variables are binary? Which are numeric or ordinal scores?
+
+Ans:
+
+## Part 1c: Recode marriage
+
+The codebook lists `marriage` as 0 = unmarried and 1 = married, but the data also contain a small number of people coded 2. In week 5, we treated those people as unmarried/non-married. We will use the same practical recode here:
+
+- `married = 1` if `marriage == 1`
+- `married = 0` otherwise
+
+```{r recode}
+survey <- survey %>%
+  mutate(
+    married = if_else(________ == 1, 1, 0)
+  )
+```
+
+Check the recode.
+
+```{r marriage-check}
+tabyl(survey, marriage, married)
+```
+
+**Question:** What does the new `married` variable compare?
+
+Ans:
+
+# Part 2: Fit the multiple regression model
+
+## Part 2a: Start with the paper's final model
+
+The paper says Table 4 is the final model from stepwise regression. We will not redo the stepwise search. Instead, we will directly fit the final set of predictors shown in the published table.
+
+Fit a model predicting K6 score from the six Table 4 predictors.
+
+```{r table4-model}
+table4_model <- lm(
+  total_scores_of_k6 ~
+    married +
+    history_of_visiting_sea +
+    changes_over_living_situations +
+    emotional_control +
+    epidemic_related_dreams +
+    coping_style,
+  data = survey
+)
+
+summary(table4_model)
+```
+
+**Question:** What is the model R-squared? How would you interpret it?
+
+Ans:
+
+## Part 2b: Interpret adjusted coefficients
+
+In a multiple regression, each coefficient is interpreted while holding the other predictors constant.
+
+Use `summary(table4_model)` to answer the questions below.
+
+**Question:** What is the coefficient for `history_of_visiting_sea`? Interpret it in one sentence using "holding the other variables constant".
+
+Ans:
+
+**Question:** What is the coefficient for `coping_style`? The coding is 0 = negative coping style and 1 = positive coping style. Interpret the coefficient in one sentence.
+
+Ans:
+
+**Question:** What is the coefficient for `emotional_control`? Why should we be cautious about interpreting this coefficient causally?
+
+Ans:
+
+# Part 3: Add confidence intervals and build a table
+
+## Part 3a: Use `broom::tidy()`
+
+Use `tidy()` to extract the estimates, p-values, and confidence intervals.
+
+```{r tidy-model}
+model_results <- tidy(________, conf.int = TRUE)
+model_results
+```
+
+## Part 3b: Format the regression table
+
+The table below uses `gt` to format the estimates. Fill in the missing data frame name.
+
+```{r make-table}
+________ %>%
+  mutate(
+    variable = recode(
+      term,
+      "(Intercept)" = "Constant",
+      "married" = "Marriage",
+      "history_of_visiting_sea" = "History of visiting Wuhan",
+      "changes_over_living_situations" = "Changes over living situations",
+      "emotional_control" = "Emotional control",
+      "epidemic_related_dreams" = "Epidemic-related dreams",
+      "coping_style" = "Coping style"
+    ),
+    beta = format(round(estimate, 3), nsmall = 3),
+    t = format(round(statistic, 3), nsmall = 3),
+    p = if_else(p.value < 0.001, "<0.001", as.character(round(p.value, 3))),
+    `95% CI` = paste0(
+      format(round(conf.low, 3), nsmall = 3),
+      " to ",
+      format(round(conf.high, 3), nsmall = 3)
+    )
+  ) %>%
+  select(variable, beta, t, p, `95% CI`) %>%
+  gt() %>%
+  tab_header(
+    title = "Stepwise multiple linear regression for psychological distress",
+    subtitle = "Outcome: K6 score"
+  )
+```
+
+**Question:** Which variables in this table are statistically significant at alpha = 0.05?
+
+Ans:
+
+# Part 4: Compare with the paper
+
+Create a small table of the values printed in the paper's Table 4.
+
+```{r paper-values}
+paper_table4 <- tribble(
+  ~variable, ~paper_beta, ~paper_t, ~paper_ci,
+  "Constant", 3.526, 13.939, "3.030 to 4.022",
+  "Marriage", -0.588, -3.682, "-0.901 to -0.275",
+  "History of visiting Wuhan", 1.449, 5.265, "0.909 to 1.898",
+  "Changes over living situations", 1.040, 9.057, "0.815 to 1.266",
+  "Emotional control", 1.995, 21.879, "1.816 to 2.174",
+  "Epidemic-related dreams", 1.597, 16.964, "1.412 to 1.782",
+  "Coping style", -2.135, -10.575, "-2.531 to -1.739"
+)
+
+paper_table4
+```
+
+Now create a rounded version of your model results and join it to the paper values.
+
+```{r compare-paper}
+our_table4 <- model_results %>%
+  mutate(
+    variable = recode(
+      term,
+      "(Intercept)" = "Constant",
+      "married" = "Marriage",
+      "history_of_visiting_sea" = "History of visiting Wuhan",
+      "changes_over_living_situations" = "Changes over living situations",
+      "emotional_control" = "Emotional control",
+      "epidemic_related_dreams" = "Epidemic-related dreams",
+      "coping_style" = "Coping style"
+    ),
+    our_beta = round(estimate, 3),
+    our_t = round(statistic, 3),
+    our_ci = paste0(
+      round(conf.low, 3),
+      " to ",
+      round(conf.high, 3)
+    )
+  ) %>%
+  select(variable, our_beta, our_t, our_ci)
+
+left_join(paper_table4, our_table4, by = "variable")
+```
+
+**Question:** Do your estimates match the paper? If not, where are the small differences?
+
+Ans:
+
+# Part 5: What did stepwise selection leave out?
+
+Table 3 says the stepwise procedure considered additional predictors, including age, history of epidemics in the community, and concern with media reports. Fit a larger model with those predictors added.
+
+```{r larger-model}
+larger_model <- lm(
+  total_scores_of_k6 ~
+    age +
+    married +
+    history_of_visiting_sea +
+    history_of_epidemics_occurring_in_the_community +
+    concern_with_media_reports_related_to_the_epidemic +
+    changes_over_living_situations +
+    emotional_control +
+    epidemic_related_dreams +
+    coping_style,
+  data = survey
+)
+
+summary(larger_model)
+```
+
+**Question:** Which of the added predictors are not statistically significant in the larger model?
+
+Ans:
+
+**Question:** Why should we be cautious about using stepwise variable selection as if it discovers the one true model?
+
+Ans:
+
+# Part 6: Practice cautious reporting
+
+Write a two-to-three sentence result statement for the Table 4 model. Include:
+
+- the outcome
+- at least two adjusted coefficients
+- one caveat about causality or reverse causation
+
+Your answer:
+
+# Wrap-up
+
+In this workshop, you practiced:
+
+1. fitting a multiple linear regression from a published table;
+2. interpreting adjusted coefficients;
+3. reproducing a regression table with `broom` and `gt`;
+4. comparing your output against a paper;
+5. explaining why cross-sectional regression tables need cautious interpretation.

@@ -1,0 +1,268 @@
+---
+title: "SOLUTIONS: Replicating a multiple linear regression table"
+subtitle: "COVID-19 psychological distress (K6) in mainland China"
+author: "GRAPH Courses team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+These are the completed solutions for the distress multiple linear regression workshop. Each step first shows the blanked chunk from the exercise (not run), then the filled-in **Solution** chunk that runs.
+
+We reproduce **Table 4** from Wang et al. (2020) and discuss why some predictors should be read as **adjusted associations**, not causal drivers.
+
+# PART 1: Load packages and prepare variables
+
+## Load packages
+
+*Exercise chunk (blank):*
+
+```{r load-packages-q, eval=FALSE}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(________)
+```
+
+**Solution:**
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(readxl, tidyverse, here, janitor, broom, gt)
+```
+
+## Import the data
+
+```{r import-raw}
+survey_raw <- read_excel(here("data/distress_data.xlsx"))
+glimpse(survey_raw)
+```
+
+**Checkpoint:** The raw data should have **1,599 rows**.
+
+**Checkpoint answer:** **1,599 rows**, 38 columns.
+
+## Create analysis variables
+
+*Exercise chunk (blank):*
+
+```{r prep-vars-q, eval=FALSE}
+# ... coping_style = ifelse(________ >= 0, 1, 0)
+# ... marriage_bin = ifelse(________ == 1, 1, 0)
+```
+
+**Solution:**
+
+```{r prep-vars}
+pos_items <- paste0("SCSQ_qes", c(1, 2, 3, 5, 6, 7, 9, 10, 12, 15, 16, 19))
+neg_items <- paste0("SCSQ_qes", c(4, 8, 11, 13, 14, 17, 18, 20))
+
+survey <- survey_raw %>%
+  mutate(
+    scsq_positive = rowSums(across(all_of(pos_items)), na.rm = TRUE),
+    scsq_negative = rowSums(across(all_of(neg_items)), na.rm = TRUE),
+    coping_tendency = as.numeric(scale(scsq_positive) - scale(scsq_negative)),
+    coping_style = ifelse(coping_tendency >= 0, 1, 0),
+    marriage_bin = ifelse(marriage == 1, 1, 0)
+  ) %>%
+  select(
+    total_scores_of_K6,
+    marriage_bin,
+    history_of_visiting_SEA,
+    changes_over_living_situations,
+    emotional_control,
+    `epidemic-related_dreams`,
+    coping_style
+  )
+
+glimpse(survey)
+```
+
+*Exercise chunk (blank):*
+
+```{r count-coping-q, eval=FALSE}
+survey %>% count(________)
+```
+
+**Solution:**
+
+```{r count-coping}
+survey %>% count(coping_style)
+```
+
+**Question:** How many people have positive coping style?
+
+**Answer:** **1,052** positive (`coping_style = 1`) and **547** negative (`coping_style = 0`), matching the paper's Table 1.
+
+**Question:** Why keep emotional control and dreams as numeric?
+
+**Answer:** The paper treated them as **linear numeric predictors** (higher code = more difficulty / more frequent dreams). That matches Table 3 ("Primary Value") and lets the slope mean "per one-step increase on the scale."
+
+# PART 2: Fit the multiple linear regression model
+
+*Exercise chunk (blank):*
+
+```{r mlr-model-q, eval=FALSE}
+mlr_model <- lm(
+  total_scores_of_K6 ~ ________ + ________ + ________ +
+    emotional_control + `epidemic-related_dreams` + coping_style,
+  data = survey
+)
+```
+
+**Solution:**
+
+```{r mlr-model}
+mlr_model <- lm(
+  total_scores_of_K6 ~ marriage_bin + history_of_visiting_SEA +
+    changes_over_living_situations + emotional_control +
+    `epidemic-related_dreams` + coping_style,
+  data = survey
+)
+
+summary(mlr_model)
+```
+
+**Question:** What is the adjusted R-squared?
+
+**Answer:** About **0.862**, matching the paper.
+
+**Question:** Interpret the marriage coefficient cautiously.
+
+**Answer:** Holding the other predictors constant, married participants have K6 scores about **0.588 points lower** than unmarried participants, on average.
+
+**Question:** Why hesitate to call emotional control a "risk factor"?
+
+**Answer:** Difficulty controlling emotion is plausibly a **symptom of distress**, measured at the same time as K6. The regression may partly describe **overlap between outcomes**, not a one-way causal effect.
+
+# PART 3: Extract coefficients with `broom`
+
+*Exercise chunk (blank):*
+
+```{r tidy-mlr-q, eval=FALSE}
+mlr_results <- tidy(________, conf.int = TRUE) %>% ...
+```
+
+**Solution:**
+
+```{r tidy-mlr}
+mlr_results <- tidy(mlr_model, conf.int = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    variable = case_when(
+      term == "marriage_bin" ~ "Marriage (married vs unmarried)",
+      term == "history_of_visiting_SEA" ~ "History of visiting Wuhan",
+      term == "changes_over_living_situations" ~ "Changes over living situations",
+      term == "emotional_control" ~ "Emotional control difficulty",
+      term == "epidemic-related_dreams" ~ "Epidemic-related dreams",
+      term == "coping_style" ~ "Coping style (positive vs negative)",
+      TRUE ~ term
+    )
+  ) %>%
+  select(variable, beta = estimate, low = conf.low, high = conf.high, p.value)
+
+mlr_results
+```
+
+**Question:** Does the coping style CI exclude 0?
+
+**Answer:** Yes. The interval runs from about **-2.53 to -1.74**, so positive coping is significantly associated with lower K6 after adjustment (p < 0.001). Still, coping and distress may influence each other in both directions.
+
+*Exercise chunk (blank):*
+
+```{r make-table-q, eval=FALSE}
+make_mlr_table(________)
+```
+
+**Solution:**
+
+```{r make-table}
+make_mlr_table <- function(results_df) {
+  results_df %>%
+    mutate(
+      `Beta (95% CI)` = paste0(
+        format(round(beta, 3), nsmall = 3), " (",
+        format(round(low, 3), nsmall = 3), " to ",
+        format(round(high, 3), nsmall = 3), ")"
+      ),
+      `p-value` = if_else(p.value < 0.001, "<0.001", format(round(p.value, 3), nsmall = 3))
+    ) %>%
+    select(variable, `Beta (95% CI)`, `p-value`) %>%
+    gt() %>%
+    tab_header(
+      title = "Table 4 replication: factors associated with K6 distress",
+      subtitle = "Multiple linear regression (adjusted coefficients)"
+    ) %>%
+    tab_options(table.width = pct(100))
+}
+
+make_mlr_table(mlr_results)
+```
+
+# PART 4: Compare to the published table
+
+*Exercise chunk (blank):*
+
+```{r compare-paper-q, eval=FALSE}
+mlr_results %>% mutate(across(c(beta, low, high), ~ round(.x, 3)))
+```
+
+**Solution:**
+
+```{r compare-paper}
+mlr_results %>%
+  mutate(across(c(beta, low, high), ~ round(.x, 3)))
+```
+
+**Question:** Do the coefficients match?
+
+**Answer:** **Yes, very closely.** For example: marriage **-0.588**, Wuhan visit **1.449**, living changes **1.040**, emotional control **1.995**, dreams **1.597**, coping style **-2.135**.
+
+**Question:** What does age's absence from Table 4 suggest?
+
+**Answer:** **Stepwise selection** dropped age even though bivariate tests showed an association. Stepwise methods can exclude variables and tend to overstate model fit; the final table reflects the algorithm's choices, not necessarily the only sensible model.
+
+# PART 5: Simple vs multiple regression for one predictor
+
+*Exercise chunk (blank):*
+
+```{r simple-wuhan-q, eval=FALSE}
+wuhan_simple <- lm(total_scores_of_K6 ~ history_of_visiting_SEA, data = survey)
+```
+
+**Solution:**
+
+```{r simple-wuhan}
+wuhan_simple <- lm(total_scores_of_K6 ~ history_of_visiting_SEA, data = survey)
+tidy(wuhan_simple, conf.int = TRUE)
+tidy(mlr_model, conf.int = TRUE) %>% filter(term == "history_of_visiting_SEA")
+```
+
+**Question:** Does the Wuhan coefficient change much?
+
+**Answer:** It stays large and positive in both models (simple and adjusted estimates are in the same ballpark). Visiting Wuhan is strongly associated with distress whether or not we adjust for the other Table 4 variables. Other coefficients (like marriage) change more between simple and multiple models.
+
+# PART 6: Thinking critically about the model
+
+**Question:** Does high R-squared mean a good causal model?
+
+**Answer:** **No.** R-squared only measures how well the model fits this sample. With symptom-like predictors on the right-hand side, a high R-squared can reflect **outcome overlap**, not a well-identified causal mechanism.
+
+**Question:** Which two predictors are most cautious as "exposures"?
+
+**Answer:** **Emotional control difficulty** and **epidemic-related dreams** are the most problematic: they read like distress symptoms measured alongside K6. **Coping style** is a close third because current mood can shape coping.
+
+**Question:** Rewrite the paper's sentence in safer language.
+
+**Answer:** Example: "In this cross-sectional sample, greater difficulty controlling emotion was **associated with** higher K6 scores after adjusting for the other variables in the model; the data cannot establish whether emotional control difficulties preceded distress."
+
+# Wrap-up
+
+You reproduced Table 4, practiced adjusted interpretation with `broom` and `gt`, and compared simple vs multiple estimates. The replication works well statistically. The critical reading is equally important: treat symptom-like survey items as **associated features**, not proven causes.

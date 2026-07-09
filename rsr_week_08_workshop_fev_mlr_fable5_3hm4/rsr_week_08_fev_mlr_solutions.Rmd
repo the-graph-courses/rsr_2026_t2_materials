@@ -1,0 +1,292 @@
+---
+title: "SOLUTIONS: Multiple linear regression and how to read it"
+subtitle: "FEV lung function: age, height, sex, and smoking together"
+author: "GRAPH Courses team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+These are the completed solutions for the week 8 exercise. Each step first shows the blanked chunk from the exercise (not run), then the filled-in **Solution** chunk that runs.
+
+Two workshops ago, we used the FEV dataset to see the three uses of regression: describe, predict, and control. At the end, we previewed a multiple regression that controlled for age and height. This week, multiple linear regression is the main event. You will build a model up one predictor at a time, and learn to read every row of the output.
+
+The dataset contains 654 youths aged 3 to 19 from East Boston in the 1970s. The outcome is **forced expiratory volume** (`fev_l`), in litres: how much air a person can forcefully breathe out in one second. Higher values mean better lung function.
+
+The variables are:
+
+- `fev_l`: forced expiratory volume in litres (the outcome)
+- `age_yrs`: age in years
+- `height_in`: height in inches
+- `sex`: `female` or `male`
+- `smoke`: current smoking status, `non_smoker` or `smoker`
+
+# Load packages and data
+
+*Exercise chunk (blank):*
+
+```{r load-packages-q, eval=FALSE}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(________)
+```
+
+**Solution:**
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, broom)
+```
+
+```{r load-data}
+fev <- read_csv(here("data/fev_kahn.csv"))
+glimpse(fev)
+```
+
+**Checkpoint:** `fev` should have **654 rows and 5 columns**.
+
+**Checkpoint answer:** `fev` has **654 rows and 5 columns**.
+
+# Part 1: One predictor, a recap
+
+In week 6 we found that height was the best single predictor of FEV. Refit that model to remind yourself what its output looks like.
+
+*Exercise chunk (blank):*
+
+```{r height-model-q, eval=FALSE}
+height_model <- lm(______ ~ ______, data = fev)
+summary(height_model)
+```
+
+**Solution:**
+
+```{r height-model}
+height_model <- lm(fev_l ~ height_in, data = fev)
+summary(height_model)
+```
+
+**Question:** Fill in the blanks.
+
+The fitted equation is: predicted FEV = ______ + ______ * height.
+The model's R-squared is about ______.
+
+Ans:
+
+**Solution answer:** predicted FEV = **-5.43** + **0.132** * height. The R-squared is about **0.754**: height alone explains about 75.4% of the variation in FEV.
+
+# Part 2: Two predictors
+
+## Part 2a: Fitting the model
+
+To fit a multiple linear regression, we simply add predictors on the right of the `~` with `+`. Fit a model with **both height and age** as predictors.
+
+*Exercise chunk (blank):*
+
+```{r height-age-model-q, eval=FALSE}
+height_age_model <- lm(______ ~ ______ + ______, data = fev)
+summary(height_age_model)
+```
+
+**Solution:**
+
+```{r height-age-model}
+height_age_model <- lm(fev_l ~ height_in + age_yrs, data = fev)
+summary(height_age_model)
+```
+
+The fitted equation now has two slopes:
+
+predicted FEV = -4.61 + 0.110 * height + 0.054 * age
+
+## Part 2b: The key change in interpretation
+
+In multiple regression, each coefficient is read **holding the other predictors constant** (also phrased as "adjusting for" or "controlling for" the other predictors).
+
+So the height slope now answers: *comparing two youths of the same age, how much higher is predicted FEV for each extra inch of height?*
+
+**Question:** Interpret the `age_yrs` coefficient (about 0.054) in one sentence, using the phrase "holding height constant".
+
+Ans:
+
+**Solution answer:** Holding height constant, each additional year of age is associated with about **0.054 litres** higher predicted FEV, on average. (In other words: comparing two youths of the same height, the older one is predicted to have slightly higher FEV.)
+
+**Question:** In the simple model, the height slope was about 0.132. In this model it dropped to about 0.110. Why did it change? (Hint: compute `cor(fev$height_in, fev$age_yrs)`.)
+
+```{r height-age-cor}
+cor(fev$height_in, fev$age_yrs)
+```
+
+Ans:
+
+**Solution answer:** Height and age are strongly correlated (r ≈ 0.79): older children are taller. In the simple model, the height slope was absorbing some of the effect of age. Once age is in the model, the height slope reflects only the part of the height-FEV relationship that is not accounted for by age, so it shrinks. When predictors are correlated, adding or removing one changes the coefficients of the others.
+
+**Question:** The R-squared went from 0.754 (height alone) to about 0.766 (height + age). Age was a strong predictor on its own (R-squared 0.572 in week 6). Why did adding it improve the model so little?
+
+Ans:
+
+**Solution answer:** Because height and age are highly correlated, most of the information age carries about FEV is already carried by height. Age adds only a small amount of *new* explanatory power, so R-squared barely moves. R-squared contributions do not simply add up across correlated predictors.
+
+# Part 3: The full model
+
+## Part 3a: Fit it
+
+Now fit the full model with all four predictors: height, age, sex, and smoking status.
+
+*Exercise chunk (blank):*
+
+```{r full-model-q, eval=FALSE}
+full_model <- lm(fev_l ~ ______ + ______ + ______ + ______, data = fev)
+summary(full_model)
+```
+
+**Solution:**
+
+```{r full-model}
+full_model <- lm(fev_l ~ height_in + age_yrs + sex + smoke, data = fev)
+summary(full_model)
+```
+
+## Part 3b: Reading every row
+
+Recall from previous weeks: for a categorical predictor, R picks the first factor level (alphabetically, for character columns) as the **reference group**, and the coefficient row compares the other level with the reference.
+
+**Question:** For the `sexmale` row (coefficient about 0.157): which sex is the reference group, and what does the coefficient mean? Use "holding ... constant" in your answer.
+
+Ans:
+
+**Solution answer:** The reference group is **female**. Holding height, age, and smoking status constant, males have predicted FEV about **0.157 litres higher** than females, on average.
+
+**Question:** Fill in the blanks for the `smokesmoker` row.
+
+Holding height, age, and sex constant, smokers have predicted FEV about ______ litres ______ (higher / lower) than non-smokers. The p-value for this coefficient is about ______, so at alpha = 0.05 this difference ______ (is / is not) statistically significant.
+
+Ans:
+
+**Solution answer:** Holding height, age, and sex constant, smokers have predicted FEV about **0.087** litres **lower** than non-smokers. The p-value is about **0.14**, so at alpha = 0.05 this difference **is not** statistically significant.
+
+## Part 3c: Confidence intervals with broom
+
+Use `tidy()` from the broom package to get each coefficient with its 95% confidence interval.
+
+*Exercise chunk (blank):*
+
+```{r tidy-full-q, eval=FALSE}
+tidy(______, conf.int = ______)
+```
+
+**Solution:**
+
+```{r tidy-full}
+tidy(full_model, conf.int = TRUE)
+```
+
+**Question:** What is the 95% CI for the `smokesmoker` coefficient? Does it include 0, and how does that relate to the p-value you saw above?
+
+Ans:
+
+**Solution answer:** The 95% CI runs from about **-0.20 to +0.03**. It includes 0, which matches the p-value being above 0.05: the two always agree. The data are consistent with smoking effects ranging from a 0.2-litre deficit to essentially no difference (or even a tiny surplus), so we cannot pin down the direction with confidence.
+
+## Part 3d: The big picture on smoking
+
+Let's put the smoking story together across models. First, the raw (unadjusted) smoking model:
+
+```{r smoke-raw}
+raw_smoke_model <- lm(fev_l ~ smoke, data = fev)
+tidy(raw_smoke_model, conf.int = TRUE)
+```
+
+**Question:** Complete the summary table below in words: what is the smoking coefficient in the raw model, and in the full adjusted model? Explain in two or three sentences what happened and why. (Think back to week 6: who were the smokers in this dataset?)
+
+Ans:
+
+**Solution answer:** In the raw model, the smoking coefficient is about **+0.71** litres: smokers appear to have *better* lung function. In the full model, it is about **-0.09** litres (not statistically significant). The raw comparison was confounded: the smokers were the older, taller adolescents, who naturally have bigger lungs. Once we hold age, height, and sex constant, the apparent advantage disappears and the point estimate turns slightly negative. This is exactly what multiple regression is for: the adjusted coefficient compares like with like.
+
+**Question:** A classmate concludes: "the full model proves smoking has no effect on lung function in youths." Give one reason to push back on that conclusion.
+
+Ans:
+
+**Solution answer:** Several acceptable answers. (1) Failing to find a significant effect is not proof of no effect: the CI (-0.20 to +0.03) is compatible with a real deficit of up to 0.2 litres, and there were relatively few smokers, so power is limited. (2) The damage from smoking accumulates over decades; these are youths who mostly started smoking recently, so we would not expect a large effect yet. (3) This is observational data; residual confounding in either direction is possible.
+
+# Part 4: Prediction with multiple predictors
+
+Prediction works exactly as before, except the new data must supply a value for **every** predictor in the model.
+
+Use the full model to predict FEV for a **12-year-old, 60-inch-tall, female non-smoker**.
+
+*Exercise chunk (blank):*
+
+```{r predict-q, eval=FALSE}
+new_person <- tibble(
+  height_in = ______,
+  age_yrs = ______,
+  sex = "______",
+  smoke = "______"
+)
+predict(______, newdata = ______)
+```
+
+**Solution:**
+
+```{r predict}
+new_person <- tibble(
+  height_in = 60,
+  age_yrs = 12,
+  sex = "female",
+  smoke = "non_smoker"
+)
+predict(full_model, newdata = new_person)
+```
+
+**Question:** What is the predicted FEV? Verify it by hand using the fitted equation (intercept -4.457, height 0.104, age 0.066, sexmale 0.157, smokesmoker -0.087). Remember: for a female non-smoker, the `sexmale` and `smokesmoker` terms contribute 0.
+
+Ans:
+
+**Solution answer:** The predicted FEV is about **2.58 litres**. By hand: -4.457 + 0.104 × 60 + 0.066 × 12 + 0.157 × 0 + (-0.087) × 0 ≈ 2.58. ✓
+
+**Question:** Without rerunning `predict()`, what would the prediction be for the same person if she were a smoker?
+
+Ans:
+
+**Solution answer:** About **2.58 - 0.087 ≈ 2.49 litres**. Changing one predictor by one unit (here, non-smoker to smoker) just adds that predictor's coefficient, since everything else is held fixed.
+
+# Part 5: Optional challenge, an interaction
+
+In the lessons this week you saw interaction terms, which let the slope of one predictor differ between groups. Fit a model where the **height slope is allowed to differ between smokers and non-smokers**, using the `:` syntax.
+
+*Exercise chunk (blank):*
+
+```{r interaction-q, eval=FALSE}
+int_model <- lm(fev_l ~ height_in + smoke + ______, data = fev)
+summary(int_model)
+```
+
+**Solution:**
+
+```{r interaction}
+int_model <- lm(fev_l ~ height_in + smoke + height_in:smoke, data = fev)
+summary(int_model)
+```
+
+**Question:** Using the coefficient table, what is the height slope for non-smokers, and what is it for smokers? Is there strong evidence that the slopes differ?
+
+Ans:
+
+**Solution answer:** Non-smokers (the reference group) have height slope about **0.131**. Smokers have slope **0.131 + 0.031 ≈ 0.162** (reference slope plus the `height_in:smokesmoker` interaction coefficient). The interaction p-value is about **0.07**, above 0.05, so there is no strong evidence that the height-FEV slope differs by smoking status; the simpler additive model is reasonable here.
+
+# Wrap-up
+
+The mechanics of multiple regression are just `+` in the formula. The skill is in the reading:
+
+1. Every coefficient is interpreted **holding the other predictors constant**.
+2. When predictors are correlated (like height and age), coefficients shift as you add or remove predictors, and R-squared contributions do not add up.
+3. Categorical predictors are read against their reference group, exactly as in simple regression.
+4. Adjusted coefficients can tell a completely different story from raw ones: the smoking coefficient flipped from +0.71 to -0.09 once we compared like with like.
+5. Prediction requires a value for every predictor; changing one predictor by one unit changes the prediction by that coefficient.

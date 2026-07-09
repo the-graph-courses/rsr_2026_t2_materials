@@ -1,0 +1,263 @@
+---
+title: "EXERCISE: Replicating a multiple linear regression table"
+subtitle: "COVID-19 psychological distress (K6) in mainland China"
+author: "YOUR NAME HERE"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+In Workshop 5 you reproduced **Table 2** from Wang et al. (2020): mean K6 distress scores by participant characteristic, with t-tests and ANOVAs.
+
+In this workshop we move to **Table 4** in the same paper: a **stepwise multiple linear regression** model that adjusts for several predictors at once. This connects directly to the course material on multiple linear regression.
+
+## The study (recap)
+
+- Paper: Wang et al. (2020), *The psychological distress and coping styles in the early stages of the COVID-19 epidemic*, PLOS ONE. See `paper/distress_paper.pdf`.
+- Data: `data/distress_data.xlsx` (1,599 participants)
+- Outcome: `total_scores_of_K6` (0 to 24, higher = more distress)
+
+## The table we will build
+
+**Table 4** reports adjusted beta coefficients from a multivariate model. The authors' final model includes:
+
+- Marriage (binary)
+- History of visiting Wuhan in the past month (binary)
+- Changes over living situations (0 to 2)
+- Emotional control difficulty (0 to 4)
+- Epidemic-related dreams (0 to 4)
+- Coping style (negative vs positive)
+
+The paper reports R-squared about **0.862** for this model.
+
+Open `paper/distress_paper.pdf` and find Table 4 before you start.
+
+## A note on interpretation (read this carefully)
+
+We will reproduce the authors' table because it is good practice with real published output. But **reproducing a table is not the same as endorsing every predictor as a causal driver of distress**.
+
+Three cautions:
+
+1. **Cross-sectional data.** Everything was measured at one time point, so we cannot tell what came first.
+2. **Symptom overlap.** Items like *difficulty controlling emotion* and *epidemic-related dreams* sound like **distress symptoms themselves**, not just independent risk factors. Putting them on the right-hand side of a regression that predicts K6 distress risks **reverse causation** or **circular reasoning**.
+3. **Coping style** may also be shaped by current mood, not only the other way around.
+
+Throughout the exercise, practice describing results as **adjusted associations**, not proven causes.
+
+# PART 1: Load packages and prepare variables
+
+## Load packages
+
+Fill in the blanks to load: `readxl`, `tidyverse`, `here`, `janitor`, `broom`, `gt`.
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(________)
+```
+
+## Import the data
+
+```{r import-raw}
+survey_raw <- read_excel(here("data/distress_data.xlsx"))
+glimpse(survey_raw)
+```
+
+**Checkpoint:** The raw data should have **1,599 rows**.
+
+## Create analysis variables
+
+The paper's Table 3 lists how variables were coded for regression. We need to recreate two derived variables:
+
+- `marriage_bin`: 0 = unmarried, 1 = married
+- `coping_style`: 0 = negative, 1 = positive (from the SCSQ questionnaire; see codebook)
+
+The coping-style steps match the paper:
+
+1. Sum the 12 positive-coping SCSQ items and the 8 negative-coping items.
+2. Z-score each sum.
+3. Subtract the negative z-score from the positive z-score.
+4. Code as positive (1) if the result is >= 0, else negative (0).
+
+The positive item numbers are 1, 2, 3, 5, 6, 7, 9, 10, 12, 15, 16, 19. The negative item numbers are 4, 8, 11, 13, 14, 17, 18, 20.
+
+Most of the code below is written out. Fill in the blanks for `marriage_bin` and the `ifelse()` that creates `coping_style`.
+
+```{r prep-vars}
+pos_items <- paste0("SCSQ_qes", c(1, 2, 3, 5, 6, 7, 9, 10, 12, 15, 16, 19))
+neg_items <- paste0("SCSQ_qes", c(4, 8, 11, 13, 14, 17, 18, 20))
+
+survey <- survey_raw %>%
+  mutate(
+    scsq_positive = rowSums(across(all_of(pos_items)), na.rm = TRUE),
+    scsq_negative = rowSums(across(all_of(neg_items)), na.rm = TRUE),
+    coping_tendency = as.numeric(scale(scsq_positive) - scale(scsq_negative)),
+    coping_style = ifelse(________ >= 0, 1, 0),
+    marriage_bin = ifelse(________ == 1, 1, 0)
+  ) %>%
+  select(
+    total_scores_of_K6,
+    marriage_bin,
+    history_of_visiting_SEA,
+    changes_over_living_situations,
+    emotional_control,
+    `epidemic-related_dreams`,
+    coping_style
+  )
+
+glimpse(survey)
+```
+
+**Question:** How many people have positive coping style (`coping_style = 1`)? Use `count(coping_style)`.
+
+```{r count-coping, eval=FALSE}
+survey %>% count(________)
+```
+
+Your answer: _______
+
+**Question:** Why do we keep `emotional_control` and `epidemic-related_dreams` as numeric codes (0 to 4) rather than converting them to factors?
+
+Your answer: _______
+
+# PART 2: Fit the multiple linear regression model
+
+The paper's Table 4 model regresses K6 on six predictors at once. Fill in the formula.
+
+```{r mlr-model, eval=FALSE}
+mlr_model <- lm(
+  total_scores_of_K6 ~ ________ + ________ + ________ +
+    emotional_control + `epidemic-related_dreams` + coping_style,
+  data = survey
+)
+
+summary(mlr_model)
+```
+
+**Question:** What is the adjusted R-squared? Is it close to the paper's 0.862?
+
+Your answer: _______
+
+**Question:** The coefficient on `marriage_bin` is negative. Fill in the interpretation using cautious language.
+
+> Holding the other predictors constant, married participants have K6 scores about ______ points ______ (higher / lower) than unmarried participants, on average.
+
+Your answer: _______
+
+**Question:** The coefficient on `emotional_control` is positive and highly significant. Why might we hesitate to call this a "risk factor" for distress?
+
+Your answer: _______
+
+# PART 3: Extract coefficients with `broom`
+
+To build a publication-style table, use `broom::tidy()` with confidence intervals.
+
+```{r tidy-mlr, eval=FALSE}
+mlr_results <- tidy(________, conf.int = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    variable = case_when(
+      term == "marriage_bin" ~ "Marriage (married vs unmarried)",
+      term == "history_of_visiting_SEA" ~ "History of visiting Wuhan",
+      term == "changes_over_living_situations" ~ "Changes over living situations",
+      term == "emotional_control" ~ "Emotional control difficulty",
+      term == "`epidemic-related_dreams`" ~ "Epidemic-related dreams",
+      term == "coping_style" ~ "Coping style (positive vs negative)",
+      TRUE ~ term
+    )
+  ) %>%
+  select(variable, beta = estimate, low = conf.low, high = conf.high, p.value)
+
+mlr_results
+```
+
+**Question:** For `coping_style`, does the 95% CI exclude 0? What does that mean at alpha = 0.05?
+
+Your answer: _______
+
+## Build the table with `gt`
+
+```{r make-table, eval=FALSE}
+make_mlr_table <- function(results_df) {
+  results_df %>%
+    mutate(
+      `Beta (95% CI)` = paste0(
+        format(round(beta, 3), nsmall = 3), " (",
+        format(round(low, 3), nsmall = 3), " to ",
+        format(round(high, 3), nsmall = 3), ")"
+      ),
+      `p-value` = if_else(p.value < 0.001, "<0.001", format(round(p.value, 3), nsmall = 3))
+    ) %>%
+    select(variable, `Beta (95% CI)`, `p-value`) %>%
+    gt() %>%
+    tab_header(
+      title = "Table 4 replication: factors associated with K6 distress",
+      subtitle = "Multiple linear regression (adjusted coefficients)"
+    ) %>%
+    tab_options(table.width = pct(100))
+}
+
+make_mlr_table(________)
+```
+
+# PART 4: Compare to the published table
+
+Round your coefficients to three decimals and compare to Table 4 in the paper.
+
+```{r compare-paper, eval=FALSE}
+mlr_results %>%
+  mutate(across(c(beta, low, high), ~ round(.x, 3)))
+```
+
+**Question:** Do your coefficients match the paper's betas (for example, marriage about -0.588, emotional control about 1.995, coping style about -2.135)?
+
+Your answer: _______
+
+**Question:** The paper's abstract says age was associated with distress in bivariate tests, but age is **not** in Table 4. What does that suggest about stepwise variable selection?
+
+Your answer: _______
+
+# PART 5: Simple vs multiple regression for one predictor
+
+Pick **history of visiting Wuhan** (`history_of_visiting_SEA`). Fit:
+
+1. A simple regression (one predictor)
+2. The full multiple regression (already fitted)
+
+```{r simple-wuhan, eval=FALSE}
+wuhan_simple <- lm(total_scores_of_K6 ~ history_of_visiting_SEA, data = survey)
+tidy(wuhan_simple, conf.int = TRUE)
+tidy(mlr_model, conf.int = TRUE) %>% filter(term == "history_of_visiting_SEA")
+```
+
+**Question:** Is the Wuhan coefficient similar in the simple and multiple models, or does it change a lot? What might explain the difference?
+
+Your answer: _______
+
+# PART 6: Thinking critically about the model
+
+**Question:** The model R-squared is very high (about 0.86). Does that mean this is a good **causal** model of distress?
+
+Your answer: _______
+
+**Question:** If you were designing a follow-up study, which two predictors from Table 4 would you treat most cautiously as "exposures", and why?
+
+Your answer: _______
+
+**Question:** Rewrite one sentence from the paper's Discussion in safer language. The original says emotional control difficulty was an "influence factor" of psychological distress. Write a version using "associated with" and mentioning the cross-sectional design.
+
+Your answer: _______
+
+# Wrap-up
+
+You recreated a published **multiple linear regression** table, extracted adjusted coefficients with `broom`, and compared simple vs adjusted estimates.
+
+The statistical skills are real and useful. The **interpretation** skills are just as important: in cross-sectional mental-health data, not every variable on the right-hand side of the regression is a clean causal predictor.

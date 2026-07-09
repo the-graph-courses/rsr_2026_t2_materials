@@ -1,0 +1,260 @@
+---
+title: "EXERCISE: Multiple linear regression with FEV"
+subtitle: "Adjusting for confounders in lung function data"
+author: "YOUR NAME HERE"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+In Workshop 6 you used **simple linear regression** (one predictor at a time) to study forced expiratory volume (FEV) in children and adolescents. You saw that a raw smoking comparison was misleading because smokers were older and taller on average.
+
+In this workshop we go further with **multiple linear regression**: fitting **two or more predictors in the same model**. The key idea from the course materials is that each coefficient is read while **holding the other predictors constant**. This is also called **adjusting for** or **controlling for** the other variables.
+
+We will use the same FEV dataset from Workshop 6 (`data/fev_kahn.csv`, 654 youths aged 3 to 19).
+
+The outcome is `fev_l` (litres). The predictors are:
+
+- `age_yrs`: age in years
+- `height_in`: height in inches
+- `smoke`: current smoking status (`non_smoker` or `smoker`)
+
+# PART 1: Load packages and data
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, here, broom)
+```
+
+```{r load-data}
+fev <- read_csv(here("data/fev_kahn.csv"))
+glimpse(fev)
+```
+
+**Checkpoint:** `fev` should have **654 rows and 5 columns**.
+
+# PART 2: From one predictor to two
+
+## Part 2a: Two simple models, side by side
+
+First, refit the two one-predictor models from Workshop 6.
+
+The age model is filled in as an example. Fill in the height model.
+
+```{r age-simple}
+age_simple <- lm(fev_l ~ age_yrs, data = fev)
+summary(age_simple)
+```
+
+```{r height-simple, eval=FALSE}
+height_simple <- lm(________ ~ ________, data = fev)
+summary(height_simple)
+```
+
+**Question:** What is the slope on `height_in` in the simple height model (about how many litres per inch)?
+
+Your answer: _______
+
+**Question:** Which simple model has higher R-squared, age or height?
+
+Your answer: _______
+
+## Part 2b: Fit a two-predictor model
+
+Now fit both predictors together.
+
+```{r age-height-model, eval=FALSE}
+age_height_model <- lm(fev_l ~ ________ + ________, data = fev)
+summary(age_height_model)
+```
+
+**Question:** In the two-predictor model, the slope on `age_yrs` is about **0.054**. In the simple age model it was about **0.222**. Why did the age slope get smaller after adding height?
+
+Your answer: _______
+
+**Question:** Fill in the interpretation.
+
+> Holding height constant, each extra year of age is associated with about ______ more litres of FEV, on average.
+
+Your answer: _______
+
+**Question:** Fill in the interpretation for height.
+
+> Holding age constant, each extra inch of height is associated with about ______ more litres of FEV, on average.
+
+Your answer: _______
+
+## Part 2c: Compare coefficients in one table
+
+`broom::tidy()` is useful for lining up coefficients from different models.
+
+```{r compare-slopes, eval=FALSE}
+compare_slopes <- bind_rows(
+  tidy(age_simple) %>% mutate(model = "Age only"),
+  tidy(height_simple) %>% mutate(model = "Height only"),
+  tidy(age_height_model) %>% mutate(model = "Age + height")
+) %>%
+  filter(term != "(Intercept)") %>%
+  select(model, term, estimate)
+
+compare_slopes
+```
+
+**Question:** Look at the `age_yrs` row across models. What happens to the age slope when height enters the model?
+
+Your answer: _______
+
+# PART 3: The smoking confounding story, revisited
+
+Workshop 6 showed that smokers had **higher** mean FEV in a raw comparison, but **lower** predicted FEV after adjusting for age and height. Now we will unpack that more carefully.
+
+## Part 3a: Summarise by smoking status
+
+```{r smoke-summary}
+fev %>%
+  group_by(smoke) %>%
+  summarise(
+    n = n(),
+    mean_age = mean(age_yrs),
+    mean_height = mean(height_in),
+    mean_fev = mean(fev_l),
+    .groups = "drop"
+  )
+```
+
+**Question:** Smokers have higher mean FEV. They are also older and taller on average. In one sentence, why might age and height act as confounders here?
+
+Your answer: _______
+
+## Part 3b: Raw smoking model
+
+```{r smoke-raw, eval=FALSE}
+smoke_raw <- lm(________ ~ ________, data = fev)
+summary(smoke_raw)
+```
+
+**Question:** The coefficient on `smokesmoker` in the raw model is about **+0.71**. What does that number mean?
+
+Your answer: _______
+
+## Part 3c: Adjusted smoking model
+
+Now add age and height to the model.
+
+```{r smoke-adjusted, eval=FALSE}
+smoke_adjusted <- lm(fev_l ~ smoke + ________ + ________, data = fev)
+summary(smoke_adjusted)
+```
+
+**Question:** After adjustment, the smoking coefficient is about **-0.11** with p about **0.067**. How does this differ from the raw coefficient? What cautious conclusion would you draw?
+
+Your answer: _______
+
+**Question:** The course materials say we should avoid causal language like "smoking causes lower FEV" in observational data. Write one safer sentence using "associated with" and "adjusting for".
+
+Your answer: _______
+
+# PART 4: Read the full three-predictor model
+
+The adjusted smoking model is a **three-predictor** multiple regression. All three slopes are read while holding the other two predictors constant.
+
+```{r full-model, eval=FALSE}
+full_model <- lm(fev_l ~ smoke + age_yrs + height_in, data = fev)
+summary(full_model)
+```
+
+**Question:** In `summary(full_model)`, which predictor has the largest absolute slope? Does that automatically mean it is the most important predictor in real life? (Hint: think about units.)
+
+Your answer: _______
+
+**Question:** What is the adjusted R-squared for this model?
+
+Your answer: _______
+
+# PART 5: Prediction with multiple predictors
+
+With several predictors, `predict()` needs a row that supplies **every** predictor in the model.
+
+The example below predicts FEV for a 12-year-old non-smoker who is 60 inches tall.
+
+```{r predict-example}
+new_person <- tibble(
+  smoke = factor("non_smoker", levels = c("non_smoker", "smoker")),
+  age_yrs = 12,
+  height_in = 60
+)
+
+predict(full_model, newdata = new_person)
+```
+
+Now try two predictions of your own.
+
+```{r predict-smoker, eval=FALSE}
+smoker_12_60 <- tibble(
+  smoke = factor("smoker", levels = c("non_smoker", "smoker")),
+  age_yrs = ________,
+  height_in = ________
+)
+
+predict(________, newdata = ________)
+```
+
+**Question:** For the same age and height, is predicted FEV higher or lower for the smoker than the non-smoker in the example above?
+
+Your answer: _______
+
+```{r predict-tall, eval=FALSE}
+tall_non_smoker <- tibble(
+  smoke = factor("non_smoker", levels = c("non_smoker", "smoker")),
+  age_yrs = ________,
+  height_in = ________
+)
+
+predict(________, newdata = ________)
+```
+
+**Question:** Predict FEV for a 16-year-old non-smoker who is 70 inches tall. Does the prediction seem plausible for this dataset?
+
+Your answer: _______
+
+# PART 6: R-squared across models
+
+Finally, compare how much variation in FEV each model explains.
+
+```{r r-squared-compare, eval=FALSE}
+tibble(
+  model = c("Age only", "Height only", "Age + height", "Smoke + age + height"),
+  r_squared = c(
+    summary(________)$r.squared,
+    summary(________)$r.squared,
+    summary(________)$r.squared,
+    summary(________)$r.squared
+  )
+)
+```
+
+**Question:** What happens to R-squared when you add more predictors? Does a higher R-squared always mean the model is "better" for every purpose?
+
+Your answer: _______
+
+# Wrap-up
+
+In this workshop you:
+
+1. Fitted models with **two and three predictors** using `+` in the formula.
+2. Interpreted coefficients as **adjusted** slopes (holding other predictors constant).
+3. Saw how a misleading raw association (smoking) can change after adjustment.
+4. Used `predict()` and compared **R-squared** across models.
+
+Next up in the course: **interaction terms**, where the slope of one predictor can depend on another.

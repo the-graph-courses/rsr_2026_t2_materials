@@ -1,0 +1,242 @@
+---
+title: "EXERCISE: Multiple linear regression and how to interpret it"
+subtitle: "FEV lung function, age, height, sex, and smoking"
+author: "YOUR NAME HERE"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+In Workshop 6 we used the FEV (lung function) dataset to introduce **simple** linear regression: one outcome, one predictor. At the very end of that workshop, we previewed what happens when we add more than one predictor at once, to control for confounding.
+
+This workshop builds that preview into a full **multiple linear regression (MLR)** model, and focuses on the main new skill: **reading and interpreting a multiple regression coefficient table**.
+
+Recall the dataset: 654 youths aged 3 to 19 from East Boston in the 1970s. The outcome is **forced expiratory volume** (`fev_l`), in litres. Higher values mean better lung function.
+
+The variables we will use are:
+
+- `fev_l`: forced expiratory volume in litres (outcome)
+- `age_yrs`: age in years
+- `height_in`: height in inches
+- `sex`: `female` or `male`
+- `smoke`: current smoking status, `non_smoker` or `smoker`
+
+# Load packages and data
+
+Use `p_load()` to load the following packages: `tidyverse` and `here`.
+
+```{r load-packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(_______)
+```
+
+```{r load-data}
+fev <- read_csv(here("data/fev_kahn.csv"))
+glimpse(fev)
+```
+
+**Checkpoint:** `fev` should have **654 rows and 5 columns**.
+
+# Part 1: From one predictor to many
+
+## Recap: two one-predictor models
+
+As a reminder, here are the simple regressions of FEV on age and on height separately.
+
+```{r age-model}
+age_model <- lm(fev_l ~ age_yrs, data = fev)
+summary(age_model)
+```
+
+```{r height-model}
+height_model <- lm(fev_l ~ height_in, data = fev)
+summary(height_model)
+```
+
+**Question:** Age and height are both positively associated with FEV on their own. Age and height are also correlated with each other (taller children tend to be older). What do you think will happen to the age coefficient once we also control for height in the same model? Give your best guess before running anything.
+
+Ans:
+
+## The multiple regression formula
+
+A multiple regression with two predictors extends the simple regression formula:
+
+predicted y = intercept + slope_1 * x_1 + slope_2 * x_2
+
+In R, we add predictors with `+`:
+
+```r
+lm(outcome ~ predictor_1 + predictor_2, data = my_data)
+```
+
+Each coefficient is now read while **holding the other predictors constant** (also called **adjusting for** or **controlling for** the other predictors).
+
+## Fit the two-predictor model
+
+Fill in the blanks to fit a model with `fev_l` as the outcome and both `age_yrs` and `height_in` as predictors.
+
+```{r age-height-model, eval=FALSE}
+age_height_model <- lm(_______ ~ _______ + _______, data = fev)
+summary(age_height_model)
+```
+
+**Question:** Write out the fitted equation, rounding each number to 3 decimals.
+
+predicted FEV = ______ + ______ * age + ______ * height
+
+Ans:
+
+**Question:** Compare the age coefficient in this model (about 0.060) with the age coefficient in the one-predictor age model (about 0.222). What happened, and why do you think it happened?
+
+Ans:
+
+**Question:** Interpret the height coefficient (about 0.109) in one sentence, using the phrase "holding age constant."
+
+Ans:
+
+**Question:** Both age and height are still statistically significant (p < 0.05) in the two-predictor model. What does that tell us, in plain language, about each predictor's relationship with FEV?
+
+Ans:
+
+# Part 2: Adding a third predictor, your turn
+
+Now bring back the `smoke` variable from Workshop 6. Recall that in the raw (one-predictor) model, smokers had *higher* mean FEV than non-smokers, which reversed after controlling for age and height, because smokers in this dataset are older and taller on average.
+
+Fit a model with `age_yrs`, `height_in`, and `smoke` all together.
+
+```{r age-height-smoke-model, eval=FALSE}
+full_model_1 <- lm(_______ ~ age_yrs + height_in + smoke, data = fev)
+summary(full_model_1)
+```
+
+**Question:** What is the coefficient for `smokesmoker`, and is it statistically significant at alpha = 0.05?
+
+Ans:
+
+**Question:** Interpret the `smokesmoker` coefficient in one sentence. Be careful to say what it means "holding age and height constant."
+
+Ans:
+
+## Adding a fourth predictor: sex
+
+The dataset also has a `sex` variable (`female` or `male`) that we have not used yet. Boys and girls differ, on average, in both height and lung development, so sex is a reasonable predictor to add.
+
+Fit a model with all four predictors: `age_yrs`, `height_in`, `smoke`, and `sex`.
+
+```{r full-model-2, eval=FALSE}
+full_model_2 <- lm(_______ ~ age_yrs + height_in + smoke + _______, data = fev)
+summary(full_model_2)
+```
+
+**Question:** What is the coefficient for `sexmale`? Interpret it in one sentence, holding the other three predictors constant.
+
+Ans:
+
+**Question:** After adding `sex` to the model, what happens to the `smokesmoker` coefficient and its p-value, compared with the three-predictor model? (It moves from about -0.110, p = 0.067, to a new value.) Is smoking status statistically significant in this four-predictor model?
+
+Ans:
+
+# Part 3: R-squared and adjusted R-squared
+
+Each time we added a predictor, R-squared went up a little. This always happens: adding *any* predictor, even a useless one, cannot decrease R-squared. That is why we also look at **adjusted R-squared**, which penalizes the score for adding predictors that do not really help.
+
+```{r r-squared-compare, eval=FALSE}
+# Fill in the model names from the four models you have already fit
+tibble(
+  model = c("age only", "age + height", "age + height + smoke", "age + height + smoke + sex"),
+  r_squared = c(
+    summary(_______)$r.squared,
+    summary(_______)$r.squared,
+    summary(_______)$r.squared,
+    summary(_______)$r.squared
+  ),
+  adj_r_squared = c(
+    summary(_______)$adj.r.squared,
+    summary(_______)$adj.r.squared,
+    summary(_______)$adj.r.squared,
+    summary(_______)$adj.r.squared
+  )
+)
+```
+
+**Question:** Does R-squared increase every time a predictor is added? Does adjusted R-squared also increase every time?
+
+Ans:
+
+**Question:** Based on this comparison, do you think `sex` is a genuinely useful predictor to add to the age + height + smoke model, or does it look more like noise? Explain using the numbers.
+
+Ans:
+
+# Part 4: Predicting with the full model
+
+Use `full_model_2` (the four-predictor model) to predict FEV for a new person.
+
+Fill in the blanks to predict FEV for a 10-year-old, 57-inch-tall, female, non-smoker.
+
+```{r predict-new-person, eval=FALSE}
+new_person <- tibble(
+  age_yrs = _______,
+  height_in = _______,
+  smoke = factor("_______", levels = c("non_smoker", "smoker")),
+  sex = factor("_______", levels = c("female", "male"))
+)
+
+predict(_______, newdata = new_person)
+```
+
+**Question:** What is the predicted FEV for this person, rounded to 2 decimals?
+
+Ans:
+
+**Question:** Now predict FEV for the same person, but change only `smoke` to `"smoker"`. How much does the prediction change? Does this match the size of the `smokesmoker` coefficient from `full_model_2`?
+
+Ans:
+
+# Part 5 (bonus, optional): Does the height-FEV slope depend on sex?
+
+So far, every model in this workshop has assumed each predictor's slope is the same for everyone (an **additive** model). An **interaction term** relaxes that assumption, letting one predictor's slope change depending on the value of another predictor.
+
+```r
+lm(outcome ~ x + group + x:group, data = my_data)
+```
+
+Fit an interaction model between `height_in` and `sex`.
+
+```{r interaction-model, eval=FALSE}
+interaction_model <- lm(fev_l ~ height_in + sex + _______, data = fev)
+summary(interaction_model)
+```
+
+**Question:** The coefficient table has an `(Intercept)`, a `height_in` row, a `sexmale` row, and a `height_in:sexmale` row. Which row is the height slope for girls (the reference sex)?
+
+Ans:
+
+**Question:** The `height_in:sexmale` coefficient is about 0.027. What is the height slope for boys? (Add it to the girls' slope.)
+
+Ans:
+
+**Question:** Based on this, does the association between height and FEV appear to be about the same for boys and girls, or does it differ meaningfully? Use the two slopes to justify your answer.
+
+Ans:
+
+# Wrap-up
+
+In this workshop, we moved from single-predictor models to a four-predictor multiple regression model of FEV.
+
+Key ideas to take away:
+
+1. Each coefficient in a multiple regression is interpreted **while holding the other predictors constant**.
+2. Adding predictors that are correlated with each other (like age and height) can change, and even sign-flip, the other coefficients. This is confounding at work.
+3. R-squared always goes up when you add a predictor. Adjusted R-squared is a fairer way to judge whether a new predictor is worth keeping.
+4. A fitted multiple regression equation can be used for prediction by plugging in a value for every predictor.
+5. (Bonus) An interaction term lets a slope differ across groups, instead of assuming one slope fits everyone.
