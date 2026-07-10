@@ -18,33 +18,56 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 # Introduction
 
-These are the completed solutions for the no-interaction effect-size version of workshop 8.
+In a previous workshop, we used a dataset of forced expiratory volume (FEV) from East Boston in the 1970s to learn about the uses of regression: describing relationships, predicting outcomes, and controlling for another variable. 
+
+In this workshop, we revisit that dataset to again look at the relationship between smoking and FEV. Our goal is to answer the question: what is the adjusted association between smoking and FEV in children and adolescents? Because these are observational data, we will use association language rather than claiming a causal effect.
+
+## Dataset description
+
+The dataset contains 654 youths aged 3 to 19 from East Boston in the 1970s. The outcome is **forced expiratory volume** (`fev_l`), measured in litres. Higher values mean better lung function.
 
 # Load packages and data
+
+Use `p_load()` to load `tidyverse`, `here`, `modelsummary`, and `equatiomatic`. The GitHub line below loads `inspectdf`.
 
 *Exercise chunk (blank):*
 
 ```{r load-packages-q, eval=FALSE}
 if (!require(pacman)) install.packages("pacman")
 pacman::p_load(________)
+pacman::p_load_gh("the-graph-courses/inspectdf")
 ```
 
 **Solution:**
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(tidyverse, here, modelsummary, ggstatsplot, equatiomatic)
+pacman::p_load(tidyverse, here, modelsummary, equatiomatic)
 pacman::p_load_gh("the-graph-courses/inspectdf")
 ```
+
+Now, glimpse, then inspect the data with the inspect_cat() and inspect_num() functions from inspectdf.
 
 ```{r load-data}
 fev <- read_csv(here("data/fev_kahn.csv"))
 glimpse(fev)
+inspect_cat(fev) %>% show_plot()
+inspect_num(fev) %>% show_plot()
 ```
 
-**Checkpoint answer:** `fev` has **654 rows and 5 columns**.
+**Checkpoint:** `fev` should have **654 rows and 5 columns**.
+
+Question: Which variables are numeric, and which look roughly symmetric?
+
+**Answer:** `fev_l`, `age_yrs`, and `height_in` are numeric. The inspect_num() plots suggest that `height_in` is the most roughly symmetric of the numeric variables. `fev_l` is somewhat right-skewed, and `age_yrs` is discrete and bounded. `smoke` and `sex` are categorical.
 
 ## Set the reference levels
+
+`read_csv()` reads `smoke` and `sex` in as plain character columns. When you pass a character column to `lm()`, R silently converts it to a factor and uses the **alphabetically first** level as the reference (baseline) group. Every coefficient is then a comparison *against* that reference. 
+
+It is preferred to set the reference levels explicitly, with `factor()` and the `levels` argument. The first level listed becomes the reference.
+
+We want **non-smokers** as the reference for `smoke`, and **females** as the reference for `sex`, so that the coefficients read as "smokers compared to non-smokers" and "males compared to females".
 
 *Exercise chunk (blank):*
 
@@ -72,13 +95,49 @@ levels(fev$smoke)
 levels(fev$sex)
 ```
 
-**Answer:** No, it changes nothing here. R's default is to use the alphabetically first level as the reference, and in this dataset the levels we want happen to already be alphabetically first (`"non_smoker"` before `"smoker"`, `"female"` before `"male"`). So the coefficients would be identical without this step.
+**Question:** If female is the reference level, what would we expect to see in the model output when we fit a model that includes sex?
 
-It is still worth doing for two reasons. First, it makes the baseline an explicit, readable choice rather than an accident of spelling. Second, it is robust: if someone later recoded `"non_smoker"` as `"unexposed"`, or `"smoker"` as `"active_smoker"`, the alphabetical default would silently flip the reference group and reverse the sign of the smoking coefficient, with no error and no warning. Setting `levels` protects against that.
+A) A row with the coefficient for sexfemale
+
+```
+              Estimate [...]   
+(Intercept)    2.451      
+sexfemale      0.361      [...]
+```
+
+B) A row with the coefficient for sexmale
+
+```
+              Estimate [...]   
+(Intercept)    2.451      
+sexmale        0.361      [...]
+```
+
+Ans:
+
+**Answer:** **B.** When female is the reference level, R does not create a coefficient for `sexfemale`. Instead, it creates an indicator for the non-reference level, `sexmale`, which compares males to females, holding any other variables in the model fixed.
+
+If male were the reference, you would see a `sexfemale` row instead.
 
 # Part 1: Define the effect and the confounding problem
 
 ## Part 1a: The raw smoking difference
+
+Start by calculating the mean FEV, mean height, and mean age for smokers and non-smokers.
+
+*Exercise chunk (blank):*
+
+```{r smoke-summary-q, eval=FALSE}
+fev %>%
+  group_by(_______) %>%
+  summarise(
+    mean_fev = ___________,
+    mean_height = ___________,
+    mean_age = ___________
+  )
+```
+
+**Solution:**
 
 ```{r smoke-summary}
 fev %>%
@@ -91,43 +150,96 @@ fev %>%
   )
 ```
 
+**Question:** Which group has higher mean FEV in the raw summary?
+
+Ans:
+
+**Answer:** Smokers have higher mean FEV in the raw summary.
+
+**Question:** Which group is older and taller on average?
+
+Ans:
+
+**Answer:** Smokers are older and taller on average.
+
+We can visualise the FEV difference with a boxplot and jittered points.
+
 ```{r smoke-plot}
-ggbetweenstats(
-  data = fev,
-  x = smoke,
-  y = fev_l
-)
+ggplot(fev, aes(x = smoke, y = fev_l)) +
+  geom_jitter(width = 0.15, alpha = 0.4) +
+  geom_boxplot(alpha = 0.7) +
+  labs(
+    x = "Smoking status",
+    y = "FEV (litres)",
+    title = "FEV by smoking status"
+  )
 ```
+
+Let's now fit a model with smoking as the only predictor.
+
+*Exercise chunk (blank):*
+
+```{r model-1-q, eval=FALSE}
+m1_smoke <- ___________
+summary(m1_smoke)
+```
+
+**Solution:**
 
 ```{r model-1}
 m1_smoke <- lm(fev_l ~ smoke, data = fev)
 summary(m1_smoke)
 ```
 
-```{r model-1-equation}
-extract_eq(m1_smoke) %>% preview_eq()
-```
+**Question:** What is the `smokesmoker` coefficient? Write a one-sentence interpretation of it.
 
-**Answer:** Smokers have higher mean FEV in the raw summary and plot.
-
-**Answer:** Smokers are older and taller on average.
+Ans:
 
 **Answer:** The `smokesmoker` coefficient is about **0.711**. In the raw model, smokers have predicted FEV about **0.711 litres higher** than non-smokers, on average.
 
+**Question:** In one sentence, why might the raw comparison be misleading?
+
+Ans:
+
 **Answer:** The raw comparison is misleading because smokers are also older and taller, and older, taller youths naturally have higher FEV.
+
+It can also help to see the equation the model is actually fitting. The `equatiomatic` package does this for you: `extract_eq()` builds the equation from the fitted model, and `preview_eq()` renders it so you can look at it in the RStudio Viewer.
+
+```{r model-1-equation}
+extract_eq(m1_smoke, use_coefs = TRUE) %>% preview_eq()
+```
+
 
 ## Part 1b: Confounders and a simple DAG
 
-Age, height, and sex are all plausible confounders: each may affect both whether a youth smokes and their FEV. We choose them from the DAG, before fitting any models.
+To estimate the smoking effect cleanly, we want to adjust for **confounders**: variables that might affect both whether a youth smokes and their FEV.
+
+In this dataset, age, height, and sex are all plausible confounders. The DAG below shows this structure:
+
+![Confounder DAG: age, height, and sex each affect both smoking and FEV](images/dag_confounder.svg){width=70%}
+
+We will therefore want to control for these. 
+
+Note that we are deciding these *before* fitting the model(s). This is what modern guidelines recommend: choosing which variables to adjust for ahead of time, based on subject-matter knowledge (including drawing a DAG like the one above), rather than fishing through the variables for significant ones.
+
+That kind of fishing (selecting variables based on their significance in the data) is more defensible when the only goal is to *predict* the outcome as accurately as possible, rather than to *explain* the effect of one particular exposure.
+
+**Answer:** Age, height, and sex are all plausible confounders because each may affect both whether a youth smokes and their FEV. The adjustment set is chosen from the DAG and subject-matter reasoning before fitting the models.
 
 # Part 2: Fit a sequence of adjusted models
 
+In Part 1a, the raw model showed a misleading smoking effect. Now we add confounders one at a time. Each model has the same outcome (`fev_l`).
+
+Write the full `lm()` call for each model. 
+
 ## Part 2a: Model 2, add age
+
+Age is a plausible confounder because smokers are older on average, and FEV increases strongly with age. Write an lm() call to predict `fev_l` from `smoke` and `age_yrs`.
 
 *Exercise chunk (blank):*
 
 ```{r model-2-q, eval=FALSE}
-m2_age <- 
+m2_age <- ___________
 summary(m2_age)
 ```
 
@@ -138,14 +250,20 @@ m2_age <- lm(fev_l ~ smoke + age_yrs, data = fev)
 summary(m2_age)
 ```
 
+**Question:** What happened to the smoking coefficient after adjusting for age?
+
+Ans:
+
 **Answer:** After adjusting for age, the smoking coefficient flips from about **+0.711** to about **-0.209**. The positive raw association was largely explained by smokers being older.
 
 ## Part 2b: Model 3, add height
 
+Height is also a plausible confounder because smokers are taller on average, and height is strongly related to lung volume. Add height to the model.
+
 *Exercise chunk (blank):*
 
 ```{r model-3-q, eval=FALSE}
-m3_age_height <- 
+m3_age_height <- ___________
 summary(m3_age_height)
 ```
 
@@ -156,14 +274,20 @@ m3_age_height <- lm(fev_l ~ smoke + age_yrs + height_in, data = fev)
 summary(m3_age_height)
 ```
 
+**Question:** Interpret the smoking coefficient in this model using the phrase "holding age and height constant."
+
+Ans:
+
 **Answer:** Holding age and height constant, smokers have predicted FEV about **0.110 litres lower** than non-smokers, on average.
 
 ## Part 2c: Model 4, add sex
 
+Finally, add sex. Sex may be related to body size and lung function, and it could also differ between smokers and non-smokers.
+
 *Exercise chunk (blank):*
 
 ```{r model-4-q, eval=FALSE}
-m4_age_height_sex <- 
+m4_age_height_sex <- ___________
 summary(m4_age_height_sex)
 ```
 
@@ -174,23 +298,29 @@ m4_age_height_sex <- lm(fev_l ~ smoke + age_yrs + height_in + sex, data = fev)
 summary(m4_age_height_sex)
 ```
 
+Let's look at the equation for this one too, and compare it to Model 1.
+
 *Exercise chunk (blank):*
 
 ```{r model-4-equation-q, eval=FALSE}
-extract_eq(________) %>% preview_eq()
+extract_eq(________, use_coefs = TRUE) %>% preview_eq()
 ```
 
 **Solution:**
 
 ```{r model-4-equation}
-extract_eq(m4_age_height_sex) %>% preview_eq()
+extract_eq(m4_age_height_sex, use_coefs = TRUE) %>% preview_eq()
 ```
 
-**Answer:** In Model 1 the equation has a single predictor, so the `smoke_smoker` coefficient is just the raw difference in mean FEV between the two groups. In Model 4 the equation has age, height, and sex terms alongside it, so the `smoke_smoker` coefficient now represents the difference between smokers and non-smokers *at fixed values of those other three variables*. The symbol in the equation looks the same; the quantity it estimates does not.
+**Question:** Again, interpret the smoking coefficient in this model. At alpha = 0.05, is the adjusted smoking coefficient statistically significant in Model 4?
 
-**Answer:** No. The p-value is about **0.14**, so at alpha = 0.05 we fail to reject the null hypothesis for the adjusted smoking coefficient.
+Ans:
+
+**Answer:** Holding age, height, and sex constant, smokers have predicted FEV about **0.087 litres lower** than non-smokers, on average. The p-value is about **0.14**, so at alpha = 0.05 we fail to reject the null hypothesis for the adjusted smoking coefficient.
 
 # Part 3: Compare models side by side
+
+Now, we can put all four models into a list, then use `modelsummary()` to compare them in one table. This shows how the smoking coefficient and model fit change as we add confounders:
 
 ```{r model-comparison}
 model_list <- list(
@@ -203,35 +333,54 @@ model_list <- list(
 modelsummary(
   model_list,
   estimate = "{estimate}",
-  statistic = c("[{conf.low}, {conf.high}]", "p = {p.value}"),
+  statistic = c("[{conf.low}, {conf.high}]", "p = {p.value}"), # two lines under each estimate
   conf_level = 0.95,
-  fmt = 3,
+  fmt = 3, # decimal places
   coef_map = c(
     "smokesmoker" = "Smoking (smoker vs non-smoker)",
     "age_yrs" = "Age (years)",
     "height_in" = "Height (inches)",
     "sexmale" = "Sex (male vs female)"
   ),
-  gof_map = list(
+  gof_map = list( # goodness-of-fit statistics to show, and how to label them
     list(raw = "nobs", clean = "N (youths)", fmt = 0),
     list(raw = "r.squared", clean = "R-squared", fmt = 3),
     list(raw = "adj.r.squared", clean = "Adjusted R-squared", fmt = 3)
   ),
   title = "Estimated smoking effect on FEV (litres), by adjustment set",
   notes = "Each cell shows the estimate, the 95% confidence interval, and the p-value. Outcome is FEV in litres.",
-  output = "gt"
+  output = "gt" # render as a nicely formatted gt table
 )
 ```
 
+The table reports two related measures of model fit:
+
+- **R-squared** is the proportion of the variation in FEV that the model explains, from 0 to 1. A problem with R-squared is that it can *only go up* when you add a predictor, even if that predictor is useless. So it always rewards bigger models.
+- **Adjusted R-squared** fixes this by adding a small penalty for each extra predictor. It only rises if a new predictor improves the fit by more than we would expect from chance. This makes it more honest when comparing models with different numbers of predictors.
+
+**Question:** Look at the R-squared row across the four models. What happens to it as we add predictors, and does the adjusted R-squared behave the same way?
+
+Ans:
+
 **Answer:** R-squared increases sharply from about **0.06** in the smoking-only model to about **0.78** in the final model. Adjusted R-squared behaves the same way here, rising from about **0.06** to about **0.77**, because each confounder we add genuinely improves the fit.
 
-**Answer:** In Model 1 the smoking interval is **[0.495, 0.927]**, which lies entirely above zero, matching the very small p-value. In Model 4 it is **[-0.204, 0.029]**, which contains zero, matching p = 0.14. The two ways of reading significance always agree, because they are computed from the same estimate and standard error. Note how much the interval moves once we adjust: it does not merely widen, it shifts across zero to the other side.
+**Question:** Look at the confidence interval for the smoking coefficient in Model 1, and then in Model 4. Does each interval contain zero? Check that your answer agrees with the p-value on the line below it.
+
+Ans:
+
+**Answer:** In Model 1 the smoking interval is **[0.495, 0.927]**, which lies entirely above zero, matching the very small p-value. In Model 4 it is **[-0.204, 0.029]**, which contains zero, matching p = 0.14. The confidence interval and p-value agree because they are computed from the same estimate and standard error.
 
 # Part 4: Report the result
 
+Write a short paragraph reporting the result from the final model.
+
+Begin by stating what the final model adjusted for. Then report the adjusted smoking estimate, its 95% confidence interval. Also report the adjusted R-squared. Use association language rather than cause-and-effect language.
+
+ANSWER:
+
 **Example answer:**
 
-> In the raw comparison, smokers had about **0.71 litres higher** mean FEV than non-smokers. After adjusting for age, height, and sex, smokers had mean FEV about **0.09 litres lower** than non-smokers (95% CI -0.20 to 0.03), so the interval includes zero. Each additional year of age was associated with about **0.07 litres higher** FEV (95% CI 0.05 to 0.08), each additional inch of height with about **0.10 litres higher** FEV (95% CI 0.10 to 0.11), and males had about **0.16 litres higher** FEV than females (95% CI 0.09 to 0.22). The final model explained about **77%** of the variation in FEV (adjusted R-squared). Because this is observational data, we describe these as adjusted associations rather than proof that smoking caused lower lung function.
+> In the raw comparison, smokers had about **0.71 litres higher** mean FEV than non-smokers, but this comparison does not account for differences in age, height, or sex between the groups. After adjusting for age, height, and sex, smokers had mean FEV about **0.09 litres lower** than non-smokers (95% CI -0.20 to 0.03). This interval includes zero, so the adjusted estimate is compatible with both a small negative association and little or no association in this sample. The final model explained about **77%** of the variation in FEV (adjusted R-squared). Because this is observational data, we describe this as an adjusted association rather than proof that smoking caused lower lung function.
 
 **Marking notes:**
 
@@ -240,26 +389,14 @@ modelsummary(
 - An interval that includes zero should be described plainly, not hidden behind p-value language alone.
 - Push back on causal wording such as "smoking reduced FEV". Association language is appropriate here.
 - Adjusted R-squared should appear somewhere in the paragraph.
-- Brief interpretation of the other coefficients is a bonus, not required for full credit.
+- Learners do not need to report the age, height, or sex coefficients here.
+
 
 # Optional challenge: Prediction from the adjusted model
 
-## Challenge part a: Predict with `predict()`
+Our goal in this workshop was to *explain* the smoking effect, not to build the best possible prediction model. Even so, once we have fitted a regression model, we can also use it to predict FEV for new individuals. If you have time, work through this section.
 
-*Exercise chunk (blank):*
-
-```{r predict-nonsmoker-q, eval=FALSE}
-new_nonsmoker <- tibble(
-  smoke = "__________",
-  age_yrs = ______,
-  height_in = ______,
-  sex = "____"
-)
-
-predict(__________, newdata = __________)
-```
-
-**Solution:**
+Use Model 4 to predict FEV for two otherwise similar 12-year-old, 60-inch-tall males: one non-smoker and one smoker.
 
 ```{r predict-nonsmoker}
 new_nonsmoker <- tibble(
@@ -298,9 +435,13 @@ new_smoker <- tibble(
 predict(m4_age_height_sex, newdata = new_smoker)
 ```
 
+**Question:** How far apart are the two predictions? How does that difference relate to the smoking coefficient in Model 4?
+
+Ans:
+
 **Answer:** The smoker prediction is about **0.087 litres lower** than the non-smoker prediction. That gap matches the smoking coefficient in Model 4 because the two people have the same age, height, and sex.
 
-## Challenge part b: Build the prediction by hand
+Extract the coefficients and calculate the smoker prediction by hand.
 
 ```{r coefficients}
 coef(m4_age_height_sex)
@@ -330,8 +471,8 @@ b["(Intercept)"] +
   b["smokesmoker"] * 1
 ```
 
+**Question:** Does your hand calculation match `predict()`?
+
+Ans:
+
 **Answer:** Yes. It matches the `predict()` result for the 12-year-old, 60-inch-tall male smoker.
-
-# Wrap-up
-
-In this workshop, multiple regression was used as an effect-size estimation tool. The smoking coefficient changed from a misleading positive raw association to a small negative adjusted association after accounting for age, height, and sex. Reported with its confidence interval, that adjusted estimate is -0.087 litres (95% CI -0.204 to 0.029), an interval that includes zero.

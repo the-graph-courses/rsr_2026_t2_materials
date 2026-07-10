@@ -28,7 +28,7 @@ The dataset contains 654 youths aged 3 to 19 from East Boston in the 1970s. The 
 
 # Load packages and data
 
-Use `p_load()` to load `tidyverse`, `here`, `modelsummary`, `ggstatsplot`, `equatiomatic`, and `inspectdf`.
+Use `p_load()` to load `tidyverse`, `here`, `modelsummary`, and `equatiomatic`. The GitHub line below loads `inspectdf`.
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
@@ -47,13 +47,13 @@ inspect_num(fev) %>% show_plot()
 
 **Checkpoint:** `fev` should have **654 rows and 5 columns**.
 
-Question: Which of the variables are numeric and normally distributed?
+Question: Which variables are numeric, and which look roughly symmetric?
 
 ## Set the reference levels
 
-`read_csv()` reads `smoke` and `sex` in as plain character columns. When you pass a character column to `lm()`, R silently converts it to a factor and uses the **alphabetically first** level as the reference (baseline) group. Every coefficient is then a comparison *against* that reference.
+`read_csv()` reads `smoke` and `sex` in as plain character columns. When you pass a character column to `lm()`, R silently converts it to a factor and uses the **alphabetically first** level as the reference (baseline) group. Every coefficient is then a comparison *against* that reference. 
 
-Leaving this to chance is a bad habit: alphabetical order might not give you the baseline you want, and a rename upstream can silently flip the sign of your coefficient. So set it explicitly, with `factor()` and the `levels` argument. The first level listed becomes the reference.
+It is preferred to set the reference levels explicitly, with `factor()` and the `levels` argument. The first level listed becomes the reference.
 
 We want **non-smokers** as the reference for `smoke`, and **females** as the reference for `sex`, so that the coefficients read as "smokers compared to non-smokers" and "males compared to females".
 
@@ -68,7 +68,23 @@ levels(fev$smoke)
 levels(fev$sex)
 ```
 
-**Question:** In this particular dataset, does setting the levels explicitly actually change anything? Why is it still worth doing?
+**Question:** If female is the reference level, what would we expect to see in the model output when we fit a model that includes sex?
+
+A) A row with the coefficient for sexfemale
+
+```
+              Estimate [...]   
+(Intercept)    2.451      
+sexfemale      0.361      [...]
+```
+
+B) A row with the coefficient for sexmale
+
+```
+              Estimate [...]   
+(Intercept)    2.451      
+sexmale        0.361      [...]
+```
 
 Ans:
 
@@ -88,7 +104,7 @@ fev %>%
   )
 ```
 
-**Question:** Which group has higher mean FEV in the raw summary and plot?
+**Question:** Which group has higher mean FEV in the raw summary?
 
 Ans:
 
@@ -96,14 +112,17 @@ Ans:
 
 Ans:
 
-We can easily visualise the FEV difference with `ggbetweenstats()` from the `ggstatsplot` package.
+We can visualise the FEV difference with a boxplot and jittered points.
 
 ```{r smoke-plot}
-ggbetweenstats(
-  data = fev,
-  x = smoke,
-  y = fev_l
-)
+ggplot(fev, aes(x = smoke, y = fev_l)) +
+  geom_jitter(width = 0.15, alpha = 0.4) +
+  geom_boxplot(alpha = 0.7) +
+  labs(
+    x = "Smoking status",
+    y = "FEV (litres)",
+    title = "FEV by smoking status"
+  )
 ```
 
 Let's now fit a model with smoking as the only predictor.
@@ -113,14 +132,6 @@ m1_smoke <- ___________
 summary(m1_smoke)
 ```
 
-Before interpreting the output, it can help to see the equation the model is actually fitting. The `equatiomatic` package does this for you: `extract_eq()` builds the equation from the fitted model, and `preview_eq()` renders it so you can look at it in the RStudio Viewer.
-
-```{r model-1-equation}
-extract_eq(m1_smoke) %>% preview_eq()
-```
-
-Notice that `smoke` does not appear as itself. It appears as an **indicator**, written something like `smoke_smoker`, which equals 1 for smokers and 0 for non-smokers. That is exactly the reference level we set above doing its work.
-
 **Question:** What is the `smokesmoker` coefficient? Write a one-sentence interpretation of it.
 
 Ans:
@@ -129,9 +140,16 @@ Ans:
 
 Ans:
 
+It can also help to see the equation the model is actually fitting. The `equatiomatic` package does this for you: `extract_eq()` builds the equation from the fitted model, and `preview_eq()` renders it so you can look at it in the RStudio Viewer.
+
+```{r model-1-equation}
+extract_eq(m1_smoke, use_coefs = TRUE) %>% preview_eq()
+```
+
+
 ## Part 1b: Confounders and a simple DAG
 
-The raw difference in Part 1a can be misleading because smokers and non-smokers differ in other ways that also affect FEV. To estimate the smoking effect cleanly, we want to adjust for **confounders**: variables that might affect both whether a youth smokes and their FEV.
+To estimate the smoking effect cleanly, we want to adjust for **confounders**: variables that might affect both whether a youth smokes and their FEV.
 
 In this dataset, age, height, and sex are all plausible confounders. The DAG below shows this structure:
 
@@ -187,12 +205,8 @@ summary(m4_age_height_sex)
 Let's look at the equation for this one too, and compare it to Model 1.
 
 ```{r model-4-equation}
-extract_eq(________) %>% preview_eq()
+extract_eq(________, use_coefs = TRUE) %>% preview_eq()
 ```
-
-**Question:** Compare the two equations. The `smoke_smoker` term appears in both, but its coefficient means something different in each. What changed?
-
-Ans:
 
 **Question:** Again, interpret the smoking coefficient in this model. At alpha = 0.05, is the adjusted smoking coefficient statistically significant in Model 4?
 
@@ -242,24 +256,12 @@ The table reports two related measures of model fit:
 
 Ans:
 
-**Question:** Look at the confidence interval for the smoking coefficient in Model 1, and then in Model 4. Does each interval contain zero? Check that your answer agrees with the p-value on the line below it.
-
-Ans:
 
 # Part 4: Report the result
 
-Write a short results paragraph for the final model. Follow the guidelines below.
+Write a short paragraph reporting the result from the final model.
 
-Some guidelines for writing your results paragraph: 
-
-1. **State the adjustment set.** Say which variables you adjusted for, in the sentence where you give the adjusted estimate. Not in a footnote.
-   - Example: "After adjusting for age, height, and sex, ..."
-
-2. **Give the main estimate with uncertainty.** Report the coefficient plus the 95% confidence interval. Use association language rather than cause-and-effect language. 
-   - Example 1: "...smokers had mean FEV 0.09 litres lower than non-smokers (95% CI -0.20 to 0.03)."
-  
-3. **Close with model fit.** Mention adjusted R-squared.
-   - Example: "The final model explained about 77% of the variation in FEV (adjusted R-squared)."
+Begin by stating what the final model adjusted for. Then report the adjusted smoking estimate, its 95% confidence interval. Also report the adjusted R-squared. Use association language rather than cause-and-effect language.
 
 ANSWER:
 
@@ -267,13 +269,6 @@ ANSWER:
 # Optional challenge: Prediction from the adjusted model
 
 Our goal in this workshop was to *explain* the smoking effect, not to build the best possible prediction model. Even so, once we have fitted a regression model, we can also use it to predict FEV for new individuals. If you have time, work through this section.
-
-Look back at the Model 4 equation you rendered with `preview_eq()`. To make a prediction, you substitute a person's values into that equation. For smoking, you substitute the indicator:
-
-- non-smoker: `smoke_smoker = 0`
-- smoker: `smoke_smoker = 1`
-
-## Challenge part a: Predict with `predict()`
 
 Use Model 4 to predict FEV for two otherwise similar 12-year-old, 60-inch-tall males: one non-smoker and one smoker.
 
@@ -302,8 +297,6 @@ predict(__________, newdata = __________)
 **Question:** How far apart are the two predictions? How does that difference relate to the smoking coefficient in Model 4?
 
 Ans:
-
-## Challenge part b: Build the prediction by hand
 
 Extract the coefficients and calculate the smoker prediction by hand.
 
