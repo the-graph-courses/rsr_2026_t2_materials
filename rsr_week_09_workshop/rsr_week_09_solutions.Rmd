@@ -34,27 +34,21 @@ Multiple linear regression can serve different scientific goals.
 
 ![](images/three_purposes.png){width=100%}
 
-**Question:** In Week 8 we tried to estimate the effect of smoking on FEV, controlling for other confounders. Which of the three purposes above does that correspond to?
+**Question 1.1:** In Week 8 we tried to estimate the effect of smoking on FEV, controlling for other confounders. Which of the three purposes above does that correspond to?
 
-Ans:
-
----
-
-**Answer:** Purpose 1, estimating a causal or adjusted exposure effect.
-
-**Question:** This week we will replicate a paper that looked at many different predictors of depression. Which of the three purposes above is that? What kind of table or plot should we probably use for the results?
-
-Ans:
+**Ans 1.1:** Purpose 1, estimating a causal or adjusted exposure effect.
 
 ---
 
-**Answer:** Purpose 3, comparing predictors after mutual adjustment. A coefficient table with adjusted estimates is the main output. A forest plot can also help compare coefficients visually.
+**Question 1.2:** This week we will replicate a paper that looked at many different predictors of depression. Which of the three purposes above is that? What kind of table or plot should we probably use for the results?
+
+**Ans 1.2:** Purpose 3, comparing predictors after mutual adjustment. A coefficient table with adjusted estimates is the main output. A forest plot can also help compare coefficients visually.
 
 # PART 2: Load and prepare the data
 
 ## Load packages
 
-Use `p_load()` to load: readxl, tidyverse, here, janitor, broom, gt, gtsummary, performance, see, sandwich, lmtest. The GitHub line below loads `inspectdf`.
+Use `p_load()` to load: readxl, tidyverse, here, janitor, broom, gt, gtsummary, performance, see, sandwich, lmtest, patchwork. The GitHub line below loads `inspectdf`.
 
 *Exercise chunk (blank):*
 
@@ -68,7 +62,7 @@ pacman::p_load_gh("the-graph-courses/inspectdf")
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(readxl, tidyverse, here, janitor, broom, gt, gtsummary, performance, see, sandwich, lmtest)
+pacman::p_load(readxl, tidyverse, here, janitor, broom, gt, gtsummary, performance, see, sandwich, lmtest, patchwork)
 pacman::p_load_gh("the-graph-courses/inspectdf")
 ```
 
@@ -145,15 +139,11 @@ inspect_cat(survey) %>% show_plot()
 inspect_num(survey) %>% show_plot()
 ```
 
-**Question:** Which variables are numeric, and which look roughly symmetric?
+**Question 2.1:** Which variables are truly numeric?
 
-Ans:
+**Ans 2.1:** Only `depression_score`, `chronological_age`, and `oslo_social_support` are truly numeric, in the sense that the numbers represent quantities we can meaningfully add or average. `sex`, `grade_level`, and `residence` are stored as numbers, so R treats them as numeric, but the codes are just labels for categories. We fix that below.
 
----
-
-**Answer:** Before labeling, all variables are numeric. `depression_score`, `chronological_age`, and `oslo_social_support` look roughly symmetric. `sex`, `grade_level`, and `residence` are categorical codes and should be labeled.
-
-Four predictors are categorical but stored as numeric codes. Below, we will label them:
+Three predictors are categorical but stored as numeric codes. Below, we will label them:
 
 - `sex` (0 = Female, 1 = Male)
 - `residence` (0 = Urban, 1 = Rural)
@@ -214,11 +204,11 @@ inspect_cat(survey) %>% show_plot()
 inspect_num(survey) %>% show_plot()
 ```
 
-# PART 3: Start with univariable models
+# PART 3: Start with simple models
 
-In the depression paper, the authors fits both univariable and multiple models and presented the results side by side. This is a common practice in regression analyses for comparing predictors. We'll do the same here.
+In the depression paper, the authors fits both simple and multiple models and presented the results side by side. This is a common practice in regression analyses for comparing predictors. We'll do the same here.
 
-Below, complete the code to fit one univariable model: `depression_score` as the outcome and `chronological_age` as the only predictor.
+Below, complete the code to fit one simple model: `depression_score` as the outcome and `chronological_age` as the only predictor.
 
 *Exercise chunk (blank):*
 
@@ -234,15 +224,11 @@ age_simple <- lm(depression_score ~ chronological_age, data = survey)
 tidy(age_simple, conf.int = TRUE)
 ```
 
-**Question:** Interpret the age coefficient from the simple model. Does its 95% CI include 0?
+**Question 3.1:** Interpret the age coefficient from the simple model. Does its 95% CI include 0?
 
-Ans:
+**Ans 3.1:** In the simple model, each 1-year increase in chronological age is associated with about **0.45 points higher** PHQ-9 score on average. The 95% CI is about **0.18 to 0.71**, so it excludes 0.
 
----
-
-**Answer:** In the simple model, each 1-year increase in chronological age is associated with about **0.45 points higher** PHQ-9 score on average. The 95% CI is about **0.18 to 0.71**, so it excludes 0.
-
-Let's now fit the remaining univariable models. We will combine these with the multiple model in the next part.
+Let's now fit the remaining simple models. We will combine these with the multiple model in the next part.
 
 ```{r all-simple-models}
 sex_simple <- lm(depression_score ~ sex, data = survey)
@@ -266,7 +252,7 @@ multivar_model <- lm(
   data = survey
 )
 
-# summary of your model 
+# summary of your model
 summary(________)
 ```
 
@@ -281,7 +267,7 @@ multivar_model <- lm(
   data = survey
 )
 
-# summary of your model 
+# summary of your model
 summary(multivar_model)
 ```
 
@@ -293,13 +279,9 @@ tidy(multivar_model, conf.int = TRUE)
 
 In a multiple model, each coefficient is a **conditional association**. It compares observations that differ on one predictor but are held constant on the other predictors in the model.
 
-**Question:** In the multiple model, interpret `sexMale` using "holding the other predictors constant."
+**Question 4.1:** Interpret `sexMale` in the multiple model output. Use the phrase "holding the other predictors constant" in your answer.
 
-Ans:
-
----
-
-**Answer:** Holding chronological age, grade level, residence, and Oslo social support constant, males score about **1.04 points lower** on the PHQ-9 than females, on average.
+**Ans 4.1:** Males score about **1.04 points lower** on the PHQ-9 than females on average, holding the other predictors constant (chronological age, grade level, residence, and Oslo social support).
 
 ## Compare the age coefficient in the simple and multiple models
 
@@ -313,13 +295,9 @@ tidy(multivar_model, conf.int = TRUE) %>%
   filter(term == "chronological_age")
 ```
 
-**Question:** What changed when age moved from the simple model to the multiple model?
+**Question 4.2:** In the simple model, the age coefficient was 0.447 and looked clearly associated with depression score. What changed in the multiple model?
 
-Ans:
-
----
-
-**Answer:** The age coefficient shrank from about **0.45** to about **0.15**, and the 95% CI changed from excluding 0 to including 0. In the simple model, age looked clearly associated with depression score; in the multiple model, age no longer has a clear unique association after grade and the other predictors are included.
+**Ans 4.2:** Two things. The **estimate** shrank by about two thirds, from 0.447 to about **0.15** points per year. And the association is **no longer significant**: the 95% CI moved from 0.18 to 0.71 (excluding 0) to about **-0.24 to 0.55** (including 0). So once the other predictors are in the model, age no longer has a clear association with depression score.
 
 Look at how age varies within each grade.
 
@@ -343,7 +321,7 @@ This overlap is one reason to avoid causal language in this kind of paper. We di
 
 # PART 5: Build a results table like the paper
 
-Table 2 in the paper shows both univariable and adjusted results side by side. That is what we are trying to reproduce (Caveat: We are only replicating a few of the predictors, and we are acknowledging, as we did last week, that a few of the numbers in the paper are not replicable from the dataset the authors released).
+Table 2 in the paper shows both simple and adjusted results side by side. That is what we are trying to reproduce (Caveat: We are only replicating a few of the predictors, and we are acknowledging, as we did last week, that a few of the numbers in the paper are not replicable from the dataset the authors released).
 
 ![Table 2 from Girma et al. (2021).](paper/table2_with_values.png)
 
@@ -356,7 +334,7 @@ multivar_model %>%
   tbl_regression()
 ```
 
-This is useful, but it only summarizes one model at a time. It does not let us place univariable and adjusted results side by side in one paper-style table.
+This is useful, but it only summarizes one model at a time. It does not let us place simple and adjusted results side by side in one paper-style table.
 
 For that, we need some custom formatting code. We have prepared this code for you, and as you can see, it is quite intricate. As we have recommended before, for this kind of table-building code, it is probably expedient to lean on LLMs, *as long as you verify that the output tables you receive match the raw outputs from the code you actually understand (your `lm()`, `summary()` and `tidy()` calls).*
 
@@ -438,7 +416,7 @@ combined_results <- bind_rows(simple_results, adjusted_results) %>%
   mutate(`Beta (95% CI)` = format_beta_ci(beta, low, high)) %>%
   select(variable, level, model, `Beta (95% CI)`)
 
-combined_results %>%
+results_table <- combined_results %>%
   pivot_wider(names_from = model, values_from = `Beta (95% CI)`) %>%
   gt(groupname_col = "variable", rowname_col = "level") %>%
   tab_header(
@@ -447,15 +425,30 @@ combined_results %>%
   ) %>%
   tab_style(style = cell_text(weight = "bold"), locations = cells_row_groups()) %>%
   tab_options(table.width = pct(100))
+
+results_table
 ```
 
-**Question:** Which adjusted 95% CIs exclude 0?
+**Question 5.1:** Based on the regression results, which variables/levels are significantly associated with higher depression scores?
 
-Ans:
+**Ans 5.1:** Two: **Grade 12** (versus Grade 9), with an adjusted beta of about 1.50 (95% CI 0.15 to 2.85), and **rural residence** (versus urban), with an adjusted beta of about 1.29 (95% CI 0.48 to 2.10). Both are positive with CIs that exclude 0.
+
+Note the wording of the question: *higher* scores. Two other predictors are also significant, but in the opposite direction, so they are associated with **lower** depression scores: **male sex** (beta about -1.04, 95% CI -1.67 to -0.41) and **Oslo social support** (beta about -0.60 per point, 95% CI -0.71 to -0.48). Chronological age, Grade 10, and Grade 11 have CIs that include 0, so they are not significant.
+
+## Export the table
+
+A `gt` table can be exported with `gtsave()`. The file extension sets the format, so `.docx` gives you a Word document.
+
+```{r export-table}
+dir.create(here("outputs"), showWarnings = FALSE)
+
+results_table %>%
+  gtsave(here("outputs/regression_table.docx"))
+```
+
+The file is written to the `outputs` folder.
 
 ---
-
-**Answer:** The adjusted 95% CIs exclude 0 for sex (`Male` versus `Female`), Grade 12 versus Grade 9, rural residence versus urban residence, and Oslo social support. Chronological age, Grade 10, and Grade 11 have adjusted intervals that include 0.
 
 # PART 6: Regression diagnostics
 
@@ -465,29 +458,21 @@ We will now check whether the model assumptions look reasonable. The diagram bel
 
 ## Sample size and design checks
 
-**Question:** Our final model has how many parameters? (This is the number of coefficient rows in the model output, including the intercept.)
+**Question 6.1:** Our final model has how many parameters? (This is the number of coefficient rows in the model output, including the intercept.)
 
-Ans:
-
----
-
-**Answer:** The model has **8** parameters: the intercept plus seven predictor terms.
-
-**Question:** Based on the guideline that we should have at least 10 observations per parameter, do we have enough data to be fitting such a regression model?
-
-Ans:
+**Ans 6.1:** The model has **8** parameters: the intercept plus seven predictor terms.
 
 ---
 
-**Answer:** Yes. With **546** observations and **8** parameters, we have about **68** observations per parameter, well above the rough rule of 10.
+**Question 6.2:** Based on the guideline that we should have at least 10 observations per parameter, do we have enough data to be fitting such a regression model?
 
-**Question:** Students were sampled from a few schools. There may be some correlation of outcomes, and therefore residuals, within schools. Which SUNSHINE letter might be most affected by this?
-
-Ans:
+**Ans 6.2:** Yes. With **546** observations and **8** parameters, we have about **68** observations per parameter, well above the rough rule of 10.
 
 ---
 
-**Answer:** It mainly threatens **U**, uncorrelated errors. Students in the same school may have correlated residuals because they share school context. That is a study-design issue, not a normality issue.
+**Question 6.3:** Students were sampled from a few schools. There may be some correlation of outcomes, and therefore residuals, within schools. Which SUNSHINE letter might be most affected by this?
+
+**Ans 6.3:** It mainly threatens **U**, uncorrelated errors. Students in the same school may have correlated residuals because they share school context. That is a study-design issue, not a normality issue.
 
 The usual fix for this kind of within-cluster correlation is to compute cluster-robust standard errors, using school as the clustering variable. However, the released dataset does not include a school identifier, so we have no way to group students by school and cannot compute those cluster-robust SEs here. This is worth flagging as a limitation when reporting the results: our standard errors may be too small because we could not account for clustering by school.
 
@@ -501,26 +486,15 @@ check_model(multivar_model)
 
 Use the plots to answer the questions below.
 
-**Question:** Which predictors show the highest collinearity? Is it severe?
+**Question 6.4:** Which predictors show the highest collinearity? Is it severe?
 
-Ans:
+**Ans 6.4:** Chronological age and grade level show the highest collinearity. This matches the age-by-grade table. The VIF values are around 2.7 to 2.8, so the overlap is real but not severe by common teaching thresholds such as 5 or 10.
 
 ---
 
-**Answer:** Chronological age and grade level show the highest collinearity. This matches the age-by-grade table. The VIF values are around 2.7 to 2.8, so the overlap is real but not severe by common teaching thresholds such as 5 or 10.
+**Question 6.5:** How would you read the linearity, homogeneity, influential-observations, and normality panels?
 
-**Question:** How would you read the linearity, homogeneity, influential-observations, and normality panels?
-
-
-Linearity:
-
-Homogeneity:
-
-Influential observations:
-
-Normality:
-
-**Answer:**
+**Ans 6.5:**
 
 Linearity: Not perfectly straight, but most of the curve occurs near the right edge of the fitted-value range, so it is probably acceptable.
 
@@ -544,15 +518,13 @@ Because heteroscedasticity is flagged, let's calculate heteroscedasticity-robust
 coeftest(multivar_model, vcov. = vcovHC(multivar_model, type = "HC3"))
 ```
 
-**Question:** Earlier we found that sex, Grade 12, rural residence, and Oslo social support had adjusted 95% CIs that excluded 0. Using the robust standard errors, are these same predictors still significantly associated with depression score?
+**Question 6.6:** Earlier we found that sex, Grade 12, rural residence, and Oslo social support were significantly associated with depression score. Using the robust standard errors, are these same predictors still significant?
 
-Ans:
+**Ans 6.6:** Yes. The HC3 robust results keep the same main conclusions: sex, Grade 12, rural residence, and Oslo social support all remain significant, and chronological age remains non-significant after adjustment. This makes the heteroscedasticity less damaging for the substantive story, though it should still be mentioned.
 
 (If the main conclusions do not change, it is still acceptable to report your original SEs. You may choose to report the assumptions figure and these heteroscedasticity-robust SEs in supplementary material so readers can keep them in mind.)
 
 ---
-
-**Answer:** Yes. The HC3 robust results keep the same main conclusions: sex, Grade 12, rural residence, and Oslo social support remain clearly associated with PHQ-9 score; chronological age remains unclear after adjustment. This makes the heteroscedasticity less damaging for the substantive story, though it should still be mentioned.
 
 ```{r check-normality}
 check_normality(multivar_model)

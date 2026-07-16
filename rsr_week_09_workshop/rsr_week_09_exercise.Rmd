@@ -32,15 +32,15 @@ Multiple linear regression can serve different scientific goals.
 
 ![](images/three_purposes.png){width=100%}
 
-**Question:** In Week 8 we tried to estimate the effect of smoking on FEV, controlling for other confounders. Which of the three purposes above does that correspond to?
+**Question 1.1:** In Week 8 we tried to estimate the effect of smoking on FEV, controlling for other confounders. Which of the three purposes above does that correspond to?
 
-Ans:
+Ans 1.1:
 
 ---
 
-**Question:** This week we will replicate a paper that looked at many different predictors of depression. Which of the three purposes above is that? What kind of table or plot should we probably use for the results?
+**Question 1.2:** This week we will replicate a paper that looked at many different predictors of depression. Which of the three purposes above is that? What kind of table or plot should we probably use for the results?
 
-Ans:
+Ans 1.2:
 
 ---
 
@@ -48,7 +48,7 @@ Ans:
 
 ## Load packages
 
-Use `p_load()` to load: readxl, tidyverse, here, janitor, broom, gt, gtsummary, performance, see, sandwich, lmtest. The GitHub line below loads `inspectdf`.
+Use `p_load()` to load: readxl, tidyverse, here, janitor, broom, gt, gtsummary, performance, see, sandwich, lmtest, patchwork. The GitHub line below loads `inspectdf`.
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
@@ -98,13 +98,13 @@ inspect_cat(survey) %>% show_plot()
 inspect_num(survey) %>% show_plot()
 ```
 
-**Question:** Which variables are numeric, and which look roughly symmetric?
+**Question 2.1:** Which variables are truly numeric?
 
-Ans:
+Ans 2.1:
 
 ---
 
-Four predictors are categorical but stored as numeric codes. Below, we will label them:
+Three predictors are categorical but stored as numeric codes. Below, we will label them:
 
 - `sex` (0 = Female, 1 = Male)
 - `residence` (0 = Urban, 1 = Rural)
@@ -140,24 +140,24 @@ inspect_cat(survey) %>% show_plot()
 inspect_num(survey) %>% show_plot()
 ```
 
-# PART 3: Start with univariable models
+# PART 3: Start with simple models
 
-In the depression paper, the authors fits both univariable and multiple models and presented the results side by side. This is a common practice in regression analyses for comparing predictors. We'll do the same here.
+In the depression paper, the authors fits both simple and multiple models and presented the results side by side. This is a common practice in regression analyses for comparing predictors. We'll do the same here.
 
-Below, complete the code to fit one univariable model: `depression_score` as the outcome and `chronological_age` as the only predictor.
+Below, complete the code to fit one simple model: `depression_score` as the outcome and `chronological_age` as the only predictor.
 
 ```{r age-simple}
 age_simple <- lm(________ ~ ________, data = survey)
 tidy(age_simple, conf.int = TRUE)
 ```
 
-**Question:** Interpret the age coefficient from the simple model. Does its 95% CI include 0?
+**Question 3.1:** Interpret the age coefficient from the simple model. Does its 95% CI include 0?
 
-Ans:
+Ans 3.1:
 
 ---
 
-Let's now fit the remaining univariable models. We will combine these with the multiple model in the next part.
+Let's now fit the remaining simple models. We will combine these with the multiple model in the next part.
 
 ```{r all-simple-models}
 sex_simple <- lm(depression_score ~ sex, data = survey)
@@ -179,7 +179,7 @@ multivar_model <- lm(
   data = survey
 )
 
-# summary of your model 
+# summary of your model
 summary(________)
 ```
 
@@ -191,9 +191,9 @@ tidy(multivar_model, conf.int = TRUE)
 
 In a multiple model, each coefficient is a **conditional association**. It compares observations that differ on one predictor but are held constant on the other predictors in the model.
 
-**Question:** In the multiple model, interpret `sexMale` using "holding the other predictors constant."
+**Question 4.1:** Interpret `sexMale` in the multiple model output. Use the phrase "holding the other predictors constant" in your answer.
 
-Ans:
+Ans 4.1:
 
 ---
 
@@ -209,9 +209,9 @@ tidy(multivar_model, conf.int = TRUE) %>%
   filter(term == "chronological_age")
 ```
 
-**Question:** What changed when age moved from the simple model to the multiple model?
+**Question 4.2:** In the simple model, the age coefficient was 0.447 and looked clearly associated with depression score. What changed in the multiple model?
 
-Ans:
+Ans 4.2:
 
 ---
 
@@ -237,7 +237,7 @@ This overlap is one reason to avoid causal language in this kind of paper. We di
 
 # PART 5: Build a results table like the paper
 
-Table 2 in the paper shows both univariable and adjusted results side by side. That is what we are trying to reproduce (Caveat: We are only replicating a few of the predictors, and we are acknowledging, as we did last week, that a few of the numbers in the paper are not replicable from the dataset the authors released).
+Table 2 in the paper shows both simple and adjusted results side by side. That is what we are trying to reproduce (Caveat: We are only replicating a few of the predictors, and we are acknowledging, as we did last week, that a few of the numbers in the paper are not replicable from the dataset the authors released).
 
 ![Table 2 from Girma et al. (2021).](paper/table2_with_values.png)
 
@@ -250,7 +250,7 @@ multivar_model %>%
   tbl_regression()
 ```
 
-This is useful, but it only summarizes one model at a time. It does not let us place univariable and adjusted results side by side in one paper-style table.
+This is useful, but it only summarizes one model at a time. It does not let us place simple and adjusted results side by side in one paper-style table.
 
 For that, we need some custom formatting code. We have prepared this code for you, and as you can see, it is quite intricate. As we have recommended before, for this kind of table-building code, it is probably expedient to lean on LLMs, *as long as you verify that the output tables you receive match the raw outputs from the code you actually understand (your `lm()`, `summary()` and `tidy()` calls).*
 
@@ -332,7 +332,7 @@ combined_results <- bind_rows(simple_results, adjusted_results) %>%
   mutate(`Beta (95% CI)` = format_beta_ci(beta, low, high)) %>%
   select(variable, level, model, `Beta (95% CI)`)
 
-combined_results %>%
+results_table <- combined_results %>%
   pivot_wider(names_from = model, values_from = `Beta (95% CI)`) %>%
   gt(groupname_col = "variable", rowname_col = "level") %>%
   tab_header(
@@ -341,11 +341,28 @@ combined_results %>%
   ) %>%
   tab_style(style = cell_text(weight = "bold"), locations = cells_row_groups()) %>%
   tab_options(table.width = pct(100))
+
+results_table
 ```
 
-**Question:** Which adjusted 95% CIs exclude 0?
+**Question 5.1:** Based on the regression results, which variables/levels are significantly associated with higher depression scores?
 
-Ans:
+Ans 5.1:
+
+---
+
+## Export the table
+
+A `gt` table can be exported with `gtsave()`. The file extension sets the format, so `.docx` gives you a Word document.
+
+```{r export-table}
+dir.create(here("outputs"), showWarnings = FALSE)
+
+results_table %>%
+  gtsave(here("outputs/regression_table.docx"))
+```
+
+The file is written to the `outputs` folder.
 
 ---
 
@@ -357,21 +374,21 @@ We will now check whether the model assumptions look reasonable. The diagram bel
 
 ## Sample size and design checks
 
-**Question:** Our final model has how many parameters? (This is the number of coefficient rows in the model output, including the intercept.)
+**Question 6.1:** Our final model has how many parameters? (This is the number of coefficient rows in the model output, including the intercept.)
 
-Ans:
-
----
-
-**Question:** Based on the guideline that we should have at least 10 observations per parameter, do we have enough data to be fitting such a regression model?
-
-Ans:
+Ans 6.1:
 
 ---
 
-**Question:** Students were sampled from a few schools. There may be some correlation of outcomes, and therefore residuals, within schools. Which SUNSHINE letter might be most affected by this?
+**Question 6.2:** Based on the guideline that we should have at least 10 observations per parameter, do we have enough data to be fitting such a regression model?
 
-Ans:
+Ans 6.2:
+
+---
+
+**Question 6.3:** Students were sampled from a few schools. There may be some correlation of outcomes, and therefore residuals, within schools. Which SUNSHINE letter might be most affected by this?
+
+Ans 6.3:
 
 ---
 
@@ -387,14 +404,15 @@ check_model(multivar_model)
 
 Use the plots to answer the questions below.
 
-**Question:** Which predictors show the highest collinearity? Is it severe?
+**Question 6.4:** Which predictors show the highest collinearity? Is it severe?
 
-Ans:
+Ans 6.4:
 
 ---
 
-**Question:** How would you read the linearity, homogeneity, influential-observations, and normality panels?
+**Question 6.5:** How would you read the linearity, homogeneity, influential-observations, and normality panels?
 
+Ans 6.5:
 
 Linearity:
 
@@ -418,9 +436,9 @@ Because heteroscedasticity is flagged, let's calculate heteroscedasticity-robust
 coeftest(multivar_model, vcov. = vcovHC(multivar_model, type = "HC3"))
 ```
 
-**Question:** Earlier we found that sex, Grade 12, rural residence, and Oslo social support had adjusted 95% CIs that excluded 0. Using the robust standard errors, are these same predictors still significantly associated with depression score?
+**Question 6.6:** Earlier we found that sex, Grade 12, rural residence, and Oslo social support were significantly associated with depression score. Using the robust standard errors, are these same predictors still significant?
 
-Ans:
+Ans 6.6:
 
 (If the main conclusions do not change, it is still acceptable to report your original SEs. You may choose to report the assumptions figure and these heteroscedasticity-robust SEs in supplementary material so readers can keep them in mind.)
 
@@ -445,4 +463,3 @@ You can also look at this script for code you might adapt: <https://github.com/k
 ```{r forest-plot-challenge}
 # Your code here
 ```
-
