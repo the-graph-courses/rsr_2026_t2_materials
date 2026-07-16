@@ -77,7 +77,7 @@ survey_raw <- read_excel(here("data/depression_data.xls"))
 *Exercise chunk (blank):*
 
 ```{r clean-rename-q, eval=FALSE}
-# 1. Standardize column names.
+# 1. Standardize column names with clean_names().
 # 2. Rename columns to clearer names.
 # 3. Keep only: depression_score, chronological_age, sex, grade_level, residence, oslo_social_support.
 
@@ -106,7 +106,7 @@ glimpse(survey)
 **Solution:**
 
 ```{r clean-rename}
-# 1. Standardize column names.
+# 1. Standardize column names with clean_names().
 # 2. Rename columns to clearer names.
 # 3. Keep only: depression_score, chronological_age, sex, grade_level, residence, oslo_social_support.
 
@@ -307,8 +307,7 @@ survey %>%
   summarise(
     mean_age = mean(chronological_age),
     min_age = min(chronological_age),
-    max_age = max(chronological_age),
-    .groups = "drop"
+    max_age = max(chronological_age)
   )
 ```
 
@@ -322,11 +321,11 @@ In addition, grade level is also largely a consequence of age. In causal terms, 
 
 ![](images/dag_age_grade.png){width=80%}
 
-This overlap is another reason to avoid causal language here. We are comparing adjusted associations, not estimating total causal effects.
+This overlap is another reason to avoid causal language here. We are comparing adjusted associations, not estimating total causal effects. If we were interested in the causal effect of age on depression, we would generally *avoid* adjusting for such mediators.
 
 # PART 5: Build a results table like the paper
 
-Table 2 in the paper shows both simple and adjusted results side by side. That is what we are trying to reproduce (Caveat: We are only replicating a few of the predictors, and we are acknowledging, as we did last week, that a few of the numbers in the paper are not replicable from the dataset the authors released).
+Table 2 in the paper shows both simple and adjusted results side by side. That is what we are trying to reproduce (Caveat: We are only replicating a few of the predictors).
 
 ![Table 2 from Girma et al. (2021).](paper/table2_with_values.png)
 
@@ -434,7 +433,7 @@ results_table <- combined_results %>%
 results_table
 ```
 
-**Question 5.1:** Based on the regression results, which variables/levels are significantly associated with higher depression scores?
+**Question 5.1:** Based on the multiple regression results, which variables/levels are significantly associated with higher depression scores?
 
 **Ans 5.1:** Two: **Grade 12** (versus Grade 9), with an adjusted beta of about 1.50 (95% CI 0.15 to 2.85), and **rural residence** (versus urban), with an adjusted beta of about 1.29 (95% CI 0.48 to 2.10). Both are positive with CIs that exclude 0.
 
