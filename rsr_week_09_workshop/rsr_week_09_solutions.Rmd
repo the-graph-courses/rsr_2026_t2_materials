@@ -141,7 +141,7 @@ inspect_num(survey) %>% show_plot()
 
 **Question 2.1:** Which variables are truly numeric?
 
-**Ans 2.1:** Only `depression_score`, `chronological_age`, and `oslo_social_support` are truly numeric, in the sense that the numbers represent quantities we can meaningfully add or average. `sex`, `grade_level`, and `residence` are stored as numbers, so R treats them as numeric, but the codes are just labels for categories. We fix that below.
+**Ans 2.1:** Only `depression_score`, `chronological_age`, and `oslo_social_support` are truly numeric, in the sense that the numbers represent quantities we can meaningfully add or average. (One might also argue that `depression_score` and `oslo_social_support` are not truly numeric, since they are aggregate scores from ordinal categorical variables. So there is wiggle room in interpretation.) `sex`, `grade_level`, and `residence` are stored as numbers, so R treats them as numeric, but the codes are just labels for categories. We fix that below.
 
 Three predictors are categorical but stored as numeric codes. Below, we will label them:
 
@@ -305,7 +305,6 @@ Look at how age varies within each grade.
 survey %>%
   group_by(grade_level) %>%
   summarise(
-    n = n(),
     mean_age = mean(chronological_age),
     min_age = min(chronological_age),
     max_age = max(chronological_age),
@@ -313,11 +312,17 @@ survey %>%
   )
 ```
 
-In the simple model, age compares students across all grades. In the multiple model, the age coefficient compares older versus younger students **within the same grade**, because grade is already in the model. Within each grade, age does not vary much, which is one reason the age association weakens after adjustment.
+**Question 4.3:** Fill in the blanks. Choose from the options in parentheses.
 
-Another reason is that grade level is largely a consequence of age: students end up in higher grades because they are older. By controlling for grade, we are also removing some of the total effect that age would otherwise carry, since part of age's influence flows through the grade a student has reached.
+In the simple model, age compares students across all grades. In the multiple model, the age coefficient compares older versus younger students ______ (across all grades / within the same grade), because grade is already in the model. Within each grade, age does not vary much, which is one reason the age association ______ (strengthens / weakens) after adjustment.
 
-This overlap is one reason to avoid causal language in this kind of paper. We did not select predictors based on causal reasoning; we are simply comparing their adjusted associations with the outcome.
+**Filled in:** within the same grade; weakens
+
+In addition, grade level is also largely a consequence of age. In causal terms, grade is more like a **mediator** of age's association with depression than a confounder. By controlling for grade, we remove part of the total effect that age would otherwise carry.
+
+![](images/dag_age_grade.png){width=80%}
+
+This overlap is another reason to avoid causal language here. We are comparing adjusted associations, not estimating total causal effects.
 
 # PART 5: Build a results table like the paper
 

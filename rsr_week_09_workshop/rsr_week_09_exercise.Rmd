@@ -65,7 +65,7 @@ survey_raw <- read_excel(here("data/depression_data.xls"))
 ```
 
 ```{r clean-rename}
-# 1. Standardize column names.
+# 1. Standardize column names with clean_names().
 # 2. Rename columns to clearer names.
 # 3. Keep only: depression_score, chronological_age, sex, grade_level, residence, oslo_social_support.
 
@@ -221,23 +221,25 @@ Look at how age varies within each grade.
 survey %>%
   group_by(grade_level) %>%
   summarise(
-    n = n(),
     mean_age = mean(chronological_age),
     min_age = min(chronological_age),
-    max_age = max(chronological_age),
-    .groups = "drop"
+    max_age = max(chronological_age)
   )
 ```
 
-In the simple model, age compares students across all grades. In the multiple model, the age coefficient compares older versus younger students **within the same grade**, because grade is already in the model. Within each grade, age does not vary much, which is one reason the age association weakens after adjustment.
+**Question 4.3:** Fill in the blanks. Choose from the options in parentheses.
 
-Another reason is that grade level is largely a consequence of age: students end up in higher grades because they are older. By controlling for grade, we are also removing some of the total effect that age would otherwise carry, since part of age's influence flows through the grade a student has reached.
+In the simple model, age compares students across all grades. In the multiple model, the age coefficient compares older versus younger students ______ (across all grades / within the same grade), because grade is already in the model. Within each grade, age does not vary much, which is one reason the age association ______ (strengthens / weakens) after adjustment.
 
-This overlap is one reason to avoid causal language in this kind of paper. We did not select predictors based on causal reasoning; we are simply comparing their adjusted associations with the outcome.
+In addition, grade level is also largely a consequence of age. In causal terms, grade is more like a **mediator** of age's association with depression than a confounder. By controlling for grade, we remove part of the total effect that age would otherwise carry.
+
+![](images/dag_age_grade.png){width=80%}
+
+This overlap is another reason to avoid causal language here. We are comparing adjusted associations, not estimating total causal effects. If we were interested in the causal effect of age on depression, we would generally *avoid* adjusting for such mediators.
 
 # PART 5: Build a results table like the paper
 
-Table 2 in the paper shows both simple and adjusted results side by side. That is what we are trying to reproduce (Caveat: We are only replicating a few of the predictors, and we are acknowledging, as we did last week, that a few of the numbers in the paper are not replicable from the dataset the authors released).
+Table 2 in the paper shows both simple and adjusted results side by side. That is what we are trying to reproduce (Caveat: We are only replicating a few of the predictors).
 
 ![Table 2 from Girma et al. (2021).](paper/table2_with_values.png)
 
@@ -345,7 +347,7 @@ results_table <- combined_results %>%
 results_table
 ```
 
-**Question 5.1:** Based on the regression results, which variables/levels are significantly associated with higher depression scores?
+**Question 5.1:** Based on the multiple regression results, which variables/levels are significantly associated with higher depression scores?
 
 Ans 5.1:
 
