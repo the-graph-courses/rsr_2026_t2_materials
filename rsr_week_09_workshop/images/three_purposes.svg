@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 340" font-family="Helvetica, Arial, sans-serif">
-  <text x="460" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">Three purposes of multiple linear regression</text>
-  <text x="460" y="50" text-anchor="middle" font-size="12.5" fill="#64748b">Same method, different scientific goals, different outputs</text>
+  <text x="460" y="36" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">Three purposes of multiple linear regression</text>
 
   <rect x="30" y="70" width="270" height="230" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="3"/>
   <rect x="30" y="70" width="270" height="48" rx="12" fill="#ea580c"/>
@@ -33,6 +32,9 @@
   <text x="755" y="181" text-anchor="middle" font-size="13" fill="#064e3b">adjustment?</text>
   <text x="755" y="210" text-anchor="middle" font-size="12" fill="#047857">Choose predictors thought</text>
   <text x="755" y="228" text-anchor="middle" font-size="12" fill="#047857">to be associated with Y</text>
-  <text x="755" y="258" text-anchor="middle" font-size="12" fill="#047857">Typical output: one coefficient</text>
-  <text x="755" y="276" text-anchor="middle" font-size="12" fill="#047857">table with adjusted estimates</text>
+  <text x="755" y="258" text-anchor="middle" font-size="12" fill="#047857">Typical output: coefficient table(s)</text>
+  <text x="755" y="276" text-anchor="middle" font-size="12" fill="#047857">with unadjusted and adjusted</text>
+  <text x="755" y="294" text-anchor="middle" font-size="12" fill="#047857">estimates</text>
 </svg>
+
+
