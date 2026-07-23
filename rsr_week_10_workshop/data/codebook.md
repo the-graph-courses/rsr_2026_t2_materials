@@ -16,4 +16,4 @@ The source is the `Sheet2` tab of the PLOS ONE S1 Dataset.
 
 The S1 workbook has 676 rows and reproduces the paper's age, TBSA, inhalation-injury, PF-ratio, and carboxyhemoglobin univariable models. It does not contain a mechanical-ventilation column, so that Table 2 row cannot be replicated from the shared patient-level data.
 
-The workbook also contains a patient with PF ratio exactly 100 coded in the lowest group, even though the paper displays that group as `<100`. The workshop retains the supplied category coding and the paper's displayed label so the published regression is reproduced.
+The workbook also contains a patient with PF ratio exactly 100 coded in the lowest group, even though the paper displays that group as `<100`. 
