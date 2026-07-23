@@ -41,7 +41,7 @@ First, load the packages used in this workshop.
 
 ```{r load-packages}
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(tidyverse, readxl, here, janitor, broom, equatiomatic, plotly, gt)
+pacman::p_load(tidyverse, readxl, here, janitor, broom, equatiomatic, gt)
 pacman::p_load_gh("the-graph-courses/inspectdf")
 ```
 
@@ -52,7 +52,7 @@ Below, we import the second sheet of the workbook, standardize its column names,
 If of interest, you can view the codebook in the data folder.
 
 ```{r import-data}
-burns_raw <- read_excel(here("data/S1Dataset_burns.xlsx"), sheet = "Sheet2") %>%
+burns_raw <- read_excel(here("/Users/kendavidn/Dropbox/tgc_github_projects/rsr_2026_t2_materials/rsr_week_10_workshop/data/S1Dataset_burns.xlsx"), sheet = "Sheet2") %>%
   clean_names() %>%
   select(mortaltiy, age, tbsa, in_hdiv, pfdivide)
 
@@ -150,9 +150,9 @@ summary(age_model)
 
 **Question 2.1:** Complete a quick interpretation of the age coefficient.
 
-> The age coefficient is ______ (positive / negative), so the odds of mortality ______ (increase / decrease) as age increases.
-
 Ans 2.1:
+
+> The age coefficient is ______ (positive / negative), so the odds of mortality ______ (increase / decrease) as age increases.
 
 **Answer:** The age coefficient is **positive**, so the odds of mortality **increase** as age increases.
 
@@ -185,67 +185,11 @@ age_results <- tidy(age_model, conf.int = TRUE, exponentiate = TRUE)
 age_results
 ```
 
-## Check the model against the observed data
-
-Now that we have fitted and interpreted the model, it is useful to see graphically how it fits the data.
-
-For this, we will temporarily group age into 10-year bands to calculate what percentage of people in each age group died. (Note that the model itself uses each patient's exact age, not these grouped ages.)
-
-```{r age-summary}
-age_summary <- burns %>%
-  mutate(age_group = cut(age_years, breaks = c(-Inf, 29, 39, 49, 59, 69, Inf),
-                         labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70+"))) %>%
-  group_by(age_group) %>%
-  summarise(
-    age_plot_position = median(age_years),
-    patients = n(),
-    deaths = sum(mortality == "Died"),
-    observed_probability = mean(mortality == "Died")
-  )
-
-age_summary
-```
-
-We can see that the probability of dying increases with age, but not by a fixed amount at each age.
-
-Let's plot these observed proportions together with the fitted curve from the model.
-
-```{r age-curve, fig.width=8, fig.height=5}
-age_curve <- tibble(
-  # Create a sequence of ages from the minimum to the maximum age in the data
-  age_years = seq(min(burns$age_years), max(burns$age_years), length.out = 100)
-) %>%
-  mutate(
-    # Calculate the fitted probability for each age
-    predicted_probability = predict(age_model, newdata = ., type = "response")
-  )
-
-# Create the plot
-age_plot <- ggplot(age_summary, aes(age_plot_position, observed_probability)) +
-  geom_point(size = 3) +
-  geom_line(data = age_curve, aes(age_years, predicted_probability), color = "#ee9b00", linewidth = 1.1) +
-  labs(x = "Age (years)", y = "Mortality probability", title = "Observed age-group proportions and fitted logistic curve")
-
-ggplotly(age_plot)
-```
-
-With the interactive plot, you can hover over points to see the exact age and observed mortality probability.
-
-**Question 2.3:** Does the orange curve (our model's fitted curve) pass through every black point (the observed proportions in our data)?
-
-Ans 2.3:
-
-**Answer:** No. The curve does not pass through every observed age-group proportion.
-
-**Question 2.4:** Is our model a perfect fit for the data?
-
-Ans 2.4:
-
-**Answer:** No. One intercept and one age coefficient describe the overall relationship, so the fitted curve does not reproduce every observed group proportion exactly.
+There is more than one way to calculate a confidence interval. `tidy()` uses a profile likelihood method, while the authors used a Wald method. This can lead to small differences between our confidence intervals and those reported in the paper. Use `exp(confint.default(age_model))` to calculate confidence intervals using the paper's method.
 
 ## Calculate a fitted probability
 
-In addition to looking at the model output graphically, we can also calculate the specific predictions from the model for specific values of the predictor.
+Before checking the model against the observed data, let's calculate a fitted probability for one specific value of age.
 
 For example, let's calculate the estimated probability of mortality for a 50-year-old patient.
 
@@ -274,11 +218,91 @@ age_50_predict <- predict(age_model, newdata = age_50_data, type = "response")
 age_50_predict
 ```
 
-**Question 2.5:** Does the hand-calculated probability match the result from `predict()`?
+**Question 2.3:** Does the hand-calculated probability match the result from `predict()`?
+
+Ans 2.3:
+
+**Answer:** Yes. Both round to **0.252**, or **25.2%**. The unrounded values differ very slightly because the hand calculation uses rounded coefficients.
+
+## Check the model against the observed data
+
+Now that we have used `predict()` for one age, we can use it for a range of ages and compare the fitted probabilities with the observed data.
+
+First, we temporarily group age into 10-year bands and calculate the observed mortality probability in each group. The model itself still uses each patient's exact age.
+
+```{r age-summary}
+age_summary <- burns %>%
+  mutate(age_group = cut(age_years, breaks = c(-Inf, 29, 39, 49, 59, 69, Inf),
+                         labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70+"))) %>%
+  group_by(age_group) %>%
+  summarise(
+    age_plot_position = median(age_years),
+    patients = n(),
+    deaths = sum(mortality == "Died"),
+    observed_probability = mean(mortality == "Died")
+  )
+
+age_summary
+```
+
+Next, create a vector containing the ages from 18 to 92 and print it.
+
+```{r age-values}
+age_values <- 18:92
+age_values
+```
+
+We now put those ages into a table and use `predict()` to calculate one fitted mortality probability for each age. Each row contains an age and the model's fitted probability for that age.
+
+```{r age-prediction-table}
+age_prediction_table <- tibble(age_years = age_values) %>%
+  mutate(
+    predicted_probability = predict(age_model, newdata = ., type = "response")
+  )
+
+age_prediction_table
+```
+
+Start by plotting only the observed mortality proportions.
+
+```{r age-bar-plot, fig.width=8, fig.height=5}
+age_bar_plot <- ggplot(
+  age_summary,
+  aes(age_plot_position, observed_probability)
+) +
+  geom_col(width = 8, fill = "#83c5be") +
+  labs(
+    x = "Age (years)",
+    y = "Mortality probability",
+    title = "Observed mortality by age group"
+  )
+
+age_bar_plot
+```
+
+Now add the fitted probabilities as an orange line. The bars show what was observed in the temporary age groups, while the line shows the model's fitted probability at each exact age.
+
+```{r age-fitted-line, fig.width=8, fig.height=5}
+age_bar_plot +
+  geom_line(
+    data = age_prediction_table,
+    aes(age_years, predicted_probability),
+    color = "#ee9b00",
+    linewidth = 1.1
+  )
+```
+
+**Question 2.4:** Does the orange fitted line pass through the top of every observed bar?
+
+Ans 2.4:
+
+**Answer:** No. The fitted line does not pass through the top of every observed bar.
+
+**Question 2.5:** Is our model a perfect fit for the observed age-group probabilities?
 
 Ans 2.5:
 
-**Answer:** Yes. Both round to **0.252**, or **25.2%**. The unrounded values differ very slightly because the hand calculation uses rounded coefficients.
+**Answer:** No. One intercept and one age coefficient describe the overall relationship, so the fitted line does not reproduce every observed group probability exactly.
 
 # PART 3: TBSA as a second continuous predictor
 
@@ -327,15 +351,37 @@ Ans 3.3:
 
 **Answer:** Each additional percentage point of TBSA burned was associated with about **1.083 times the odds**, or **8.3% higher odds**, of mortality.
 
+## Calculate a fitted probability
+
+Before checking the model against the observed data, use `predict()` to calculate the fitted mortality probability for a patient with 50% TBSA burned.
+
+```{r tbsa-50-predict}
+tbsa_50_data <- tibble(tbsa_percent = 50)
+
+tbsa_50_predict <- predict(
+  tbsa_model,
+  newdata = tbsa_50_data,
+  type = "response"
+)
+
+tbsa_50_predict
+```
+
+The fitted mortality probability is approximately **0.344**, or **34.4%**. This is the same process we used to obtain the fitted probability for a 50-year-old patient.
+
 ## Check the model against the observed data
 
-Now that we have fitted and interpreted the model, we can compare its curve with observed mortality proportions in temporary 10-percentage-point TBSA bands.
+Now use `predict()` for a range of TBSA values and compare the fitted probabilities with observed mortality proportions in temporary 10-percentage-point bands.
 
 ```{r tbsa-summary}
 tbsa_summary <- burns %>%
   # Variable to group: tbsa_percent.
   mutate(
-    tbsa_group = cut(tbsa_percent, breaks = seq(0, 100, 10), include.lowest = TRUE)
+    tbsa_group = cut(
+      tbsa_percent,
+      breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
+      include.lowest = TRUE
+    )
   ) %>%
   # Grouping variable: tbsa_group.
   group_by(tbsa_group) %>%
@@ -344,29 +390,55 @@ tbsa_summary <- burns %>%
     deaths = sum(mortality == "Died"),
     observed_probability = mean(mortality == "Died")
   ) %>%
-  mutate(tbsa_midpoint = seq(5, 95, 10))
+  mutate(tbsa_midpoint = c(5, 15, 25, 35, 45, 55, 65, 75, 85, 95))
 
 tbsa_summary
 ```
 
-```{r tbsa-curve, fig.width=8, fig.height=5}
-# Create a sequence of TBSA percentages from the minimum to the maximum in the data
-tbsa_curve <- tibble(
-  # Create a sequence of TBSA percentages from the minimum to the maximum in the data
-  tbsa_percent = seq(min(burns$tbsa_percent), max(burns$tbsa_percent), length.out = 100)
-) %>%
+Create a vector containing the TBSA values from 0 to 100 and print it.
+
+```{r tbsa-values}
+tbsa_values <- 0:100
+tbsa_values
+```
+
+Now put those values into a table and use `predict()` to calculate one fitted mortality probability for each TBSA value.
+
+```{r tbsa-prediction-table}
+tbsa_prediction_table <- tibble(tbsa_percent = tbsa_values) %>%
   mutate(
-    # Calculate the fitted probability for each TBSA percentage
     predicted_probability = predict(tbsa_model, newdata = ., type = "response")
   )
 
-ggplot() +
-  geom_point(data = tbsa_summary, aes(tbsa_midpoint, observed_probability), size = 3) +
-  geom_line(data = tbsa_curve, aes(tbsa_percent, predicted_probability), color = "#ee9b00", linewidth = 1.1) +
+tbsa_prediction_table
+```
+
+Start by plotting only the observed mortality proportions.
+
+```{r tbsa-bar-plot, fig.width=8, fig.height=5}
+tbsa_bar_plot <- ggplot(
+  tbsa_summary,
+  aes(tbsa_midpoint, observed_probability)
+) +
+  geom_col(width = 9, fill = "#83c5be") +
   labs(
     x = "TBSA (% burned)",
     y = "Mortality probability",
-    title = "Observed TBSA-group proportions and fitted logistic curve"
+    title = "Observed mortality by TBSA group"
+  )
+
+tbsa_bar_plot
+```
+
+Now add the model's fitted probabilities as an orange line.
+
+```{r tbsa-fitted-line, fig.width=8, fig.height=5}
+tbsa_bar_plot +
+  geom_line(
+    data = tbsa_prediction_table,
+    aes(tbsa_percent, predicted_probability),
+    color = "#ee9b00",
+    linewidth = 1.1
   )
 ```
 
@@ -376,11 +448,11 @@ Ans 3.4:
 
 **Answer:** Observed mortality generally increases as TBSA increases, especially in the higher TBSA groups.
 
-**Question 3.5:** Does the fitted curve pass through every observed point?
+**Question 3.5:** Does the fitted line pass through the top of every observed bar?
 
 Ans 3.5:
 
-**Answer:** No. The curve summarizes the overall relationship but does not reproduce every temporary group's observed proportion.
+**Answer:** No. The fitted line summarizes the overall relationship but does not reproduce every temporary group's observed proportion.
 
 # PART 4: Inhalation injury as a polytomous predictor
 
@@ -430,9 +502,9 @@ summary(inhalation_model)
 
 **Question 4.3:** Complete the first interpretation of the Upper coefficient.
 
-> The Upper coefficient is ______ (positive / negative), so the Upper group has ______ (higher / lower) odds of mortality than the Normal group.
-
 Ans 4.3:
+
+> The Upper coefficient is ______ (positive / negative), so the Upper group has ______ (higher / lower) odds of mortality than the Normal group.
 
 **Answer:** The Upper coefficient is **positive**, so the Upper group has **higher** odds of mortality than the Normal group.
 
@@ -472,9 +544,9 @@ inhalation_results
 
 **Question 4.5:** Complete the interpretation for Subjective injury.
 
-> Compared with Normal, the Subjective group had ______ times the odds of mortality. Its 95% CI ______ (crossed / did not cross) 1, so the result ______ (was / was not) statistically significant.
-
 Ans 4.5:
+
+> Compared with Normal, the Subjective group had ______ times the odds of mortality. Its 95% CI ______ (crossed / did not cross) 1, so the result ______ (was / was not) statistically significant.
 
 **Answer:** Compared with Normal, the Subjective group had **0.615 times the odds** of mortality. Its 95% CI **crossed** 1, so the result **was not** statistically significant.
 
@@ -650,9 +722,9 @@ Ans 6.4:
 
 **Final reporting task:** Complete this results paragraph using the combined table.
 
-> In separate univariable logistic regression models, each additional year of age was associated with ______% higher odds of mortality (OR ______, 95% CI 1.021 to 1.046), and each additional percentage point of TBSA burned was associated with ______% higher odds (OR ______, 95% CI 1.070 to 1.096). Compared with Normal inhalation status, the Upper group had OR ______ (95% CI 2.689 to 7.370) and the Lower group had OR ______ (95% CI 1.467 to 3.832). Compared with PF ratio >300, the <100 group had OR ______ (95% CI 1.644 to 4.694).
-
 Ans:
+
+> In separate univariable logistic regression models, each additional year of age was associated with ______% higher odds of mortality (OR ______, 95% CI 1.021 to 1.046), and each additional percentage point of TBSA burned was associated with ______% higher odds (OR ______, 95% CI 1.070 to 1.096). Compared with Normal inhalation status, the Upper group had OR ______ (95% CI 2.689 to 7.370) and the Lower group had OR ______ (95% CI 1.467 to 3.832). Compared with PF ratio >300, the <100 group had OR ______ (95% CI 1.644 to 4.694).
 
 **Answer:** In separate univariable logistic regression models, each additional year of age was associated with **3.4% higher odds** of mortality (OR **1.034**, 95% CI 1.021 to 1.046), and each additional percentage point of TBSA burned was associated with **8.3% higher odds** (OR **1.083**, 95% CI 1.070 to 1.096). Compared with Normal inhalation status, the Upper group had OR **4.438** (95% CI 2.689 to 7.370) and the Lower group had OR **2.379** (95% CI 1.467 to 3.832). Compared with PF ratio >300, the <100 group had OR **2.765** (95% CI 1.644 to 4.694).
 
