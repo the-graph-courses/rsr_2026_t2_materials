@@ -18,13 +18,20 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 # Introduction
 
-In this workshop, we will use univariable logistic regression to study mortality after burns.
+In this workshop, we will use univariable logistic regression to study predictors of mortality after burns.
 
-[Kim et al. (2017)](https://doi.org/10.1371/journal.pone.0185195) studied 676 adults admitted to a burns intensive care unit in Seoul, Korea. The outcome was **mortality**, coded 1 if a patient died and 0 if they survived.
+Our work will aim to replicate part of the analysis in [Kim et al. (2017)](https://doi.org/10.1371/journal.pone.0185195), which studied 676 adults admitted to a burns intensive care unit in Seoul, Korea.
 
-The authors fitted a separate univariable logistic regression for each predictor. We will recreate that workflow for continuous and polytomous categorical predictors in Table 2.
+The authors fitted univariable logistic regression models for each predictor in Table 2 of their paper.
 
 ![Table 2 from Kim et al. (2017).](images/table2.png)
+
+We will recreate that for the following four predictors:
+
+- Age
+- Total body surface area burned (TBSA)
+- Inhalation injury
+- PF ratio group
 
 # PART 1: Load and prepare the data
 
@@ -40,7 +47,9 @@ pacman::p_load_gh("the-graph-courses/inspectdf")
 
 ## Import the study data
 
-We import the second sheet of the workbook, standardize its column names, and keep the variables used in this workshop.
+Below, we import the second sheet of the workbook, standardize its column names, and keep the variables used in this workshop.
+
+If of interest, you can view the codebook in the data folder.
 
 ```{r import-data}
 burns_raw <- read_excel(here("data/S1Dataset_burns.xlsx"), sheet = "Sheet2") %>%
@@ -55,56 +64,33 @@ glimpse(burns_raw)
 Inspect the variables before changing their names, types, or labels.
 
 ```{r inspect-raw-data}
-inspect_cat(burns_raw)
-inspect_num(burns_raw)
+inspect_cat(burns_raw) %>% show_plot()
+inspect_num(burns_raw) %>% show_plot()
 ```
 
-The codebook says that `mortaltiy`, `in_hdiv`, and `pfdivide` are categorical variables.
-
-**Question 1.1:** What do the inspection results tell you about how these three variables are currently stored?
+**Question 1.1:** The codebook says that `mortaltiy`, `in_hdiv`, and `pfdivide` are categorical variables. How are these variables currently stored?
 
 Ans 1.1:
 
-**Answer:** All three are stored as numeric variables. Their small sets of numeric values are category codes rather than continuous measurements.
+**Answer:** They are stored as numeric variables. Their numbers are category codes rather than continuous measurements.
 
 ## Rename, recode, and select variables
 
-The workbook misspells `mortality` as `mortaltiy`. It uses these category codes:
+Now, let's clean some of the variables.
+
+The workbook misspells `mortality` as `mortaltiy`, so we need to fix that. We also want to convert these three variables to labelled factors, using the schema below:
 
 - `mortaltiy`: 0 = Survived, 1 = Died
 - `in_hdiv`: 0 = Normal, 1 = Subjective, 2 = Upper, 3 = Lower
 - `pfdivide`: 0 = >300, 1 = 200-300, 2 = 100-200, 3 = <100
 
-The factor labels are completed for you. Fill in the three data-management functions.
-
-The exercise code is shown below and is not run.
-
-```{r clean-data-question, eval=FALSE}
-burns <- burns_raw %>%
-  # Use rename() to create mortality, age_years, and tbsa_percent.
-  ______(mortality = mortaltiy, age_years = age, tbsa_percent = tbsa) %>%
-  # Use mutate() to apply the stated levels and labels.
-  ______(
-    mortality = factor(mortality, levels = c(0, 1),
-                       labels = c("Survived", "Died")),
-    inhalation_injury = factor(in_hdiv, levels = 0:3,
-                               labels = c("Normal", "Subjective", "Upper", "Lower")),
-    pf_ratio_group = factor(pfdivide, levels = 0:3,
-                            labels = c(">300", "200-300", "100-200", "<100"))
-  ) %>%
-  # Use select() to keep mortality and the four named predictors.
-  ______(mortality, age_years, tbsa_percent, inhalation_injury, pf_ratio_group)
-
-glimpse(burns)
-```
-
-The completed code is:
+Fill in the correct functions below.
 
 ```{r clean-data}
 burns <- burns_raw %>%
-  # Use rename() to create mortality, age_years, and tbsa_percent.
+  # Change the names of these columns
   rename(mortality = mortaltiy, age_years = age, tbsa_percent = tbsa) %>%
-  # Use mutate() to apply the stated levels and labels.
+  # Change these variables to labelled factors
   mutate(
     mortality = factor(mortality, levels = c(0, 1),
                        labels = c("Survived", "Died")),
@@ -113,7 +99,7 @@ burns <- burns_raw %>%
     pf_ratio_group = factor(pfdivide, levels = 0:3,
                             labels = c(">300", "200-300", "100-200", "<100"))
   ) %>%
-  # Use select() to keep mortality and the four named predictors.
+  # Keep only the variables we will use in this workshop
   select(mortality, age_years, tbsa_percent, inhalation_injury, pf_ratio_group)
 
 glimpse(burns)
@@ -129,7 +115,7 @@ burns %>% tabyl(mortality)
 
 Ans 1.2:
 
-**Answer:** There were **173 deaths**.
+**Answer:** **173 patients** died.
 
 **Question 1.3:** What percentage of the 676 patients died?
 
@@ -151,20 +137,18 @@ Ans 1.5:
 
 # PART 2: Age as a continuous predictor
 
-This section walks through the full workflow. You will repeat it more independently for total body surface area burned (TBSA) in Part 3.
+Now, we will model age as a continuous predictor of mortality. In this section, most of the code will be provided to you. Later on, you will work more independently to model another continuous predictor, total body surface area burned (TBSA).
 
 ## Fit and interpret the model
 
-We first fit mortality as the outcome and exact age as the only predictor. A binary outcome uses the binomial family.
+We first fit mortality as the outcome and age as the predictor.
 
 ```{r age-model}
 age_model <- glm(mortality ~ age_years, family = binomial, data = burns)
 summary(age_model)
 ```
 
-Always inspect `summary()` before making a formatted results table.
-
-**Question 2.1:** Complete the first interpretation of the age coefficient.
+**Question 2.1:** Complete a quick interpretation of the age coefficient.
 
 > The age coefficient is ______ (positive / negative), so the odds of mortality ______ (increase / decrease) as age increases.
 
@@ -178,33 +162,34 @@ Below, we display the fitted equation.
 extract_eq(age_model, use_coefs = TRUE) %>% preview_eq()
 ```
 
-Exponentiating a log-odds coefficient gives an odds ratio (OR). It compares the odds after a one-unit increase with the odds before that increase.
+The coefficient on age is the change in the log-odds of mortality for a one-year increase in age. This is a hard-to-interpret quantity, so we usually convert it to an odds ratio by exponentiating it (that is, raising `e` to the power of the coefficient). This can be done with the `exp()` function in R.
 
 ```{r age-or}
-age_or <- exp(coef(age_model)["age_years"])
+age_coefficient <- coef(age_model)["age_years"]
+age_or <- exp(age_coefficient)
 age_or
 ```
 
-Now use `tidy()` to store the OR, its 95% confidence interval, and its p-value.
+**Question 2.2:** Complete the odds-ratio interpretation.
+
+Ans 2.2:
+
+> Each additional year of age was associated with about 1.034 times the odds or 3.4% _______________ (higher / lower) odds of _________ (survival / mortality).
+
+**Answer:** Each additional year of age was associated with about 1.034 times the odds or **3.4% higher odds of mortality**.
+
+To get odds ratios and their confidence intervals more easily, we can use the `tidy()` function from the `broom` package.
 
 ```{r age-results}
 age_results <- tidy(age_model, conf.int = TRUE, exponentiate = TRUE)
 age_results
 ```
 
-**Question 2.2:** Complete the odds-ratio interpretation.
-
-> Each additional year of age was associated with ______ times the odds, or about ______% ______ (higher / lower) odds, of mortality.
-
-Ans 2.2:
-
-**Answer:** Each additional year of age was associated with **1.0337 times the odds**, or about **3.4% higher odds**, of mortality.
-
-(There is more than one way to calculate a confidence interval. `tidy()` uses a profile likelihood method. The paper used a Wald method. These sometimes lead to differences between what we calculate and what the authors calculated. Use `exp(confint.default(age_model))` to get the paper's method.)
-
 ## Check the model against the observed data
 
-Now that we have fitted and interpreted the model, we can see graphically how it fits the data. We temporarily group age into 10-year bands to calculate observed mortality proportions. The model itself still uses each patient's exact age.
+Now that we have fitted and interpreted the model, it is useful to see graphically how it fits the data.
+
+For this, we will temporarily group age into 10-year bands to calculate what percentage of people in each age group died. (Note that the model itself uses each patient's exact age, not these grouped ages.)
 
 ```{r age-summary}
 age_summary <- burns %>%
@@ -221,73 +206,70 @@ age_summary <- burns %>%
 age_summary
 ```
 
-The black points are the observed proportions in the temporary age groups, positioned at each group's median age. The orange curve is the fitted probability from the model using exact age.
+We can see that the probability of dying increases with age, but not by a fixed amount at each age.
+
+Let's plot these observed proportions together with the fitted curve from the model.
 
 ```{r age-curve, fig.width=8, fig.height=5}
 age_curve <- tibble(
+  # Create a sequence of ages from the minimum to the maximum age in the data
   age_years = seq(min(burns$age_years), max(burns$age_years), length.out = 100)
 ) %>%
   mutate(
-    predicted_probability = predict(age_model, newdata = ., type = "response"),
-    hover = paste0(
-      "Age: ", round(age_years),
-      "<br>Fitted mortality: ", scales::percent(predicted_probability, 0.1)
-    )
+    # Calculate the fitted probability for each age
+    predicted_probability = predict(age_model, newdata = ., type = "response")
   )
 
-age_plot <- ggplot() +
-  geom_point(
-    data = age_summary,
-    aes(age_plot_position, observed_probability),
-    size = 3
-  ) +
-  geom_line(
-    data = age_curve,
-    aes(age_years, predicted_probability, text = hover, group = 1),
-    color = "#ee9b00",
-    linewidth = 1.1
-  ) +
-  labs(
-    x = "Age (years)",
-    y = "Mortality probability",
-    title = "Observed age-group proportions and fitted logistic curve"
-  )
+# Create the plot
+age_plot <- ggplot(age_summary, aes(age_plot_position, observed_probability)) +
+  geom_point(size = 3) +
+  geom_line(data = age_curve, aes(age_years, predicted_probability), color = "#ee9b00", linewidth = 1.1) +
+  labs(x = "Age (years)", y = "Mortality probability", title = "Observed age-group proportions and fitted logistic curve")
 
-ggplotly(age_plot, tooltip = "text")
+ggplotly(age_plot)
 ```
 
-**Question 2.3:** Does the orange curve pass through every black point?
+With the interactive plot, you can hover over points to see the exact age and observed mortality probability.
+
+**Question 2.3:** Does the orange curve (our model's fitted curve) pass through every black point (the observed proportions in our data)?
 
 Ans 2.3:
 
-**Answer:** No. The points are observed proportions for temporary age groups, while one curve is fitted using all patients' exact ages.
+**Answer:** No. The curve does not pass through every observed age-group proportion.
 
-**Question 2.4:** Does the fitted probability increase by a fixed number of percentage points at every age?
+**Question 2.4:** Is our model a perfect fit for the data?
 
 Ans 2.4:
 
-**Answer:** No. The sigmoid curve means that an equal increase in age does not produce an equal percentage-point increase in fitted probability everywhere on the curve.
+**Answer:** No. One intercept and one age coefficient describe the overall relationship, so the fitted curve does not reproduce every observed group proportion exactly.
 
 ## Calculate a fitted probability
 
-For a 50-year-old patient, the fitted log odds equal the intercept plus the age coefficient multiplied by 50. The inverse-logit formula converts those log odds to a probability.
+In addition to looking at the model output graphically, we can also calculate the specific predictions from the model for specific values of the predictor.
+
+For example, let's calculate the estimated probability of mortality for a 50-year-old patient.
+
+Recall that the intercept was approximately -2.7424 and the coefficient on age was approximately 0.0331. For a 50-year-old patient, the fitted log odds are:
+
+`-2.7424 + (0.0331 × 50)`
 
 ```{r age-50-manual}
-age_50_log_odds <- coef(age_model)["(Intercept)"] +
-  coef(age_model)["age_years"] * 50
+age_50_log_odds <- -2.7424 + (0.0331 * 50)
 
 age_50_probability <- 1 / (1 + exp(-age_50_log_odds))
 age_50_probability
 ```
 
-`predict(..., type = "response")` calculates the fitted probability directly.
+This means that the model estimates a mortality probability of approximately 0.252, or 25.2%, for a 50-year-old patient.
+
+We can also use the `predict()` function to calculate the fitted probability directly.
 
 ```{r age-50-predict}
-age_50_predict <- predict(
-  age_model,
-  newdata = tibble(age_years = 50),
-  type = "response"
-)
+# First, create a new data frame with the age we want to predict
+age_50_data <- tibble(age_years = 50)
+
+# Then, use the predict() function to calculate the fitted probability
+age_50_predict <- predict(age_model, newdata = age_50_data, type = "response")
 
 age_50_predict
 ```
@@ -296,36 +278,7 @@ age_50_predict
 
 Ans 2.5:
 
-**Answer:** Yes. Both methods give a fitted probability of approximately **0.252**, or **25.2%**.
-
-Now calculate fitted probabilities at ages 30, 40, and 50.
-
-```{r age-predictions}
-age_predictions <- tibble(age_years = c(30, 40, 50)) %>%
-  mutate(
-    predicted_probability = predict(age_model, newdata = ., type = "response")
-  )
-
-age_predictions
-```
-
-**Question 2.6:** Is the increase in fitted probability from age 30 to 40 the same as the increase from age 40 to 50?
-
-Ans 2.6:
-
-**Answer:** No. The fitted probabilities are approximately **14.8%**, **19.5%**, and **25.2%**. The first increase is about **4.7 percentage points**, while the second is about **5.7 percentage points**.
-
-The probability does not increase by a fixed number of percentage points. However, each additional year multiplies the odds by the same value. We can raise the one-year OR to the power of 10 to obtain the OR for a 10-year increase.
-
-```{r age-ten-year-or}
-age_or^10
-```
-
-**Question 2.7:** By approximately what percentage do the odds of mortality increase for every additional 10 years of age?
-
-Ans 2.7:
-
-**Answer:** The odds multiply by approximately **1.393**, which is a **39.3% increase** for each additional 10 years.
+**Answer:** Yes. Both round to **0.252**, or **25.2%**. The unrounded values differ very slightly because the hand calculation uses rounded coefficients.
 
 # PART 3: TBSA as a second continuous predictor
 
@@ -335,17 +288,8 @@ TBSA is the percentage of a patient's total body surface area that was burned. O
 
 Use `mortality` as the outcome and exact `tbsa_percent` as the only predictor.
 
-The exercise code is shown below and is not run.
-
-```{r tbsa-model-question, eval=FALSE}
-# Outcome: mortality. Predictor: tbsa_percent. Family: binomial. Data: burns.
-tbsa_model <- glm(________ ~ ________, family = ________, data = ________)
-summary(tbsa_model)
-```
-
-The completed code is:
-
 ```{r tbsa-model}
+# Outcome: mortality. Predictor: tbsa_percent. Family: binomial. Data: burns.
 tbsa_model <- glm(mortality ~ tbsa_percent, family = binomial, data = burns)
 summary(tbsa_model)
 ```
@@ -364,59 +308,28 @@ Ans 3.2:
 
 Display the fitted TBSA equation.
 
-```{r tbsa-equation-question, eval=FALSE}
-# Model object: tbsa_model.
-extract_eq(________, use_coefs = TRUE) %>% preview_eq()
-```
-
 ```{r tbsa-equation}
+# Model object: tbsa_model.
 extract_eq(tbsa_model, use_coefs = TRUE) %>% preview_eq()
 ```
 
 Now store the exponentiated result.
 
-```{r tbsa-results-question, eval=FALSE}
-# Model: tbsa_model. Request confidence intervals and exponentiated estimates.
-tbsa_results <- tidy(________, conf.int = ________, exponentiate = ________)
-tbsa_results
-```
-
 ```{r tbsa-results}
+# Model: tbsa_model. Request confidence intervals and exponentiated estimates.
 tbsa_results <- tidy(tbsa_model, conf.int = TRUE, exponentiate = TRUE)
 tbsa_results
 ```
 
-**Question 3.3:** Write one sentence interpreting the TBSA odds ratio. Include the OR, the percentage change and direction in the odds of mortality, and explain that the unit is one percentage point rather than a 1% relative increase.
+**Question 3.3:** Write one sentence interpreting the TBSA odds ratio, similar to what we did in question 2.2.
 
 Ans 3.3:
 
-**Answer:** Each additional percentage point of TBSA burned was associated with **1.0825 times the odds**, or about **8.3% higher odds**, of mortality. The unit is a one-percentage-point increase, such as 20% to 21% burned, rather than a 1% relative increase.
+**Answer:** Each additional percentage point of TBSA burned was associated with about **1.083 times the odds**, or **8.3% higher odds**, of mortality.
 
 ## Check the model against the observed data
 
 Now that we have fitted and interpreted the model, we can compare its curve with observed mortality proportions in temporary 10-percentage-point TBSA bands.
-
-The exercise code is shown below and is not run.
-
-```{r tbsa-summary-question, eval=FALSE}
-tbsa_summary <- burns %>%
-  # Variable to group: tbsa_percent.
-  mutate(
-    tbsa_group = cut(________, breaks = seq(0, 100, 10), include.lowest = TRUE)
-  ) %>%
-  # Grouping variable: tbsa_group.
-  group_by(________) %>%
-  summarise(
-    patients = n(),
-    deaths = sum(mortality == "Died"),
-    observed_probability = mean(mortality == "Died")
-  ) %>%
-  mutate(tbsa_midpoint = seq(5, 95, 10))
-
-tbsa_summary
-```
-
-The completed code is:
 
 ```{r tbsa-summary}
 tbsa_summary <- burns %>%
@@ -437,29 +350,19 @@ tbsa_summary
 ```
 
 ```{r tbsa-curve, fig.width=8, fig.height=5}
+# Create a sequence of TBSA percentages from the minimum to the maximum in the data
 tbsa_curve <- tibble(
-  tbsa_percent = seq(
-    min(burns$tbsa_percent),
-    max(burns$tbsa_percent),
-    length.out = 100
-  )
+  # Create a sequence of TBSA percentages from the minimum to the maximum in the data
+  tbsa_percent = seq(min(burns$tbsa_percent), max(burns$tbsa_percent), length.out = 100)
 ) %>%
   mutate(
+    # Calculate the fitted probability for each TBSA percentage
     predicted_probability = predict(tbsa_model, newdata = ., type = "response")
   )
 
 ggplot() +
-  geom_point(
-    data = tbsa_summary,
-    aes(tbsa_midpoint, observed_probability),
-    size = 3
-  ) +
-  geom_line(
-    data = tbsa_curve,
-    aes(tbsa_percent, predicted_probability),
-    color = "#ee9b00",
-    linewidth = 1.1
-  ) +
+  geom_point(data = tbsa_summary, aes(tbsa_midpoint, observed_probability), size = 3) +
+  geom_line(data = tbsa_curve, aes(tbsa_percent, predicted_probability), color = "#ee9b00", linewidth = 1.1) +
   labs(
     x = "TBSA (% burned)",
     y = "Mortality probability",
@@ -471,23 +374,25 @@ ggplot() +
 
 Ans 3.4:
 
-**Answer:** Observed mortality generally increases with TBSA. It is below 7% in the first three groups, reaches 60% for 60-70% TBSA, and is 100% in the two highest groups.
+**Answer:** Observed mortality generally increases as TBSA increases, especially in the higher TBSA groups.
 
 **Question 3.5:** Does the fitted curve pass through every observed point?
 
 Ans 3.5:
 
-**Answer:** No. The fitted curve summarizes the relationship using one intercept and one TBSA coefficient, so it does not reproduce every temporary group's observed proportion.
+**Answer:** No. The curve summarizes the overall relationship but does not reproduce every temporary group's observed proportion.
 
 # PART 4: Inhalation injury as a polytomous predictor
 
-Inhalation injury is classified as Normal, Subjective, Upper, or Lower. Subjective indicates smoke-exposure history or signs; Lower indicates injury below the trachea on bronchoscopy.
+Now, we will move from continuous predictors to categorical predictors.
+
+Inhalation injury is classified as Normal, Subjective, Upper, or Lower. Subjective indicates smoke-exposure history or signs; Lower indicates injury below the trachea, and Upper indicates injury above the trachea.
 
 Because `Normal` is the first factor level, it will be the reference group.
 
 ## Summarise the observed group probabilities
 
-First, calculate the observed mortality probability in each inhalation-injury group.
+First, let's do some basic descriptive analysis to calculate the observed mortality probability in each inhalation-injury group.
 
 ```{r inhalation-observed}
 inhalation_summary <- burns %>%
@@ -511,23 +416,14 @@ Ans 4.1:
 
 Ans 4.2:
 
-**Answer:** The **Normal** group is the reference because it is the first factor level.
+**Answer:** The **Normal** group is the reference.
 
 ## Fit and interpret the model
 
-Use the four-level factor as the predictor. The model estimates three comparisons, each between a non-reference level and Normal.
-
-The exercise code is shown below and is not run.
-
-```{r inhalation-model-question, eval=FALSE}
-# Outcome: mortality. Predictor: inhalation_injury.
-inhalation_model <- glm(________ ~ ________, family = binomial, data = burns)
-summary(inhalation_model)
-```
-
-The completed code is:
+Now, let's fit a model to the data. We will use the four-level factor as the predictor. The model estimates three comparisons, each between a non-reference level and Normal.
 
 ```{r inhalation-model}
+# Outcome: mortality. Predictor: inhalation_injury.
 inhalation_model <- glm(mortality ~ inhalation_injury, family = binomial, data = burns)
 summary(inhalation_model)
 ```
@@ -542,15 +438,20 @@ Ans 4.3:
 
 ## Calculate a fitted group probability by hand
 
-For the Upper group, the fitted log odds equal the intercept plus the Upper coefficient. We then use the inverse-logit formula.
+For the Upper group, the fitted log odds equal the intercept plus the Upper coefficient. From the model summary, these values are approximately -1.3666 and 1.4902:
+
+`-1.3666 + 1.4902`
+
+We then use the inverse-logit formula to convert the fitted log odds to a probability.
 
 ```{r inhalation-upper-probability}
-upper_log_odds <- coef(inhalation_model)["(Intercept)"] +
-  coef(inhalation_model)["inhalation_injuryUpper"]
+upper_log_odds <- -1.3666 + 1.4902
 
 upper_probability <- 1 / (1 + exp(-upper_log_odds))
 upper_probability
 ```
+
+This gives a fitted mortality probability of approximately 0.531, or 53.1%, for the Upper group.
 
 **Question 4.4:** Does the fitted probability for the Upper group match its observed probability in `inhalation_summary`?
 
@@ -560,7 +461,7 @@ Ans 4.4:
 
 With one four-level categorical predictor, the model estimates one fitted probability for each group. It can therefore match the four observed group probabilities exactly.
 
-The sigmoid shape of the logistic function is not especially useful for a categorical predictor. The category names do not form a numeric scale, so there is no meaningful continuous curve to draw between them. Here, the fitted values are four separate group probabilities.
+Note that the sigmoid shape of the logistic function is not especially useful for a categorical predictor. Because the category names do not form a numeric scale, there is no meaningful continuous curve to draw between them.
 
 Now use `tidy()` to display the coefficients as odds ratios with confidence intervals.
 
@@ -577,22 +478,6 @@ Ans 4.5:
 
 **Answer:** Compared with Normal, the Subjective group had **0.615 times the odds** of mortality. Its 95% CI **crossed** 1, so the result **was not** statistically significant.
 
-**Question 4.6:** Complete the interpretation for Upper injury.
-
-> Compared with Normal, the Upper group had ______ times the odds of mortality. Its 95% CI ______ (crossed / did not cross) 1, so the result ______ (was / was not) statistically significant.
-
-Ans 4.6:
-
-**Answer:** Compared with Normal, the Upper group had **4.438 times the odds** of mortality. Its 95% CI **did not cross** 1, so the result **was** statistically significant.
-
-**Question 4.7:** Complete the interpretation for Lower injury.
-
-> Compared with Normal, the Lower group had ______ times the odds of mortality. Its 95% CI ______ (crossed / did not cross) 1, so the result ______ (was / was not) statistically significant.
-
-Ans 4.7:
-
-**Answer:** Compared with Normal, the Lower group had **2.379 times the odds** of mortality. Its 95% CI **did not cross** 1, so the result **was** statistically significant.
-
 # PART 5: PF ratio as a polytomous predictor
 
 PF ratio is arterial oxygen pressure divided by the fraction of inspired oxygen. Lower values indicate worse oxygenation. The authors reported four clinically meaningful categories.
@@ -600,23 +485,6 @@ PF ratio is arterial oxygen pressure divided by the fraction of inspired oxygen.
 ## Summarise the observed group probabilities
 
 Calculate the observed mortality probability in each PF ratio group.
-
-The exercise code is shown below and is not run.
-
-```{r pf-summary-question, eval=FALSE}
-pf_summary <- burns %>%
-  # Grouping variable: pf_ratio_group.
-  group_by(________) %>%
-  summarise(
-    patients = n(),
-    deaths = sum(mortality == "Died"),
-    observed_probability = mean(mortality == "Died")
-  )
-
-pf_summary
-```
-
-The completed code is:
 
 ```{r pf-summary}
 pf_summary <- burns %>%
@@ -641,17 +509,8 @@ Ans 5.1:
 
 Repeat the categorical workflow using `pf_ratio_group`. The `>300` group is the reference.
 
-The exercise code is shown below and is not run.
-
-```{r pf-model-question, eval=FALSE}
-# Outcome: mortality. Predictor: pf_ratio_group. Family: binomial. Data: burns.
-pf_group_model <- glm(________ ~ ________, family = ________, data = ________)
-summary(pf_group_model)
-```
-
-The completed code is:
-
 ```{r pf-model}
+# Outcome: mortality. Predictor: pf_ratio_group. Family: binomial. Data: burns.
 pf_group_model <- glm(mortality ~ pf_ratio_group, family = binomial, data = burns)
 summary(pf_group_model)
 ```
@@ -664,13 +523,8 @@ Ans 5.2:
 
 Use `tidy()` to request confidence intervals and odds ratios.
 
-```{r pf-results-question, eval=FALSE}
-# Model: pf_group_model. Request confidence intervals and exponentiated estimates.
-pf_results <- tidy(________, conf.int = ________, exponentiate = ________)
-pf_results
-```
-
 ```{r pf-results}
+# Model: pf_group_model. Request confidence intervals and exponentiated estimates.
 pf_results <- tidy(pf_group_model, conf.int = TRUE, exponentiate = TRUE)
 pf_results
 ```
@@ -681,23 +535,11 @@ Ans 5.3:
 
 **Answer:** Compared with PF ratio >300, the 200-300 group had **0.773 times the odds** of mortality. This indicates lower estimated odds, but the 95% CI crosses 1, so the comparison was not statistically significant.
 
-**Question 5.4:** Write a full interpretation for PF ratio 100-200 compared with >300. Include the OR, direction of association, whether the 95% CI crosses 1, and statistical significance.
-
-Ans 5.4:
-
-**Answer:** Compared with PF ratio >300, the 100-200 group had **1.004 times the odds** of mortality. The estimated odds were nearly identical, and the 95% CI crosses 1, so the comparison was not statistically significant.
-
-**Question 5.5:** Write a full interpretation for PF ratio <100 compared with >300. Include the OR, direction of association, whether the 95% CI crosses 1, and statistical significance.
-
-Ans 5.5:
-
-**Answer:** Compared with PF ratio >300, the <100 group had **2.765 times the odds** of mortality. This indicates higher odds, and the 95% CI does not cross 1, so the comparison was statistically significant.
-
 ## Why might we categorize a continuous measurement?
 
-You might notice that the age and TBSA models used each patient's exact value and produced a smooth sigmoid curve. For PF ratio, the model instead used four categories and estimated one mortality probability for each category.
+You might notice that age and TBSA were used as continuous predictors, so the models used each patient's exact value and fitted a smooth sigmoid curve. PF ratio is also measured on a continuous scale, but the authors chose to place it into clinically meaningful categories.
 
-Reasons to use categories:
+Here are some reasons for using categories:
 
 - Clinical cut points may already be familiar. For example, clinicians may already use a PF ratio below 100 to describe severe oxygenation impairment.
 - Categories can be easier to explain. For example, it is easier to say "patients with PF ratio below 100 had higher odds of mortality than patients above 300" than to describe the effect of every one-point change.
@@ -707,13 +549,12 @@ What we lose:
 
 - The model no longer uses each patient's exact PF ratio, so some information and statistical power are usually lost.
 - Values close to a cut point can be placed in different groups. A PF ratio of 199 and a PF ratio of 201 differ by only 2 points but enter different categories.
-- Different values in the same group receive the same fitted probability. A PF ratio of 101 and a PF ratio of 199 are treated identically by this model.
 
 # PART 6: Combine and report the models
 
 Finally, we combine the four model results. We remove all intercept rows here and add rows for the two reference groups.
 
-Most of the table-formatting code is filled in for you. It is fine to use a template or ask an LLM to help write this kind of code. Always check the formatted values against output from model code that you understand.
+All of the table-formatting code is filled in for you. It is fine to use a template or ask an LLM to help write this kind of code. Always check the formatted values against output from model code that you understand.
 
 ```{r combined-results}
 model_results <- bind_rows(

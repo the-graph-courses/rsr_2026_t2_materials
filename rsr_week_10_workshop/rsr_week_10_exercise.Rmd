@@ -26,11 +26,12 @@ The authors fitted univariable logistic regression models for each predictor in 
 
 ![Table 2 from Kim et al. (2017).](images/table2.png)
 
- We will recreate that for the following four predictors:
- - Age
- - Total body surface area burned (TBSA)
- - Inhalation injury
- - Pulmonary function ratio (PF ratio) group
+We will recreate that for the following four predictors:
+
+- Age
+- Total body surface area burned (TBSA)
+- Inhalation injury
+- PF ratio group
 
 # PART 1: Load and prepare the data
 
@@ -213,7 +214,7 @@ age_plot <- ggplot(age_summary, aes(age_plot_position, observed_probability)) +
   geom_line(data = age_curve, aes(age_years, predicted_probability), color = "#ee9b00", linewidth = 1.1) +
   labs(x = "Age (years)", y = "Mortality probability", title = "Observed age-group proportions and fitted logistic curve")
 
-ggplotly(age_plot, tooltip = "text")
+ggplotly(age_plot)
 ```
 
 With the interactive plot, you can hover over points to see the exact age and observed mortality probability.
@@ -232,20 +233,18 @@ In addition to looking at the model output graphically, we can also calculate th
 
 For example, let's calculate the estimated probability of mortality for a 50-year-old patient.
 
-Recall that our intercept was xxx and the coefficient on age was xxx.
+Recall that the intercept was approximately -2.7424 and the coefficient on age was approximately 0.0331. For a 50-year-old patient, the fitted log odds are:
 
-[replace this with the actual naked numbers from the summary....]
+`-2.7424 + (0.0331 × 50)`
 
 ```{r age-50-manual}
-age_50_log_odds <- coef(age_model)["(Intercept)"] +
-  coef(age_model)["age_years"] * 50
+age_50_log_odds <- -2.7424 + (0.0331 * 50)
 
 age_50_probability <- 1 / (1 + exp(-age_50_log_odds))
 age_50_probability
 ```
 
-This means that ....
-
+This means that the model estimates a mortality probability of approximately 0.252, or 25.2%, for a 50-year-old patient.
 
 We can also use the `predict()` function to calculate the fitted probability directly.
 
@@ -406,17 +405,20 @@ Ans 4.3:
 
 ## Calculate a fitted group probability by hand
 
-For the Upper group, the fitted log odds equal the intercept plus the Upper coefficient. We then use the inverse-logit formula.
+For the Upper group, the fitted log odds equal the intercept plus the Upper coefficient. From the model summary, these values are approximately -1.3666 and 1.4902:
 
-[dear llm, do the same here as we did above....]
+`-1.3666 + 1.4902`
+
+We then use the inverse-logit formula to convert the fitted log odds to a probability.
 
 ```{r inhalation-upper-probability}
-upper_log_odds <- coef(inhalation_model)["(Intercept)"] +
-  coef(inhalation_model)["inhalation_injuryUpper"]
+upper_log_odds <- -1.3666 + 1.4902
 
 upper_probability <- 1 / (1 + exp(-upper_log_odds))
 upper_probability
 ```
+
+This gives a fitted mortality probability of approximately 0.531, or 53.1%, for the Upper group.
 
 **Question 4.4:** Does the fitted probability for the Upper group match its observed probability in `inhalation_summary`?
 
@@ -489,14 +491,13 @@ pf_results
 
 **Question 5.3:** Write a full interpretation for PF ratio 200-300 compared with >300. Include the OR, direction of association, whether the 95% CI crosses 1, and statistical significance.
 
+Ans 5.3: ______
 
 ## Why might we categorize a continuous measurement?
 
-You might notice that for age the authors chose not to...but for PF ratio they chose to...
+You might notice that age and TBSA were used as continuous predictors, so the models used each patient's exact value and fitted a smooth sigmoid curve. PF ratio is also measured on a continuous scale, but the authors chose to place it into clinically meaningful categories.
 
-something something something...
-
-Here are some...
+Here are some reasons for using categories:
 
 - Clinical cut points may already be familiar. For example, clinicians may already use a PF ratio below 100 to describe severe oxygenation impairment.
 - Categories can be easier to explain. For example, it is easier to say "patients with PF ratio below 100 had higher odds of mortality than patients above 300" than to describe the effect of every one-point change.
