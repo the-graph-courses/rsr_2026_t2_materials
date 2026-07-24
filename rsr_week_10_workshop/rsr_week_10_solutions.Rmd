@@ -52,7 +52,7 @@ Below, we import the second sheet of the workbook, standardize its column names,
 If of interest, you can view the codebook in the data folder.
 
 ```{r import-data}
-burns_raw <- read_excel(here("/Users/kendavidn/Dropbox/tgc_github_projects/rsr_2026_t2_materials/rsr_week_10_workshop/data/S1Dataset_burns.xlsx"), sheet = "Sheet2") %>%
+burns_raw <- read_excel(here("data/S1Dataset_burns.xlsx"), sheet = "Sheet2") %>%
   clean_names() %>%
   select(mortaltiy, age, tbsa, in_hdiv, pfdivide)
 
@@ -84,13 +84,11 @@ The workbook misspells `mortality` as `mortaltiy`, so we need to fix that. We al
 - `in_hdiv`: 0 = Normal, 1 = Subjective, 2 = Upper, 3 = Lower
 - `pfdivide`: 0 = >300, 1 = 200-300, 2 = 100-200, 3 = <100
 
-Fill in the correct functions below.
+We use `rename()` to improve the column names, `mutate()` to create labelled factors, and `select()` to keep the variables used in the workshop.
 
 ```{r clean-data}
 burns <- burns_raw %>%
-  # Change the names of these columns
   rename(mortality = mortaltiy, age_years = age, tbsa_percent = tbsa) %>%
-  # Change these variables to labelled factors
   mutate(
     mortality = factor(mortality, levels = c(0, 1),
                        labels = c("Survived", "Died")),
@@ -99,7 +97,6 @@ burns <- burns_raw %>%
     pf_ratio_group = factor(pfdivide, levels = 0:3,
                             labels = c(">300", "200-300", "100-200", "<100"))
   ) %>%
-  # Keep only the variables we will use in this workshop
   select(mortality, age_years, tbsa_percent, inhalation_injury, pf_ratio_group)
 
 glimpse(burns)
@@ -206,13 +203,11 @@ age_50_probability
 
 This means that the model estimates a mortality probability of approximately 0.252, or 25.2%, for a 50-year-old patient.
 
-We can also use the `predict()` function to calculate the fitted probability directly.
+We can also use the `predict()` function to calculate the fitted probability directly. First, create a one-row table containing the age of interest. Then pass that table to `predict()` as `newdata`.
 
 ```{r age-50-predict}
-# First, create a new data frame with the age we want to predict
 age_50_data <- tibble(age_years = 50)
 
-# Then, use the predict() function to calculate the fitted probability
 age_50_predict <- predict(age_model, newdata = age_50_data, type = "response")
 
 age_50_predict
@@ -245,10 +240,10 @@ age_summary <- burns %>%
 age_summary
 ```
 
-Next, create a vector containing the ages from 18 to 92 and print it.
+Next, create a vector containing the ages from 18 to 90 and print it.
 
 ```{r age-values}
-age_values <- 18:92
+age_values <- 18:90
 age_values
 ```
 
@@ -256,47 +251,40 @@ We now put those ages into a table and use `predict()` to calculate one fitted m
 
 ```{r age-prediction-table}
 age_prediction_table <- tibble(age_years = age_values) %>%
-  mutate(
-    predicted_probability = predict(age_model, newdata = ., type = "response")
-  )
+  mutate(predicted_probability = predict(age_model, newdata = ., type = "response"))
 
 age_prediction_table
 ```
 
-Start by plotting only the observed mortality proportions.
+Start by plotting only the observed mortality proportions. Each vertical segment runs from zero to the observed probability, which is marked by a point.
 
-```{r age-bar-plot, fig.width=8, fig.height=5}
-age_bar_plot <- ggplot(
-  age_summary,
-  aes(age_plot_position, observed_probability)
-) +
-  geom_col(width = 8, fill = "#83c5be") +
-  labs(
-    x = "Age (years)",
-    y = "Mortality probability",
-    title = "Observed mortality by age group"
-  )
+```{r age-observed-plot, fig.width=8, fig.height=5}
+age_observed_plot <- ggplot(age_summary, aes(age_plot_position, observed_probability)) +
+  geom_segment(aes(xend = age_plot_position, y = 0, yend = observed_probability)) +
+  geom_point(size = 3) +
+  geom_text(aes(label = paste0(age_group, "\n",
+                               scales::percent(observed_probability, accuracy = 0.1))),
+            vjust = -0.7, size = 3) +
+  labs(x = "Age (years)", y = "Mortality probability",
+       title = "Observed mortality by age group") +
+  coord_cartesian(ylim = c(0, 0.55))
 
-age_bar_plot
+age_observed_plot
 ```
 
-Now add the fitted probabilities as an orange line. The bars show what was observed in the temporary age groups, while the line shows the model's fitted probability at each exact age.
+Now add the fitted probabilities as an orange line. The points show what was observed in the temporary age groups, while the line shows the model's fitted probability at each exact age.
 
 ```{r age-fitted-line, fig.width=8, fig.height=5}
-age_bar_plot +
-  geom_line(
-    data = age_prediction_table,
-    aes(age_years, predicted_probability),
-    color = "#ee9b00",
-    linewidth = 1.1
-  )
+age_observed_plot +
+  geom_line(data = age_prediction_table, aes(age_years, predicted_probability),
+            color = "#ee9b00", linewidth = 1.1)
 ```
 
-**Question 2.4:** Does the orange fitted line pass through the top of every observed bar?
+**Question 2.4:** Does the orange fitted line pass through every observed point?
 
 Ans 2.4:
 
-**Answer:** No. The fitted line does not pass through the top of every observed bar.
+**Answer:** No. The fitted line does not pass through every observed point.
 
 **Question 2.5:** Is our model a perfect fit for the observed age-group probabilities?
 
@@ -313,7 +301,6 @@ TBSA is the percentage of a patient's total body surface area that was burned. O
 Use `mortality` as the outcome and exact `tbsa_percent` as the only predictor.
 
 ```{r tbsa-model}
-# Outcome: mortality. Predictor: tbsa_percent. Family: binomial. Data: burns.
 tbsa_model <- glm(mortality ~ tbsa_percent, family = binomial, data = burns)
 summary(tbsa_model)
 ```
@@ -333,14 +320,12 @@ Ans 3.2:
 Display the fitted TBSA equation.
 
 ```{r tbsa-equation}
-# Model object: tbsa_model.
 extract_eq(tbsa_model, use_coefs = TRUE) %>% preview_eq()
 ```
 
 Now store the exponentiated result.
 
 ```{r tbsa-results}
-# Model: tbsa_model. Request confidence intervals and exponentiated estimates.
 tbsa_results <- tidy(tbsa_model, conf.int = TRUE, exponentiate = TRUE)
 tbsa_results
 ```
@@ -357,102 +342,12 @@ Before checking the model against the observed data, use `predict()` to calculat
 
 ```{r tbsa-50-predict}
 tbsa_50_data <- tibble(tbsa_percent = 50)
-
-tbsa_50_predict <- predict(
-  tbsa_model,
-  newdata = tbsa_50_data,
-  type = "response"
-)
+tbsa_50_predict <- predict(tbsa_model, newdata = tbsa_50_data, type = "response")
 
 tbsa_50_predict
 ```
 
 The fitted mortality probability is approximately **0.344**, or **34.4%**. This is the same process we used to obtain the fitted probability for a 50-year-old patient.
-
-## Check the model against the observed data
-
-Now use `predict()` for a range of TBSA values and compare the fitted probabilities with observed mortality proportions in temporary 10-percentage-point bands.
-
-```{r tbsa-summary}
-tbsa_summary <- burns %>%
-  # Variable to group: tbsa_percent.
-  mutate(
-    tbsa_group = cut(
-      tbsa_percent,
-      breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
-      include.lowest = TRUE
-    )
-  ) %>%
-  # Grouping variable: tbsa_group.
-  group_by(tbsa_group) %>%
-  summarise(
-    patients = n(),
-    deaths = sum(mortality == "Died"),
-    observed_probability = mean(mortality == "Died")
-  ) %>%
-  mutate(tbsa_midpoint = c(5, 15, 25, 35, 45, 55, 65, 75, 85, 95))
-
-tbsa_summary
-```
-
-Create a vector containing the TBSA values from 0 to 100 and print it.
-
-```{r tbsa-values}
-tbsa_values <- 0:100
-tbsa_values
-```
-
-Now put those values into a table and use `predict()` to calculate one fitted mortality probability for each TBSA value.
-
-```{r tbsa-prediction-table}
-tbsa_prediction_table <- tibble(tbsa_percent = tbsa_values) %>%
-  mutate(
-    predicted_probability = predict(tbsa_model, newdata = ., type = "response")
-  )
-
-tbsa_prediction_table
-```
-
-Start by plotting only the observed mortality proportions.
-
-```{r tbsa-bar-plot, fig.width=8, fig.height=5}
-tbsa_bar_plot <- ggplot(
-  tbsa_summary,
-  aes(tbsa_midpoint, observed_probability)
-) +
-  geom_col(width = 9, fill = "#83c5be") +
-  labs(
-    x = "TBSA (% burned)",
-    y = "Mortality probability",
-    title = "Observed mortality by TBSA group"
-  )
-
-tbsa_bar_plot
-```
-
-Now add the model's fitted probabilities as an orange line.
-
-```{r tbsa-fitted-line, fig.width=8, fig.height=5}
-tbsa_bar_plot +
-  geom_line(
-    data = tbsa_prediction_table,
-    aes(tbsa_percent, predicted_probability),
-    color = "#ee9b00",
-    linewidth = 1.1
-  )
-```
-
-**Question 3.4:** How does observed mortality generally change as TBSA increases?
-
-Ans 3.4:
-
-**Answer:** Observed mortality generally increases as TBSA increases, especially in the higher TBSA groups.
-
-**Question 3.5:** Does the fitted line pass through the top of every observed bar?
-
-Ans 3.5:
-
-**Answer:** No. The fitted line summarizes the overall relationship but does not reproduce every temporary group's observed proportion.
 
 # PART 4: Inhalation injury as a polytomous predictor
 
@@ -495,7 +390,6 @@ Ans 4.2:
 Now, let's fit a model to the data. We will use the four-level factor as the predictor. The model estimates three comparisons, each between a non-reference level and Normal.
 
 ```{r inhalation-model}
-# Outcome: mortality. Predictor: inhalation_injury.
 inhalation_model <- glm(mortality ~ inhalation_injury, family = binomial, data = burns)
 summary(inhalation_model)
 ```
@@ -560,7 +454,6 @@ Calculate the observed mortality probability in each PF ratio group.
 
 ```{r pf-summary}
 pf_summary <- burns %>%
-  # Grouping variable: pf_ratio_group.
   group_by(pf_ratio_group) %>%
   summarise(
     patients = n(),
@@ -582,7 +475,6 @@ Ans 5.1:
 Repeat the categorical workflow using `pf_ratio_group`. The `>300` group is the reference.
 
 ```{r pf-model}
-# Outcome: mortality. Predictor: pf_ratio_group. Family: binomial. Data: burns.
 pf_group_model <- glm(mortality ~ pf_ratio_group, family = binomial, data = burns)
 summary(pf_group_model)
 ```
@@ -596,7 +488,6 @@ Ans 5.2:
 Use `tidy()` to request confidence intervals and odds ratios.
 
 ```{r pf-results}
-# Model: pf_group_model. Request confidence intervals and exponentiated estimates.
 pf_results <- tidy(pf_group_model, conf.int = TRUE, exponentiate = TRUE)
 pf_results
 ```
@@ -695,30 +586,6 @@ all_results %>%
   cols_align(align = "center", columns = c(OR, `95% CI`, p_value)) %>%
   tab_header(title = md("**Univariable logistic regression results**"))
 ```
-
-**Question 6.1:** What is the OR for age?
-
-Ans 6.1:
-
-**Answer:** The OR for age is **1.034**.
-
-**Question 6.2:** What is the OR for TBSA?
-
-Ans 6.2:
-
-**Answer:** The OR for TBSA is **1.083**.
-
-**Question 6.3:** What is the OR for Upper versus Normal inhalation injury?
-
-Ans 6.3:
-
-**Answer:** The OR for Upper versus Normal inhalation injury is **4.438**.
-
-**Question 6.4:** What is the OR for PF ratio <100 versus >300?
-
-Ans 6.4:
-
-**Answer:** The OR for PF ratio <100 versus >300 is **2.765**.
 
 **Final reporting task:** Complete this results paragraph using the combined table.
 
