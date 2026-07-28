@@ -182,7 +182,7 @@ age_results <- tidy(age_model, conf.int = TRUE, exponentiate = TRUE)
 age_results
 ```
 
-There is more than one way to calculate a confidence interval. `tidy()` uses a profile likelihood method, while the authors used a Wald method. This can lead to small differences between our confidence intervals and those reported in the paper. Use `exp(confint.default(age_model))` to calculate confidence intervals using the paper's method.
+There is more than one way to calculate a confidence interval. `tidy()` uses a profile likelihood method, while the authors used a Wald method. This can lead to small differences between our confidence intervals and those reported in the paper. If you are interested, later on you can use `exp(confint.default(age_model))` to calculate confidence intervals using the paper's method.
 
 ## Calculate a fitted probability
 
@@ -223,12 +223,15 @@ Ans 2.3:
 
 Now that we have used `predict()` for one age, we can use it for a range of ages and compare the fitted probabilities with the observed data.
 
+Most of this section is provided to you. Read then run each section then answer the interpretation questions below.
+
 First, we temporarily group age into 10-year bands and calculate the observed mortality probability in each group. The model itself still uses each patient's exact age.
 
 ```{r age-summary}
 age_summary <- burns %>%
-  mutate(age_group = cut(age_years, breaks = c(-Inf, 29, 39, 49, 59, 69, Inf),
-                         labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70+"))) %>%
+  mutate(age_group = cut(age_years, breaks = c(18, 29, 39, 49, 59, 69, Inf),
+                         labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70+"),
+                         include.lowest = TRUE)) %>%
   group_by(age_group) %>%
   summarise(
     age_plot_position = median(age_years),
@@ -240,7 +243,13 @@ age_summary <- burns %>%
 age_summary
 ```
 
-Next, create a vector containing the ages from 18 to 90 and print it.
+**Question 2.4:** Which age group had the highest observed mortality probability?
+
+Ans 2.4:
+
+**Answer:** The **70+** group, with an observed mortality probability of about **0.472**, or **47.2%**.
+
+Next, we create a vector containing the ages from 18 to 90 and print it.
 
 ```{r age-values}
 age_values <- 18:90
@@ -256,41 +265,35 @@ age_prediction_table <- tibble(age_years = age_values) %>%
 age_prediction_table
 ```
 
-Start by plotting only the observed mortality proportions. Each vertical segment runs from zero to the observed probability, which is marked by a point.
+Now, we plot the observed mortality proportions together with the model's fitted probabilities. Each vertical segment runs from zero to the observed probability, which is marked by a point and labelled with its age group. The orange line shows the model's fitted probability at each exact age.
 
-```{r age-observed-plot, fig.width=8, fig.height=5}
-age_observed_plot <- ggplot(age_summary, aes(age_plot_position, observed_probability)) +
+```{r age-observed-fitted-plot, fig.width=8, fig.height=5}
+ggplot(age_summary, aes(age_plot_position, observed_probability)) +
   geom_segment(aes(xend = age_plot_position, y = 0, yend = observed_probability)) +
   geom_point(size = 3) +
   geom_text(aes(label = paste0(age_group, "\n",
                                scales::percent(observed_probability, accuracy = 0.1))),
             vjust = -0.7, size = 3) +
-  labs(x = "Age (years)", y = "Mortality probability",
-       title = "Observed mortality by age group") +
-  coord_cartesian(ylim = c(0, 0.55))
-
-age_observed_plot
-```
-
-Now add the fitted probabilities as an orange line. The points show what was observed in the temporary age groups, while the line shows the model's fitted probability at each exact age.
-
-```{r age-fitted-line, fig.width=8, fig.height=5}
-age_observed_plot +
   geom_line(data = age_prediction_table, aes(age_years, predicted_probability),
-            color = "#ee9b00", linewidth = 1.1)
+            color = "#ee9b00", linewidth = 1.1) +
+  labs(x = "Age (years)", y = "Mortality probability",
+       title = "Observed vs fitted mortality by age") +
+  coord_cartesian(ylim = c(0, 0.55))
 ```
 
-**Question 2.4:** Does the orange fitted line pass through every observed point?
-
-Ans 2.4:
-
-**Answer:** No. The fitted line does not pass through every observed point.
-
-**Question 2.5:** Is our model a perfect fit for the observed age-group probabilities?
+**Question 2.5:** Does the orange fitted line pass through every observed point?
 
 Ans 2.5:
 
+**Answer:** No. The fitted line does not pass through every observed point.
+
+**Question 2.6:** Is our model a perfect fit for the observed age-group probabilities?
+
+Ans 2.6:
+
 **Answer:** No. One intercept and one age coefficient describe the overall relationship, so the fitted line does not reproduce every observed group probability exactly.
+
+As you can see, the model has limitations: a single intercept and slope force a smooth curve through the data, so it cannot match every observed group probability. In practice, we could improve the fit by adding more predictors to the model (a multivariable model, which we will cover in a later week) or by allowing age to have a more flexible, non-linear effect (for example, with a squared term or splines), but this has the limitation that it makes the model difficult to interpret or explain to others.
 
 # PART 3: TBSA as a second continuous predictor
 
@@ -338,7 +341,7 @@ Ans 3.3:
 
 ## Calculate a fitted probability
 
-Before checking the model against the observed data, use `predict()` to calculate the fitted mortality probability for a patient with 50% TBSA burned.
+Now, use `predict()` to calculate the fitted mortality probability for a patient with 50% TBSA burned. What is the fitted probability?
 
 ```{r tbsa-50-predict}
 tbsa_50_data <- tibble(tbsa_percent = 50)
@@ -347,7 +350,9 @@ tbsa_50_predict <- predict(tbsa_model, newdata = tbsa_50_data, type = "response"
 tbsa_50_predict
 ```
 
-The fitted mortality probability is approximately **0.344**, or **34.4%**. This is the same process we used to obtain the fitted probability for a 50-year-old patient.
+Ans 3.4:
+
+**Answer:** Approximately **0.344**, or **34.4%**.
 
 # PART 4: Inhalation injury as a polytomous predictor
 
@@ -379,7 +384,7 @@ Ans 4.1:
 
 **Answer:** The **Upper** group had the highest observed mortality, at **53.1%**.
 
-**Question 4.2:** Which inhalation-injury group will be the reference in the model?
+**Question 4.2:** Which inhalation-injury group will be the reference in the model? (You can call `levels()` on the `inhalation_injury` variable to see the order of the factor levels.)
 
 Ans 4.2:
 
@@ -472,7 +477,7 @@ Ans 5.1:
 
 ## Fit and interpret the model
 
-Repeat the categorical workflow using `pf_ratio_group`. The `>300` group is the reference.
+Repeat the categorical workflow using `pf_ratio_group`. Here, very little code is written for you. (By now, you should be building the muscle memory of using the glm() function.)
 
 ```{r pf-model}
 pf_group_model <- glm(mortality ~ pf_ratio_group, family = binomial, data = burns)
@@ -504,14 +509,21 @@ You might notice that age and TBSA were used as continuous predictors, so the mo
 
 Here are some reasons for using categories:
 
-- Clinical cut points may already be familiar. For example, clinicians may already use a PF ratio below 100 to describe severe oxygenation impairment.
-- Categories can be easier to explain. For example, it is easier to say "patients with PF ratio below 100 had higher odds of mortality than patients above 300" than to describe the effect of every one-point change.
-- Categories allow each group to have its own mortality probability, without requiring a single smooth relationship across the full PF ratio range.
+- Clinical cut points may already be familiar (for example, PF ratio below 100 for severe oxygenation impairment).
+- Categories are often easier to explain than describing the effect of every one-point change.
+- Each group can have its own mortality probability, without assuming one smooth relationship across the full range.
 
 What we lose:
 
-- The model no longer uses each patient's exact PF ratio, so some information and statistical power are usually lost.
-- Values close to a cut point can be placed in different groups. A PF ratio of 199 and a PF ratio of 201 differ by only 2 points but enter different categories.
+- Some information and statistical power, because the model no longer uses each patient's exact PF ratio.
+- Arbitrary separation near cut points: PF ratios of 199 and 201 differ by only 2 points but enter different groups.
+
+**Question 5.4:** Give one reason the authors might have categorized PF ratio instead of modeling it continuously.
+
+Ans 5.4:
+
+**Answer:** Any one of the reasons above is acceptable. For example, clinicians may already use familiar PF ratio cut points, such as below 100 for severe oxygenation impairment.
+
 
 # PART 6: Combine and report the models
 
