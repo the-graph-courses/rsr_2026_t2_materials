@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1600" height="700" fill="#ffffff"/>
+
+  <text x="800" y="40" text-anchor="middle" font-size="27" font-weight="700" fill="#1a1a1a">SUNSHINE checks for logistic regression</text>
+  <text x="800" y="72" text-anchor="middle" font-size="18" fill="#6b7280">Highlighted rows can be inspected with performance::check_model()</text>
+
+  <!-- header row -->
+  <g>
+    <rect x="48"   y="100" width="128" height="52" rx="10" fill="#0f6b60"/>
+    <rect x="188"  y="100" width="470" height="52" rx="10" fill="#0f6b60"/>
+    <rect x="670"  y="100" width="570" height="52" rx="10" fill="#0f6b60"/>
+    <rect x="1252" y="100" width="300" height="52" rx="10" fill="#0f6b60"/>
+    <text x="112"  y="133" text-anchor="middle" font-size="19" font-weight="700" fill="#ffffff">Letter</text>
+    <text x="423"  y="133" text-anchor="middle" font-size="19" font-weight="700" fill="#ffffff">Check</text>
+    <text x="955"  y="133" text-anchor="middle" font-size="19" font-weight="700" fill="#ffffff">Question it asks</text>
+    <text x="1402" y="133" text-anchor="middle" font-size="19" font-weight="700" fill="#ffffff">How</text>
+  </g>
+
+  <!-- S: sample size (grey) -->
+  <g>
+    <rect x="48"   y="164" width="128" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="188"  y="164" width="470" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="670"  y="164" width="570" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="1252" y="164" width="300" height="52" rx="10" fill="#eef1f6"/>
+    <text x="112"  y="197" text-anchor="middle" font-size="19" font-weight="700" fill="#374151">S</text>
+    <text x="423"  y="197" text-anchor="middle" font-size="18" fill="#374151">Sample size</text>
+    <text x="955"  y="197" text-anchor="middle" font-size="18" fill="#374151">Enough <tspan font-weight="700">events</tspan> for the model?</text>
+    <text x="1402" y="197" text-anchor="middle" font-size="17" fill="#8b95a5">~10 events per parameter</text>
+  </g>
+
+  <!-- U: uncorrelated errors (grey) -->
+  <g>
+    <rect x="48"   y="228" width="128" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="188"  y="228" width="470" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="670"  y="228" width="570" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="1252" y="228" width="300" height="52" rx="10" fill="#eef1f6"/>
+    <text x="112"  y="261" text-anchor="middle" font-size="19" font-weight="700" fill="#374151">U</text>
+    <text x="423"  y="261" text-anchor="middle" font-size="18" fill="#374151">Uncorrelated errors</text>
+    <text x="955"  y="261" text-anchor="middle" font-size="18" fill="#374151">Observations independent?</text>
+    <text x="1402" y="261" text-anchor="middle" font-size="17" fill="#8b95a5">Study design</text>
+  </g>
+
+  <!-- N: no multicollinearity (teal) -->
+  <g>
+    <rect x="48"   y="292" width="128" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="188"  y="292" width="470" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="670"  y="292" width="570" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="1252" y="292" width="300" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <text x="112"  y="325" text-anchor="middle" font-size="19" font-weight="700" fill="#0f6b60">N</text>
+    <text x="423"  y="325" text-anchor="middle" font-size="18" font-weight="700" fill="#0f6b60">No multicollinearity</text>
+    <text x="955"  y="325" text-anchor="middle" font-size="18" fill="#0f4f47">Predictors too correlated?</text>
+    <text x="1402" y="325" text-anchor="middle" font-size="18" font-weight="700" fill="#0f6b60">check_model()</text>
+  </g>
+
+  <!-- S: shape (teal) -->
+  <g>
+    <rect x="48"   y="356" width="128" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="188"  y="356" width="470" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="670"  y="356" width="570" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="1252" y="356" width="300" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <text x="112"  y="389" text-anchor="middle" font-size="19" font-weight="700" fill="#0f6b60">S</text>
+    <text x="423"  y="382" text-anchor="middle" font-size="18" font-weight="700" fill="#0f6b60">Shape (linearity</text>
+    <text x="423"  y="402" text-anchor="middle" font-size="18" font-weight="700" fill="#0f6b60">in the log odds)</text>
+    <text x="955"  y="389" text-anchor="middle" font-size="18" fill="#0f4f47">Straight line on the <tspan font-weight="700">log-odds</tspan> scale?</text>
+    <text x="1402" y="382" text-anchor="middle" font-size="18" font-weight="700" fill="#0f6b60">check_model()</text>
+    <text x="1402" y="402" text-anchor="middle" font-size="15" fill="#0f6b60">binned residuals panel</text>
+  </g>
+
+  <!-- H: homogeneity (struck out / not applicable) -->
+  <g>
+    <rect x="48"   y="420" width="128" height="52" rx="10" fill="#f7f7f8" stroke="#d6d9df" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="188"  y="420" width="470" height="52" rx="10" fill="#f7f7f8" stroke="#d6d9df" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="670"  y="420" width="570" height="52" rx="10" fill="#f7f7f8" stroke="#d6d9df" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="1252" y="420" width="300" height="52" rx="10" fill="#fdeeee" stroke="#e3a9a9" stroke-width="2"/>
+    <text x="112"  y="453" text-anchor="middle" font-size="19" font-weight="700" fill="#aeb4bf">H</text>
+    <text x="423"  y="453" text-anchor="middle" font-size="18" fill="#aeb4bf" text-decoration="line-through">Homogeneity of variance</text>
+    <text x="955"  y="453" text-anchor="middle" font-size="17" fill="#aeb4bf">Variance is fixed at p(1 &#8722; p) by the model</text>
+    <text x="1402" y="453" text-anchor="middle" font-size="17" font-weight="700" fill="#b03a3a">Does not apply</text>
+  </g>
+
+  <!-- I: influential points (teal) -->
+  <g>
+    <rect x="48"   y="484" width="128" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="188"  y="484" width="470" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="670"  y="484" width="570" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <rect x="1252" y="484" width="300" height="52" rx="10" fill="#c7f0e6" stroke="#0f6b60" stroke-width="2.5"/>
+    <text x="112"  y="517" text-anchor="middle" font-size="19" font-weight="700" fill="#0f6b60">I</text>
+    <text x="423"  y="517" text-anchor="middle" font-size="18" font-weight="700" fill="#0f6b60">Influential points</text>
+    <text x="955"  y="517" text-anchor="middle" font-size="18" fill="#0f4f47">One point pulling too hard?</text>
+    <text x="1402" y="517" text-anchor="middle" font-size="18" font-weight="700" fill="#0f6b60">check_model()</text>
+  </g>
+
+  <!-- N: normality -> replaced -->
+  <g>
+    <rect x="48"   y="548" width="128" height="60" rx="10" fill="#f7f7f8" stroke="#d6d9df" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="188"  y="548" width="470" height="60" rx="10" fill="#f7f7f8" stroke="#d6d9df" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="670"  y="548" width="570" height="60" rx="10" fill="#f7f7f8" stroke="#d6d9df" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <rect x="1252" y="548" width="300" height="60" rx="10" fill="#fdeeee" stroke="#e3a9a9" stroke-width="2"/>
+    <text x="112"  y="585" text-anchor="middle" font-size="19" font-weight="700" fill="#aeb4bf">N</text>
+    <text x="423"  y="585" text-anchor="middle" font-size="18" fill="#aeb4bf" text-decoration="line-through">Normality of residuals</text>
+    <text x="955"  y="573" text-anchor="middle" font-size="17" fill="#aeb4bf">A 0/1 outcome can never give normal residuals.</text>
+    <text x="955"  y="596" text-anchor="middle" font-size="17" fill="#4b5563">Replaced by: are the <tspan font-weight="700">quantile residuals</tspan> uniform?</text>
+    <text x="1402" y="573" text-anchor="middle" font-size="17" font-weight="700" fill="#b03a3a">Does not apply</text>
+    <text x="1402" y="596" text-anchor="middle" font-size="15" fill="#6b7280">needs the DHARMa package</text>
+  </g>
+
+  <!-- E: exogeneity (grey) -->
+  <g>
+    <rect x="48"   y="620" width="128" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="188"  y="620" width="470" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="670"  y="620" width="570" height="52" rx="10" fill="#eef1f6"/>
+    <rect x="1252" y="620" width="300" height="52" rx="10" fill="#eef1f6"/>
+    <text x="112"  y="653" text-anchor="middle" font-size="19" font-weight="700" fill="#374151">E</text>
+    <text x="423"  y="653" text-anchor="middle" font-size="18" fill="#374151">Exogeneity</text>
+    <text x="955"  y="653" text-anchor="middle" font-size="18" fill="#374151">No important confounder left out?</text>
+    <text x="1402" y="653" text-anchor="middle" font-size="17" fill="#8b95a5">Domain knowledge</text>
+  </g>
+</svg>

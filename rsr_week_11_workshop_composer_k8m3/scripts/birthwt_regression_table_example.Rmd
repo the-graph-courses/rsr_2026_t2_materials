@@ -1,0 +1,377 @@
+---
+title: "Example: dense logistic regression table"
+subtitle: "birthwt data with binary, continuous, and polytomous predictors"
+author: "GRAPH Courses (composer_k8m3)"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 10, fig.height = 8)
+```
+
+# Purpose
+
+This script shows how to build a **single display** that combines:
+
+- raw counts and outcome percentages (with in-cell bars),
+- univariable odds ratios,
+- multivariable odds ratios,
+- forest-style OR plots for **categorical** predictors, and
+- a continuous OR **curve** (with CI ribbon) for continuous predictors, while still showing binned raw percentages.
+
+It is meant as a teaching / LLM-prompting reference for the Week 11 challenge. The data are from MASS::`birthwt` ([docs](https://www.rdocumentation.org/packages/MASS/versions/7.3-66/topics/birthwt)).
+
+Predictors:
+
+- `age` (continuous; also shown in age bands for raw %)
+- `lwt` (continuous mother weight in pounds; also banded for raw %)
+- `race` (polytomous: white / black / other)
+- `smoke` (binary)
+- `ptl_cat` (polytomous: 0, 1, 2+ previous premature labours)
+
+# Packages and data prep
+
+```{r packages}
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, broom, patchwork, scales)
+# birthwt lives in MASS; load the dataset without attaching MASS
+# (MASS::select would mask dplyr::select)
+data(birthwt, package = "MASS")
+```
+
+```{r prep}
+bwt <- birthwt %>%
+  as_tibble() %>%
+  mutate(
+    low = factor(low, levels = c(0, 1), labels = c("Normal", "Low")),
+    race = factor(race, levels = c(1, 2, 3), labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ptl_cat = factor(
+      case_when(ptl == 0 ~ "0", ptl == 1 ~ "1", TRUE ~ "2+"),
+      levels = c("0", "1", "2+")
+    ),
+    age_band = cut(age, breaks = c(14, 19, 24, 29, 34, Inf),
+                   labels = c("14-19", "20-24", "25-29", "30-34", "35+"),
+                   include.lowest = TRUE),
+    lwt_band = cut(lwt, breaks = c(80, 100, 120, 140, 160, Inf),
+                   labels = c("80-100", "101-120", "121-140", "141-160", "161+"),
+                   include.lowest = TRUE)
+  )
+
+glimpse(bwt)
+bwt %>% count(low) %>% mutate(pct = n / sum(n))
+```
+
+# Fit models
+
+```{r models}
+# Univariable
+uni_age   <- glm(low ~ age, family = binomial, data = bwt)
+uni_lwt   <- glm(low ~ lwt, family = binomial, data = bwt)
+uni_race  <- glm(low ~ race, family = binomial, data = bwt)
+uni_smoke <- glm(low ~ smoke, family = binomial, data = bwt)
+uni_ptl   <- glm(low ~ ptl_cat, family = binomial, data = bwt)
+
+# Multivariable
+multi <- glm(low ~ age + lwt + race + smoke + ptl_cat, family = binomial, data = bwt)
+
+tidy(multi, conf.int = TRUE, exponentiate = TRUE)
+```
+
+# Helper: raw proportion rows
+
+```{r raw-helper}
+raw_rows <- function(data, group_var, predictor_label) {
+  data %>%
+    group_by({{ group_var }}) %>%
+    summarise(
+      n = n(),
+      n_low = sum(low == "Low"),
+      pct = mean(low == "Low"),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      predictor = predictor_label,
+      level = as.character({{ group_var }}),
+      row_type = "category"
+    ) %>%
+    select(predictor, level, n, n_low, pct, row_type)
+}
+
+raw_table <- bind_rows(
+  raw_rows(bwt, age_band, "Age (years), continuous"),
+  raw_rows(bwt, lwt_band, "Mother weight (lb), continuous"),
+  raw_rows(bwt, race, "Race"),
+  raw_rows(bwt, smoke, "Smoked during pregnancy"),
+  raw_rows(bwt, ptl_cat, "Previous premature labours")
+)
+
+raw_table
+```
+
+# Helper: OR curve for a continuous predictor
+
+For a continuous coefficient \(\beta\), the odds ratio comparing age \(x\) to a reference age \(x_0\) is \(\exp(\beta (x - x_0))\). We plot that across a grid, with a Wald CI ribbon from the coefficient SE.
+
+```{r continuous-or-curve}
+continuous_or_curve <- function(model, term, data, varname, ref_value, grid = NULL) {
+  beta <- coef(model)[[term]]
+  se <- sqrt(diag(vcov(model)))[[term]]
+
+  if (is.null(grid)) {
+    grid <- seq(min(data[[varname]], na.rm = TRUE),
+                max(data[[varname]], na.rm = TRUE),
+                length.out = 80)
+  }
+
+  tibble(
+    x = grid,
+    or = exp(beta * (grid - ref_value)),
+    or_low = exp((beta - 1.96 * se) * (grid - ref_value)),
+    or_high = exp((beta + 1.96 * se) * (grid - ref_value))
+  )
+}
+
+age_ref <- 25
+lwt_ref <- 120
+
+age_uni_curve <- continuous_or_curve(uni_age, "age", bwt, "age", age_ref) %>%
+  mutate(model = "Univariable")
+age_multi_curve <- continuous_or_curve(multi, "age", bwt, "age", age_ref) %>%
+  mutate(model = "Multivariable")
+
+lwt_uni_curve <- continuous_or_curve(uni_lwt, "lwt", bwt, "lwt", lwt_ref) %>%
+  mutate(model = "Univariable")
+lwt_multi_curve <- continuous_or_curve(multi, "lwt", bwt, "lwt", lwt_ref) %>%
+  mutate(model = "Multivariable")
+```
+
+# Helper: categorical OR rows
+
+```{r cat-or-helper}
+cat_or_rows <- function(uni_model, multi_model, term_prefix, predictor_label, levels_in_order, reference_level) {
+  uni <- tidy(uni_model, conf.int = TRUE, exponentiate = TRUE) %>%
+    filter(str_starts(term, term_prefix)) %>%
+    mutate(model = "Univariable")
+  multi <- tidy(multi_model, conf.int = TRUE, exponentiate = TRUE) %>%
+    filter(str_starts(term, term_prefix)) %>%
+    mutate(model = "Multivariable")
+
+  refs <- tibble(
+    term = paste0(term_prefix, reference_level),
+    estimate = 1, conf.low = NA_real_, conf.high = NA_real_,
+    model = c("Univariable", "Multivariable"),
+    is_reference = TRUE
+  )
+
+  bind_rows(uni, multi) %>%
+    mutate(is_reference = FALSE) %>%
+    bind_rows(refs) %>%
+    mutate(
+      predictor = predictor_label,
+      level = str_remove(term, fixed(term_prefix)),
+      level = factor(level, levels = levels_in_order)
+    ) %>%
+    arrange(model, level)
+}
+
+race_or <- cat_or_rows(uni_race, multi, "race", "Race", c("White", "Black", "Other"), "White")
+smoke_or <- cat_or_rows(uni_smoke, multi, "smoke", "Smoked during pregnancy", c("No", "Yes"), "No")
+ptl_or <- cat_or_rows(uni_ptl, multi, "ptl_cat", "Previous premature labours", c("0", "1", "2+"), "0")
+```
+
+# Build plot panels
+
+We assemble one "strip" per predictor with patchwork: text / bars on the left, OR numbers in the middle, OR plot on the right.
+
+```{r plot-theme}
+theme_strip <- theme_minimal(base_size = 11) +
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(face = "bold", size = 11),
+    legend.position = "none"
+  )
+```
+
+## Categorical predictor strip
+
+```{r cat-strip}
+make_categorical_strip <- function(raw_df, or_df, title, y_levels) {
+  raw_df <- raw_df %>%
+    mutate(level = factor(level, levels = y_levels))
+
+  or_df <- or_df %>%
+    mutate(level = factor(level, levels = y_levels))
+
+  p_raw <- ggplot(raw_df, aes(pct, level)) +
+    geom_col(aes(x = 1), fill = "grey90", width = 0.7) +
+    geom_col(fill = "#4C78A8", width = 0.7) +
+    geom_text(aes(x = 0.02, label = sprintf("%s / %s  (%.0f%%)", n_low, n, 100 * pct)),
+              hjust = 0, size = 3) +
+    scale_x_continuous(limits = c(0, 1), labels = percent) +
+    labs(title = title, x = "% low birth weight") +
+    theme_strip
+
+  or_labels <- or_df %>%
+    mutate(
+      label = if_else(
+        is_reference,
+        "Reference",
+        sprintf("%.2f (%.2f-%.2f)", estimate, conf.low, conf.high)
+      )
+    )
+
+  p_or_text <- ggplot(or_labels, aes(x = 1, y = level)) +
+    geom_text(aes(label = label, color = model),
+              position = position_nudge(y = ifelse(or_labels$model == "Univariable", 0.15, -0.15)),
+              size = 3, hjust = 0.5) +
+    scale_color_manual(values = c(Univariable = "#4C78A8", Multivariable = "#F58518")) +
+    scale_x_continuous(limits = c(0.5, 1.5)) +
+    labs(title = "OR (95% CI)", x = NULL) +
+    theme_strip +
+    theme(axis.text.x = element_blank(), panel.grid = element_blank())
+
+  p_forest <- ggplot(filter(or_df, !is_reference), aes(estimate, level, color = model)) +
+    geom_vline(xintercept = 1, linetype = "dashed", color = "grey50") +
+    geom_linerange(aes(xmin = conf.low, xmax = conf.high),
+                   position = position_dodge(width = 0.5)) +
+    geom_point(position = position_dodge(width = 0.5), size = 2) +
+    scale_x_log10() +
+    scale_color_manual(values = c(Univariable = "#4C78A8", Multivariable = "#F58518")) +
+    labs(title = "OR plot", x = "Odds ratio (log scale)") +
+    theme_strip
+
+  p_raw + p_or_text + p_forest + plot_layout(widths = c(1.2, 1, 1.2))
+}
+```
+
+## Continuous predictor strip
+
+```{r cont-strip}
+make_continuous_strip <- function(raw_df, uni_curve, multi_curve, title,
+                                  uni_model, multi_model, term, unit_label,
+                                  ref_value, y_levels) {
+  raw_df <- raw_df %>% mutate(level = factor(level, levels = y_levels))
+
+  curves <- bind_rows(uni_curve, multi_curve)
+
+  # Map continuous x onto the same discrete y scale used by the raw bins.
+  y_num <- seq_along(y_levels)
+  x_range <- range(curves$x)
+  curves <- curves %>%
+    mutate(
+      y = y_num[1] + (x - x_range[1]) / diff(x_range) * (diff(range(y_num))),
+      y = pmin(pmax(y, min(y_num)), max(y_num))
+    )
+
+  ref_y <- y_num[1] + (ref_value - x_range[1]) / diff(x_range) * diff(range(y_num))
+
+  uni_or <- tidy(uni_model, conf.int = TRUE, exponentiate = TRUE) %>%
+    filter(term == !!term)
+  multi_or <- tidy(multi_model, conf.int = TRUE, exponentiate = TRUE) %>%
+    filter(term == !!term)
+
+  or_label_df <- tibble(
+    model = c("Univariable", "Multivariable"),
+    label = c(
+      sprintf("per unit: %.2f (%.2f-%.2f)", uni_or$estimate, uni_or$conf.low, uni_or$conf.high),
+      sprintf("per unit: %.2f (%.2f-%.2f)", multi_or$estimate, multi_or$conf.low, multi_or$conf.high)
+    ),
+    y = c(length(y_levels) - 0.2, length(y_levels) - 0.8)
+  )
+
+  p_raw <- ggplot(raw_df, aes(pct, level)) +
+    geom_col(aes(x = 1), fill = "grey90", width = 0.7) +
+    geom_col(fill = "#4C78A8", width = 0.7) +
+    geom_text(aes(x = 0.02, label = sprintf("%s / %s  (%.0f%%)", n_low, n, 100 * pct)),
+              hjust = 0, size = 3) +
+    scale_x_continuous(limits = c(0, 1), labels = percent) +
+    labs(title = title, x = "% low birth weight") +
+    theme_strip
+
+  p_or_text <- ggplot(or_label_df, aes(x = 1, y = y)) +
+    geom_text(aes(label = paste0(model, "\n", label), color = model), size = 3) +
+    annotate("text", x = 1, y = 1.5, size = 3,
+             label = paste0("OR vs ref ", ref_value, " ", unit_label)) +
+    scale_color_manual(values = c(Univariable = "#4C78A8", Multivariable = "#F58518")) +
+    scale_y_continuous(limits = c(0.5, length(y_levels) + 0.5)) +
+    scale_x_continuous(limits = c(0.5, 1.5)) +
+    labs(title = "OR (95% CI)", x = NULL) +
+    theme_strip +
+    theme(axis.text = element_blank(), panel.grid = element_blank())
+
+  p_curve <- ggplot(curves, aes(or, y, color = model, fill = model)) +
+    geom_vline(xintercept = 1, linetype = "dashed", color = "grey50") +
+    geom_ribbon(aes(xmin = or_low, xmax = or_high), alpha = 0.15, color = NA) +
+    geom_path(linewidth = 1) +
+    annotate("point", x = 1, y = ref_y, shape = 1, size = 3, color = "grey20") +
+    scale_x_log10() +
+    scale_y_continuous(breaks = y_num, labels = y_levels) +
+    scale_color_manual(values = c(Univariable = "#4C78A8", Multivariable = "#F58518")) +
+    scale_fill_manual(values = c(Univariable = "#4C78A8", Multivariable = "#F58518")) +
+    labs(title = "OR vs reference (curve)", x = "Odds ratio (log scale)") +
+    theme_strip
+
+  p_raw + p_or_text + p_curve + plot_layout(widths = c(1.2, 1, 1.2))
+}
+```
+
+# Assemble the full figure
+
+```{r full-figure, fig.height=16}
+age_levels <- levels(bwt$age_band)
+lwt_levels <- levels(bwt$lwt_band)
+
+strip_age <- make_continuous_strip(
+  filter(raw_table, predictor == "Age (years), continuous"),
+  age_uni_curve, age_multi_curve,
+  "Age (years), continuous",
+  uni_age, multi, "age", "years", age_ref, age_levels
+)
+
+strip_lwt <- make_continuous_strip(
+  filter(raw_table, predictor == "Mother weight (lb), continuous"),
+  lwt_uni_curve, lwt_multi_curve,
+  "Mother weight (lb), continuous",
+  uni_lwt, multi, "lwt", "lb", lwt_ref, lwt_levels
+)
+
+strip_race <- make_categorical_strip(
+  filter(raw_table, predictor == "Race"),
+  race_or, "Race", c("White", "Black", "Other")
+)
+
+strip_smoke <- make_categorical_strip(
+  filter(raw_table, predictor == "Smoked during pregnancy"),
+  smoke_or, "Smoked during pregnancy", c("No", "Yes")
+)
+
+strip_ptl <- make_categorical_strip(
+  filter(raw_table, predictor == "Previous premature labours"),
+  ptl_or, "Previous premature labours", c("0", "1", "2+")
+)
+
+legend_plot <- ggplot(tibble(model = c("Univariable", "Multivariable"), x = 1:2, y = 1),
+                      aes(x, y, color = model)) +
+  geom_point(size = 3) +
+  scale_color_manual(values = c(Univariable = "#4C78A8", Multivariable = "#F58518")) +
+  theme_void() +
+  theme(legend.position = "top", legend.title = element_blank())
+
+legend_plot / strip_age / strip_lwt / strip_race / strip_smoke / strip_ptl +
+  plot_layout(heights = c(0.15, 1.2, 1.2, 0.9, 0.7, 0.9))
+```
+
+# Notes for adapting to the burns workshop
+
+1. Keep raw % **binned** even when the model uses the continuous variable.
+2. For continuous OR plots, pick a clinically meaningful reference (here age 25 and weight 120 lb; the screenshot example used age 35).
+3. Always verify printed ORs against `tidy(model, conf.int = TRUE, exponentiate = TRUE)`.
+4. Univariable and multivariable can share one figure by using two colors and dodged points / overlaid curves.
+5. This layout is deliberately built from ggplot + patchwork so an LLM can modify strips without a specialized table package.
