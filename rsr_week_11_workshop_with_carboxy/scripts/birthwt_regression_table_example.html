@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="GRAPH Courses (composer_k8m3)" />
+<meta name="author" content="GRAPH Courses (grok_m7p2)" />
 
 <meta name="date" content="2026-07-30" />
 
@@ -1483,7 +1483,7 @@ border-radius: 0px;
 table</h1>
 <h3 class="subtitle">birthwt data with binary, continuous, and
 polytomous predictors</h3>
-<h4 class="author">GRAPH Courses (composer_k8m3)</h4>
+<h4 class="author">GRAPH Courses (grok_m7p2)</h4>
 <h4 class="date">2026-07-30</h4>
 
 </div>
@@ -1776,7 +1776,8 @@ the left, OR numbers in the middle, OR plot on the right.</p>
 
   curves &lt;- bind_rows(uni_curve, multi_curve)
 
-  # Map continuous x onto the same discrete y scale used by the raw bins.
+  # Map continuous x onto the same discrete y scale used by the raw bins:
+  # stretch the predictor range across the bin rows for a &quot;flipped&quot; look.
   y_num &lt;- seq_along(y_levels)
   x_range &lt;- range(curves$x)
   curves &lt;- curves %&gt;%

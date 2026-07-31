@@ -1,7 +1,7 @@
 ---
 title: "Example: dense logistic regression table"
 subtitle: "birthwt data with binary, continuous, and polytomous predictors"
-author: "GRAPH Courses (composer_k8m3)"
+author: "GRAPH Courses (grok_m7p2)"
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -261,7 +261,8 @@ make_continuous_strip <- function(raw_df, uni_curve, multi_curve, title,
 
   curves <- bind_rows(uni_curve, multi_curve)
 
-  # Map continuous x onto the same discrete y scale used by the raw bins.
+  # Map continuous x onto the same discrete y scale used by the raw bins:
+  # stretch the predictor range across the bin rows for a "flipped" look.
   y_num <- seq_along(y_levels)
   x_range <- range(curves$x)
   curves <- curves %>%

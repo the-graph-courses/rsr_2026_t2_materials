@@ -50,7 +50,7 @@ pacman::p_load_gh("the-graph-courses/inspectdf")
 
 ## Import and clean
 
-Below we import the study data and prepare the outcome and four predictors.
+Below we import the study data and prepare the outcome and four predictors. We also keep the raw continuous PF ratio for an optional challenge at the end.
 
 ```{r import-clean}
 burns_raw <- read_excel(here("data/S1Dataset_burns.xlsx"), sheet = "Sheet2") %>%
@@ -66,7 +66,8 @@ burns <- burns_raw %>%
     pf_ratio_group = factor(pfdivide, levels = 0:3,
                             labels = c(">300", "200-300", "100-200", "<100"))
   ) %>%
-  select(mortality, age_years, tbsa_percent, inhalation_injury, pf_ratio_group)
+  select(mortality, age_years, tbsa_percent, inhalation_injury,
+         pf_ratio, pf_ratio_group)
 
 glimpse(burns)
 burns %>% tabyl(mortality)
@@ -74,12 +75,10 @@ burns %>% tabyl(mortality)
 
 **Question 1.1:** How many patients are in the analysis dataset, and how many died?
 
-Ans 1.1: ______
-
+**Answer 1.1:**
 **Question 1.2:** What are the four predictors we will include in the multivariable model?
 
-Ans 1.2: ______
-
+**Answer 1.2:**
 # PART 2: Univariable models
 
 You already know how to fit these. The code below is filled in so you can move quickly to the multivariable section. Run the chunk and skim the odds ratios.
@@ -104,12 +103,10 @@ uni_results
 
 **Question 2.1:** In the univariable results, which continuous predictors have 95% CIs that exclude 1?
 
-Ans 2.1: ______
+**Answer 2.1:**
+**Question 2.2:** Which inhalation-injury contrast (Subjective, Upper, or Lower) has the largest univariable odds ratio versus Normal?
 
-**Question 2.2:** Which inhalation-injury contrast has the largest univariable odds ratio versus Normal?
-
-Ans 2.2: ______
-
+**Answer 2.2:**
 ## Compare the univariable models with AIC
 
 AIC gives one way to compare models fitted to the same outcome and patients. A lower AIC indicates a better balance between fitting the observed data and avoiding unnecessary complexity. 
@@ -123,11 +120,9 @@ AIC(inhalation_uni)
 AIC(pf_uni)
 ```
 
-**Question 2.3:** Which univariable model has the lowest AIC and therefore fits these mortality data best among the four models compared?
+**Question 2.3:** Which univariable model has the lowest AIC? This is the variable that best explains the outcome in this sample. Does this match your expectations?
 
-Ans 2.3: ______
-
-
+**Answer 2.3:**
 # PART 3: Multivariable model
 
 Now you will fit one model that includes all four predictors together.
@@ -156,12 +151,7 @@ extract_eq(multivar_model, use_coefs = TRUE, wrap = TRUE, terms_per_line = 3) %>
 
 **Question 3.1:** How many parameters does this model have, including the intercept? (Count the coefficients in your extract_eq() output or the number of rows in the summary() output.)
 
-Ans 3.1: ______
-
-**Question 3.2:** For logistic regression, a common rough guideline is at least about 10 **events** (here, deaths) per model parameter, not 10 rows. With 173 deaths and that many parameters, do we meet this guideline?
-
-Ans 3.2: ______
-
+**Answer 3.1:**
 ## Odds ratios
 
 Here, complete the `tidy()` call to obtain adjusted odds ratios and 95% confidence intervals.
@@ -171,20 +161,19 @@ multivar_results <- tidy(________, conf.int = ________, exponentiate = ________)
 multivar_results
 ```
 
-**Question 3.3:** Complete the interpretation for age in the multivariable model.
+**Question 3.2:** Complete the interpretation for age in the multivariable model.
 
-Ans 3.3:
-
+**Answer 3.2:**
 > After adjusting for TBSA, inhalation injury, and PF ratio group, each additional year of age was associated with about ______ times the odds of mortality (OR ______, 95% CI ______ to ______).
 
-**Question 3.4:** Compare the univariable and multivariable ORs for Upper inhalation injury (versus Normal). Did the adjusted OR move closer to 1, farther from 1, or stay about the same? What does that suggest?
+**Question 3.3:** Compare the univariable and multivariable ORs for Upper inhalation injury (versus Normal). Complete the interpretation below.
 
-Ans 3.4: ______
+**Answer 3.3:**
+> The OR decreased from about ______ in the univariable model to about ______ after adjustment, so it moved ______ (closer to / farther from) 1. This suggests that differences in age, TBSA, and PF ratio may explain ______ (some / all / none) of the univariable association. However, the adjusted OR remains well above 1, so ______ (most / none) of the association remains after adjustment.
 
-**Question 3.5:** In the multivariable model, which predictors still have statistically significant associations with mortality (CI excludes 1, or p < 0.05)?
+**Question 3.4:** In the multivariable model, which predictors still have statistically significant associations with mortality (CI excludes 1, or p < 0.05)?
 
-Ans 3.5: ______
-
+**Answer 3.4:**
 ## Side-by-side univariable and multivariable table
 
 Below we use some functions from the `gtsummary` package to create a side-by-side table of the univariable and multivariable results.
@@ -247,14 +236,15 @@ In Week 9 you used the SUNSHINE checklist for **linear** regression. Many of the
 | Normality of residuals | Often checked, least critical in large samples | **Not an assumption** of logistic regression. |
 | Multicollinearity, influence, design | Same ideas | Same ideas |
 
-**Question 4.1:** Does logistic regression require normally distributed residuals?
+**Question 4.1:** For logistic regression, a common rough guideline is at least about 10 **events** (here, deaths) per model parameter, not 10 rows. With 173 deaths and 9 parameters, do we meet this guideline?
 
-Ans 4.1: ______
+**Answer 4.1:**
+**Question 4.2:** Does logistic regression require normally distributed residuals?
 
-**Question 4.2:** For a logistic model, which check_model() diagnostic panel is used to check whether the model shape is a good fit for the data?
+**Answer 4.2:**
+**Question 4.3:** For a logistic model, which check_model() diagnostic panel is used to check whether the model shape is a good fit for the data?
 
-Ans 4.2: ______
-
+**Answer 4.3:**
 ## Run `check_model()`
 
 Below we run the diagnostic panel for our multivariable model.
@@ -263,10 +253,9 @@ Below we run the diagnostic panel for our multivariable model.
 check_model(multivar_model)
 ```
 
-**Question 4.3:** Is there any concern about collinearity (high VIF), or influential observations based on the output?
+**Question 4.4:** Is there any concern about collinearity (high VIF), or influential observations based on the output?
 
-Ans 4.3: ______
-
+**Answer 4.4:**
 ### Binned-residual plot
 
 The binned-residual plot shows some concerning trends. Many binned average residuals lie outside their error bounds. This suggests systematic lack of fit in parts of the prediction range.
@@ -281,12 +270,32 @@ This possible lack of fit should also be reported. The original paper did not re
 
 Complete the results paragraph below using the multivariable model.
 
-Ans:
-
+**Answer:**
 > We fitted a multivariable logistic regression model of in-hospital mortality among 676 patients. After adjustment, each additional year of age was associated with an odds ratio of ______ (95% CI 1.044 to 1.085), and each additional percentage point of TBSA burned with an odds ratio of ______ (95% CI 1.079 to 1.112). Compared with Normal inhalation status, Upper injury had an adjusted odds ratio of ______ and Lower injury ______. None of the PF ratio comparisons reached statistical significance after adjustment; the largest adjusted odds ratio was ______ for <100 versus >300.
 >
 > We also checked the model diagnostics. Collinearity between the predictors was ______ (low / high), and ______ (no / many) observations appeared unduly influential. However, many binned average residuals fell ______ (inside / outside) their expected bounds, which suggests that the model ______ (fits / does not fit) parts of the prediction range well. We report this as a limitation of the analysis.
 
+# Optional challenge: Continuous or categorized PF ratio?
+
+The paper used four PF ratio categories instead of modeling the continuous variable directly. Categorizing loses information within groups and creates abrupt cut points, but can sometimes fit the data better than a pure continuous predictor. It can also make clinical decisions easier.
+
+Below we compare the AIC values from our two PF ratio models to see which one fits the data better.
+
+Compare `pf_uni` (categorized) with a new model using raw continuous `pf_ratio`. Fit the continuous model below and compare AIC values.
+
+```{r pf-functional-form-challenge}
+pf_continuous_model <- glm(________ ~ ________, family = ________, data = ________)
+
+AIC(pf_continuous_model)
+AIC(pf_uni)
+```
+
+**Challenge question 1:** Which model has the lower AIC, and by approximately how many points?
+
+**Answer:**
+**Challenge question 2:** Is the AIC difference very large? Based on this comparison, does the categorization of PF ratio which the authors implemented appear to have improved the model fit?
+
+**Answer:**
 # Reference
 
 Kim Y, Kym D, Hur J, Yoon J, Yim H, Cho YS, et al. (2017). Does inhalation injury predict mortality in burns patients or require redefinition? *PLOS ONE*, 12(9), e0185195. <https://doi.org/10.1371/journal.pone.0185195>
