@@ -76,9 +76,11 @@ burns %>% tabyl(mortality)
 **Question 1.1:** How many patients are in the analysis dataset, and how many died?
 
 **Answer 1.1:**
+
 **Question 1.2:** What are the four predictors we will include in the multivariable model?
 
 **Answer 1.2:**
+
 # PART 2: Univariable models
 
 You already know how to fit these. The code below is filled in so you can move quickly to the multivariable section. Run the chunk and skim the odds ratios.
@@ -104,9 +106,11 @@ uni_results
 **Question 2.1:** In the univariable results, which continuous predictors have 95% CIs that exclude 1?
 
 **Answer 2.1:**
+
 **Question 2.2:** Which inhalation-injury contrast (Subjective, Upper, or Lower) has the largest univariable odds ratio versus Normal?
 
 **Answer 2.2:**
+
 ## Compare the univariable models with AIC
 
 AIC gives one way to compare models fitted to the same outcome and patients. A lower AIC indicates a better balance between fitting the observed data and avoiding unnecessary complexity. 
@@ -120,9 +124,17 @@ AIC(inhalation_uni)
 AIC(pf_uni)
 ```
 
-**Question 2.3:** Which univariable model has the lowest AIC? This is the variable that best explains the outcome in this sample. Does this match your expectations?
+Each AIC value above comes from one univariable model:
+
+- `age_uni`: age (years)
+- `tbsa_uni`: total body surface area burned (%)
+- `inhalation_uni`: inhalation injury (Normal / Subjective / Upper / Lower)
+- `pf_uni`: PF ratio group (>300 / 200-300 / 100-200 / <100)
+
+**Question 2.3:** Which univariable model has the lowest AIC? Based on what you know clinically about burns, is that the predictor you would have expected to be strongest?
 
 **Answer 2.3:**
+
 # PART 3: Multivariable model
 
 Now you will fit one model that includes all four predictors together.
@@ -152,6 +164,7 @@ extract_eq(multivar_model, use_coefs = TRUE, wrap = TRUE, terms_per_line = 3) %>
 **Question 3.1:** How many parameters does this model have, including the intercept? (Count the coefficients in your extract_eq() output or the number of rows in the summary() output.)
 
 **Answer 3.1:**
+
 ## Odds ratios
 
 Here, complete the `tidy()` call to obtain adjusted odds ratios and 95% confidence intervals.
@@ -174,6 +187,7 @@ multivar_results
 **Question 3.4:** In the multivariable model, which predictors still have statistically significant associations with mortality (CI excludes 1, or p < 0.05)?
 
 **Answer 3.4:**
+
 ## Side-by-side univariable and multivariable table
 
 Below we use some functions from the `gtsummary` package to create a side-by-side table of the univariable and multivariable results.
@@ -239,12 +253,15 @@ In Week 9 you used the SUNSHINE checklist for **linear** regression. Many of the
 **Question 4.1:** For logistic regression, a common rough guideline is at least about 10 **events** (here, deaths) per model parameter, not 10 rows. With 173 deaths and 9 parameters, do we meet this guideline?
 
 **Answer 4.1:**
+
 **Question 4.2:** Does logistic regression require normally distributed residuals?
 
 **Answer 4.2:**
+
 **Question 4.3:** For a logistic model, which check_model() diagnostic panel is used to check whether the model shape is a good fit for the data?
 
 **Answer 4.3:**
+
 ## Run `check_model()`
 
 Below we run the diagnostic panel for our multivariable model.
@@ -256,6 +273,7 @@ check_model(multivar_model)
 **Question 4.4:** Is there any concern about collinearity (high VIF), or influential observations based on the output?
 
 **Answer 4.4:**
+
 ### Binned-residual plot
 
 The binned-residual plot shows some concerning trends. Many binned average residuals lie outside their error bounds. This suggests systematic lack of fit in parts of the prediction range.
@@ -293,9 +311,11 @@ AIC(pf_uni)
 **Challenge question 1:** Which model has the lower AIC, and by approximately how many points?
 
 **Answer:**
+
 **Challenge question 2:** Is the AIC difference very large? Based on this comparison, does the categorization of PF ratio which the authors implemented appear to have improved the model fit?
 
 **Answer:**
+
 # Reference
 
 Kim Y, Kym D, Hur J, Yoon J, Yim H, Cho YS, et al. (2017). Does inhalation injury predict mortality in burns patients or require redefinition? *PLOS ONE*, 12(9), e0185195. <https://doi.org/10.1371/journal.pone.0185195>

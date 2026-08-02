@@ -126,9 +126,16 @@ AIC(inhalation_uni)
 AIC(pf_uni)
 ```
 
-**Question 2.3:** Which univariable model has the lowest AIC and therefore fits these mortality data best among the four models compared?
+Each AIC value above comes from one univariable model:
 
-**Answer 2.3:** The TBSA model has the lowest AIC (about 448), so it provides the best fit among these four univariable models. This does not establish that TBSA is causal or that the model is adequate in every respect.
+- `age_uni`: age (years)
+- `tbsa_uni`: total body surface area burned (%)
+- `inhalation_uni`: inhalation injury (Normal / Subjective / Upper / Lower)
+- `pf_uni`: PF ratio group (>300 / 200-300 / 100-200 / <100)
+
+**Question 2.3:** Which univariable model has the lowest AIC? Based on what you know clinically about burns, is that the predictor you would have expected to be strongest?
+
+**Answer 2.3:** The TBSA model has the lowest AIC (about 448). Yes, that matches clinical expectation: burn size is usually a strong driver of mortality. This does not establish that TBSA is causal or that the model is adequate in every respect.
 
 # PART 3: Multivariable model
 
