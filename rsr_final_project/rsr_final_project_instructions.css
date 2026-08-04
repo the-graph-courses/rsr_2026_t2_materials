@@ -1,0 +1,78 @@
+/* Each main numbered section (1-4) gets a pale tinted panel, and its
+   headings use a darker shade of the same hue. */
+#planning-your-study,
+#understanding-the-report-structure-paper-sections,
+#executing-your-analysis,
+#final-checks-and-submission {
+  padding: 1.25rem 1.5rem 1.5rem;
+  margin: 2rem 0;
+  border-radius: 0.5rem;
+  border-left: 4px solid rgba(0, 0, 0, 0.12);
+}
+
+/* 1. Planning: green */
+#planning-your-study {
+  background-color: #f4f9f5;
+  border-left-color: #2e7d5b;
+}
+#planning-your-study h1,
+#planning-your-study h2,
+#planning-your-study h3 {
+  color: #1d5c42;
+}
+
+/* 2. Report structure: blue */
+#understanding-the-report-structure-paper-sections {
+  background-color: #f4f8fc;
+  border-left-color: #35699b;
+}
+#understanding-the-report-structure-paper-sections h1,
+#understanding-the-report-structure-paper-sections h2,
+#understanding-the-report-structure-paper-sections h3 {
+  color: #1d4c74;
+}
+
+/* 3. Executing the analysis: amber */
+#executing-your-analysis {
+  background-color: #fdf8f1;
+  border-left-color: #b07d33;
+}
+#executing-your-analysis h1,
+#executing-your-analysis h2,
+#executing-your-analysis h3 {
+  color: #8a5a15;
+}
+
+/* 4. Final checks and submission: plum */
+#final-checks-and-submission {
+  background-color: #faf5f8;
+  border-left-color: #96567a;
+}
+#final-checks-and-submission h1,
+#final-checks-and-submission h2,
+#final-checks-and-submission h3 {
+  color: #713d5c;
+}
+
+/* Button-style link, e.g. to the dataset collection */
+a.link-button {
+  display: inline-block;
+  margin: 0.25rem 0 1rem;
+  padding: 0.6rem 1.1rem;
+  background-color: #2e7d5b;
+  color: #fff !important;
+  font-weight: 600;
+  text-decoration: none !important;
+  border-radius: 0.35rem;
+}
+a.link-button:hover {
+  background-color: #1d5c42;
+}
+
+/* Callout headings keep the default callout styling */
+#planning-your-study .callout :is(h1, h2, h3),
+#understanding-the-report-structure-paper-sections .callout :is(h1, h2, h3),
+#executing-your-analysis .callout :is(h1, h2, h3),
+#final-checks-and-submission .callout :is(h1, h2, h3) {
+  color: inherit;
+}
