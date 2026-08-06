@@ -103,7 +103,7 @@ Now that you have a dataset in mind, you'll need to choose your outcome variable
 | Outcome type | Regression method | Main model results to focus on |
 |:---|:---|:---|
 | Continuous outcome (e.g. birthweight, PHQ-9 scores) | **Linear regression** | beta coefficient, 95% confidence interval, p-value, adjusted R-squared |
-| Binary outcome (e.g. died/survived, anaemic/not anaemic) | **Logistic regression** | odds ratio, 95% confidence interval, p-value, AIC |
+| Binary outcome (e.g. died/survived, anaemic/not anaemic) | **Logistic regression** | odds ratio, 95% confidence interval, p-value, AIC (only if comparing multiple models) |
 
 
 ## 1c. Choosing a report style and research purpose
