@@ -311,7 +311,9 @@ Your comparison must discuss:
 
 ## 3f. Check your model diagnostics
 
-Run `check_model()` on your final multivariable model and present and describe the results. 
+Run `check_model()` on your final multivariable model and present and describe the results. This works for both linear and logistic models.
+
+For logistic models, the diagnostic panels differ slightly from linear regression (as in the Week 11 workshop). Homogeneity of variance and normality of residuals are not assumptions of logistic regression. Focus on **binned residuals** (model shape / fit), **collinearity**, and **influential observations**.
 
 You are unlikely to have a model that perfectly satisfies all assumptions. This is okay. What matters is that you report any deviations from the assumptions. You are not required to implement advanced corrections or transformations that were not covered in the course.
 
@@ -421,7 +423,7 @@ Then:
 +-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
 | Fit and interpret univariable logistic regression and odds ratios                 | Week 10 workshop                                                                                                      |
 +-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
-| Fit a multivariable logistic model, merge tables, use AIC, check binned residuals | Week 11 workshop                                                                                                      |
+| Fit a multivariable logistic model, merge tables, use AIC, run `check_model()`    | Week 11 workshop                                                                                                      |
 +-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
 | Refresh on any diagnostic panel                                                   | [Regression Diagnostics Explorer](https://the-graph-courses.github.io/rsr_resources/explorers/regression-diagnostics) |
 +-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
@@ -588,11 +590,9 @@ AIC(multivar_glm)
 ### Diagnostics for the logistic model
 
 ```{r}
-#| fig-width: 7
-#| fig-height: 4.5
-binned_res <- binned_residuals(multivar_glm)
-binned_res
-plot(binned_res)
+#| fig-width: 9
+#| fig-height: 10
+check_model(multivar_glm)
 ```
 
-The binned residuals plot shows quite some deviations from the error bounds. This should be reported as a limitation in the Discussion & Limitations section.
+Collinearity is low and no observations appear unduly influential. The binned-residual panel is the main check of whether the model shape fits the data. Here, many binned average residuals fall outside their error bounds, which suggests systematic lack of fit in parts of the prediction range. This should be reported as a limitation in the Discussion & Limitations section.
