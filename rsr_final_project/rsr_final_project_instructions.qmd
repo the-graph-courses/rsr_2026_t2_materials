@@ -342,67 +342,66 @@ Then:
 
 ### Research aim, data selection, and introduction (15 points)
 
--   Is the dataset from the provided collection, or an external dataset approved by an instructor?
--   Are an appropriate outcome and predictors selected for the research purpose?
--   Is there a focused and meaningful research question and hypothesis?
--   Does the report justify why this research question and hypothesis are important?
--   Does the report clearly align with the chosen research purpose (either comparing predictors or estimating a causal effect)?
--   Is the choice of the main analytic approach (linear vs logistic regression) appropriate for the outcome?
+-   Is the dataset an individual-level dataset for which the regression approaches taught in the course are appropriate?
+-   Does the paper use an appropriate outcome and set of predictors?
+-   Does the report state or clearly imply a well defined research question and, ideally, a hypothesis?
+-   Does the report's introduction or conclusion give meaningful context about why this research question is important?
+-   Do the report's goals align with at least one of the following purposes: a) to compare predictors of an outcome, before and after mutual adjustment b) to try to estimate a causal effect, controlling for other factors?
+-   Does the paper's main regression type (linear vs logistic regression) make sense for the chosen outcome?
 
 ### Methods (10 points)
 
--   In the methods section, is the data source described accurately, including the study design, population, and unit of observation?
--   Are the outcome and predictors clearly defined, including coding and reference groups where relevant?
--   Is the choice of predictors or covariates justified using subject-matter knowledge?
--   Are data cleaning, exclusions, and missing-data handling clearly described?
--   Are the descriptive analysis, univariable models, multivariable model, and diagnostics described in enough detail for another analyst to reproduce the analysis?
+-   Is the data source, including collection method and study design, decently well described? (Of course, if the report reuses data from a published paper, this description can only be as detailed as the original paper.)
+-   Does the report clearly define the outcomes and predictor variables, including how variables were coded, and the reference groups?
+-   Is the set of predictors chosen justified using subject-matter knowledge or other valid principles?
+-   Where relevant, are important data cleaning steps, including missing data handling, or exclusion of certain individuals clearly described?
+-   Are the descriptive analysis, univariable and multivariable models and the model diagnostics described in sufficient detail for someone else to fairly easily reproduce the analysis?
 
 ### Descriptive analysis (10 points)
 
--   In the results section, is the analytic sample size, including any exclusions, reported accurately?
--   Is there a nicely-formatted Table 1 that describes the analytic sample, using mean and SD for continuous variables and number and percentage for categorical variables.
--   Is there at least one well-designed and informative figure that shows the outcome distribution or its relationship with an important predictor?
--   Are the tables and figures generated with R code and are clearly labelled and presented?
--   Are the descriptive findings interpreted accurately and concisely in the text?
+-   Is there at least one table that describes the final analytic sample, using for example mean and standard deviation for the continuous variables and percentage compositions for the categorical variables?
+-   Does the report have at least one nicely-formatted figure that shows the distribution of the outcome or the relationship between the outcome and an important predictor?
+-   Are the tables and figures created in R?
+-   Are the tables well presented, without mistakes, with clear labels, and referred to appropriately in the text?
+-   Are the descriptive findings, including some of what was presented in the table, interpreted accurately in the text?
 
 ### Univariable regression (15 points)
 
--   In the results section, is a separate univariable model correctly fitted for each planned predictor?
--   Are the beta coefficients or odds ratios reported appropriately with 95% confidence intervals?
--   Are the main findings for selected predictors interpreted correctly in the text, including the sizes of associations, units, and reference groups where relevant?
--   Are the statistical findings distinguished from clinical or practical importance?
+-   Is there a separate univariable model for each predictor that was mentioned in the methods?
+-   Is there at least one table presenting univariable estimates?
+-   In the table or the text, are the odds ratios (for logistic regression) or the beta coefficients (for linear regression) reported appropriately, including their 95% confidence intervals?
+-   Are some of the findings for the univariable regressions reported and interpreted accurately in the report text, including, where relevant, the size of the association, the units, the confidence intervals?
 
 ### Multivariable regression and comparison (25 points)
 
--   In the results section, is one multivariable model correctly fitted with at least three planned predictors?
--   Are the key coefficients interpreted using appropriate conditional language?
--   Is the model fit calculated and reported appropriately using R-squared and adjusted R-squared for linear regression, or AIC for logistic regression?
--   Is there a table (or multiple tables) presenting univariable and multivariable estimates?
--   Does the report explain how the main coefficient or odds ratio changed after adjustment.
--   Does the report identify which predictors remained associated after mutual adjustment?
--   Does the report discuss plausible reasons for changes between the univariable and multivariable results, such as confounding or shared information between predictors?
+-   In the results section, is there at least one main multivariable model appropriately fitted with at least three of the predictors planned?
+-   When multivariable associations are presented, is appropriate conditional language used?
+-   Is the model fit characterised and reported using R-squared and related measures for linear regression, and AIC for logistic regression when comparisons between models are relevant?
+-   Is there a table (or multiple tables) with the multivariable estimates?
+-   For predictor-comparison papers, does the report identify which predictors remain associated after adjustment?
+-   If there are noticeable changes between the univariable and multivariable results, does the paper discuss these, including plausible reasons for such changes?
+-   If relevant, is there some mention of the clinical/practical significance of associations, in contrast to statistical significance (either for univariable or multivariable models)?
 
 ### Diagnostics, discussion, and limitations (15 points)
 
--   Is the `performance::check_model()` function run on the final multivariable model, and are the diagnostic findings well-presented and interpreted?
--   Are any important diagnostic concerns reported honestly and included as limitations?
--   Does the discussion directly answer the research question and state whether the findings support the hypothesis?
--   Does the discussion discuss the scientific or practical meaning of the findings?
+-   Is the `performance::check_model()` function or similar diagnostics run on the final multivariable model, and are diagnostic findings well presented?
+-   Where they exist, are any diagnostic concerns reported in the text, either fixed/addressed directly or reported as limitations?
+-   Does the discussion/conclusion satisfactorily answer the research question(s) identified in the beginning (either directly or indirectly)?
 -   Are at least two relevant limitations identified?
--   Are the conclusions appropriate for the study design, analysis, and chosen research purpose, without unwarranted causal claims?
+-   Are the conclusions appropriate for the study design and analysis and does the report avoid making unwarranted claims?
 
 ### Reproducible R and professional communication (10 points)
 
--   Are all required sections present: Introduction, Methods, Results & Interpretation, Discussion & Limitations, and References?
--   Is the data source cited in the References section?
--   Are there at least 750 words of narrative text (excluding code, code comments, and references)?
--   Does the code run without errors; all outputs are generated in R?
--   Is the code clear and reproducible, with relative file paths such as `here::here()`?
--   Are the code chunks hidden (`echo = FALSE`); messages and warnings suppressed?
+-   Are all required sections present, including but not limited to an introduction, a methods, a results and a discussion section?
+-   Where data was obtained from another published paper, is the source of the data cited in the report?
+-   Excluding code, does the narrative text have at least 750 words?
+-   Is the code reproducible: that is, written so that rerunning it would likely produce the reported results, including the use of relative file paths such as `here::here()`?
+-   Are the code chunks hidden with `echo = FALSE` or similar, and are warnings and messages also suppressed?
 -   Are the tables and figures readable, clearly labelled, and include units where relevant?
--   Does the report knit without errors after restarting R and knitting from a clean session?
--   Is the source file correctly named, and both the `.Rmd` (or `.qmd`) source and knitted `.html`, `.docx`, or `.pdf` report are ready to upload?
--   Is the prose clear, proofread, written mainly in the student's own words, and scores under 50% AI-generated text on [Pangram](https://www.pangram.com)? NOTE: This is a pass/fail criterion.
+-   Is the source file appropriately named, including the student's name?
+-   Was a knitted html, docx, or pdf report submitted?
+-   Is the writing overall clear and professional, without severe comprehension issues or typos?
+-   Does the report score under 50% AI-generated text on [Pangram](https://www.pangram.com)?
 
 # Appendices
 
